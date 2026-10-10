@@ -235,7 +235,16 @@ end
 
 ## Video API
 
-`sn.VideoWriter` and `sn.VideoReader` write and read video files. The current implementation uses a simple AVI container without an external codec dependency.
+`sn.VideoWriter` selects H.264/MP4 for a `.mp4` output path (case-insensitive), using OpenH264 and minimp4. Other output paths retain AVI/MJPEG. MP4 accepts even dimensions up to 3840×2160 and 1–60 FPS. `addFrame` accepts RGB8/RGBA8/BGR8/BGRA8 pixels, optional row stride, and quality from 1 to 100; alpha is ignored. Call `close` to finalize the file and check its return value. MP4 currently contains video only.
+
+`addEncodedFrame` accepts JPEG frames for AVI only. `sn.VideoReader` currently reads AVI/MJPEG only; play MP4 output in an external player.
+
+```luau
+local writer = sn.VideoWriter.new()
+assert(writer:open("capture.mp4", 640, 360, 30), writer:lastError())
+assert(writer:addFrame(pixels, 640, 360, "rgba8", 90), writer:lastError())
+assert(writer:close(), writer:lastError())
+```
 
 ```luau
 local writer = sn.VideoWriter.new()

@@ -235,7 +235,16 @@ end
 
 ## Video API
 
-`sn.VideoWriter` と `sn.VideoReader` は、動画の書き出しと読み戻しに対応します。現在の実装は外部コーデックに依存しない簡易 AVI コンテナを使います。
+`sn.VideoWriter` は、出力先の拡張子が `.mp4` の場合（大文字・小文字を区別しません）、OpenH264 と minimp4 を使って H.264/MP4 を書き出します。それ以外は従来の AVI/MJPEG 形式です。MP4 は偶数の幅・高さ、最大 3840×2160、1〜60 FPS に対応します。`addFrame` は RGB8/RGBA8/BGR8/BGRA8、行ストライド、1〜100 の画質指定に対応し、アルファ値は無視します。`close` でファイルを確定し、戻り値を確認してください。MP4 は映像のみで、音声は含みません。
+
+`addEncodedFrame` は AVI 向けの JPEG フレーム専用です。`sn.VideoReader` は現在 AVI/MJPEG のみ対応しています。MP4 の再生には外部プレイヤーを使用してください。
+
+```luau
+local writer = sn.VideoWriter.new()
+assert(writer:open("capture.mp4", 640, 360, 30), writer:lastError())
+assert(writer:addFrame(pixels, 640, 360, "rgba8", 90), writer:lastError())
+assert(writer:close(), writer:lastError())
+```
 
 ```luau
 local writer = sn.VideoWriter.new()

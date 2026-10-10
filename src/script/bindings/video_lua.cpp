@@ -6,6 +6,7 @@
 #include <core/buffer/buffer.hpp>
 
 #include <cstring>
+#include <limits>
 
 namespace sinen {
 namespace {
@@ -46,10 +47,22 @@ static int lVideoWriterAddFrame(lua_State *L) {
   const char *formatName = luaL_optstring(L, 5, "rgba8");
   const int quality = static_cast<int>(luaL_optinteger(L, 6, 90));
   const auto stride = static_cast<UInt32>(luaL_optinteger(L, 7, 0));
+  const auto format = pixelFormatFromString(formatName);
+  const UInt64 rowBytes =
+      static_cast<UInt64>(width) *
+      ((format == VideoPixelFormat::RGB8 || format == VideoPixelFormat::BGR8)
+           ? 3
+           : 4);
+  const UInt64 actualStride = stride == 0 ? rowBytes : stride;
+  const UInt64 required =
+      height == 0 ? 0
+                  : static_cast<UInt64>(height - 1) * actualStride + rowBytes;
+  if (rowBytes > std::numeric_limits<UInt32>::max() ||
+      actualStride < rowBytes || required > buffer.size()) {
+    luaL_error(L, "video frame buffer is too small or stride is invalid");
+  }
   lua_pushboolean(L, writer->addFrame(static_cast<const UInt8 *>(buffer.data()),
-                                      width, height,
-                                      pixelFormatFromString(formatName), stride,
-                                      quality));
+                                      width, height, format, stride, quality));
   return 1;
 }
 

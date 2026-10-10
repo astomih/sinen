@@ -13,6 +13,27 @@ set_property(TARGET sinen_license_report_tests PROPERTY CXX_STANDARD 23)
 
 add_test(NAME sinen_license_report_tests COMMAND sinen_license_report_tests)
 
+if(TARGET sinen_graphics)
+  # Decode generated H.264 in tests, keeping decoder code out of the engine.
+  file(GLOB SINEN_TEST_H264_DECODER CONFIGURE_DEPENDS
+       ${SINEN_OPENH264_DIR}/codec/decoder/core/src/*.cpp
+       ${SINEN_OPENH264_DIR}/codec/decoder/plus/src/*.cpp)
+  add_library(sinen_test_h264_decoder STATIC ${SINEN_TEST_H264_DECODER})
+  target_include_directories(sinen_test_h264_decoder PRIVATE
+       ${SINEN_OPENH264_DIR}/codec/api/wels
+       ${SINEN_OPENH264_DIR}/codec/common/inc
+       ${SINEN_OPENH264_DIR}/codec/decoder/core/inc
+       ${SINEN_OPENH264_DIR}/codec/decoder/plus/inc)
+  target_link_libraries(sinen_test_h264_decoder PUBLIC sinen_openh264)
+  add_executable(sinen_video_tests video_tests.cpp)
+  target_link_libraries(sinen_video_tests PRIVATE sinen_graphics
+                        sinen_test_h264_decoder GTest::gtest_main)
+  target_include_directories(sinen_video_tests PRIVATE
+                             ${SINEN_SOURCE_DIR}/libs/minimp4)
+  set_property(TARGET sinen_video_tests PROPERTY CXX_STANDARD 23)
+  add_test(NAME sinen_video_tests COMMAND sinen_video_tests)
+endif()
+
 if(TARGET sinen_platform)
   add_executable(sinen_external_file_tests external_file_tests.cpp)
   target_link_libraries(sinen_external_file_tests

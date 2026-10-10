@@ -3,6 +3,7 @@
 #include <platform/io/filesystem.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <cstring>
 #include <limits>
 #include <memory>
@@ -149,6 +150,18 @@ bool VideoWriter::open(StringView path, UInt32 width, UInt32 height,
     return false;
   }
 
+  String extension(path.substr(path.size() > 4 ? path.size() - 4 : 0));
+  for (auto &c : extension) {
+    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+  }
+  const bool writeMp4 = extension == ".mp4";
+  if (writeMp4 && ((width & 1) || (height & 1) || width > 3840 ||
+                   height > 2160 || fps > 60)) {
+    setError(
+        "MP4 requires even dimensions up to 3840x2160 and FPS from 1 to 60");
+    return false;
+  }
+
   String resolvedPath;
   if (!Filesystem::resolveSandboxPath(path, FilesystemAccess::Write,
                                       resolvedPath)) {
@@ -165,6 +178,13 @@ bool VideoWriter::open(StringView path, UInt32 width, UInt32 height,
   info = {width, height, fps, 0};
   index.clear();
   suggestedBufferSize = 0;
+  if (writeMp4) {
+    if (!openMp4()) {
+      close();
+      return false;
+    }
+    return true;
+  }
   if (!writeHeaders()) {
     close();
     return false;
@@ -277,6 +297,21 @@ bool VideoWriter::addFrame(const UInt8 *pixels, UInt32 width, UInt32 height,
     return false;
   }
   quality = std::clamp(quality, 1, 100);
+  const UInt32 channels =
+      (format == VideoPixelFormat::RGB8 || format == VideoPixelFormat::BGR8)
+          ? 3
+          : 4;
+  if (static_cast<UInt64>(width) * channels >
+          std::numeric_limits<UInt32>::max() ||
+      (strideBytes != 0 && strideBytes < width * channels) ||
+      (format != VideoPixelFormat::RGB8 && format != VideoPixelFormat::RGBA8 &&
+       format != VideoPixelFormat::BGR8 && format != VideoPixelFormat::BGRA8)) {
+    setError("invalid video pixel format or stride");
+    return false;
+  }
+  if (mp4) {
+    return addMp4Frame(pixels, format, strideBytes, quality);
+  }
 
   Array<UInt8> rgb = toRgb(pixels, width, height, format, strideBytes);
   Array<UInt8> jpeg;
@@ -291,6 +326,11 @@ bool VideoWriter::addFrame(const UInt8 *pixels, UInt32 width, UInt32 height,
 }
 
 bool VideoWriter::addEncodedFrame(const UInt8 *encodedData, Size encodedSize) {
+  if (mp4) {
+    setError("MP4 requires raw pixels through addFrame; encoded JPEG frames "
+             "are AVI-only");
+    return false;
+  }
   if (!isOpen()) {
     setError("video writer is not open");
     return false;
@@ -348,6 +388,9 @@ bool VideoWriter::patchHeaders() {
 }
 
 bool VideoWriter::close() {
+  if (mp4) {
+    return closeMp4();
+  }
   if (!output.is_open()) {
     return true;
   }

@@ -61,3 +61,9 @@
 [submodule "libs/box3d"]
 	path = libs/box3d
 	url = https://github.com/erincatto/box3d
+[submodule "libs/openh264"]
+	path = libs/openh264
+	url = https://github.com/cisco/openh264.git
+[submodule "libs/minimp4"]
+	path = libs/minimp4
+	url = https://github.com/lieff/minimp4.git

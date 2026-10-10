@@ -4,7 +4,7 @@ local font: sn.Font = sn.Font.new(24)
 local width = 96
 local height = 54
 local frames = 24
-local outputPath = "video_encode_demo.avi"
+local outputPath = "video_encode_demo.mp4"
 local status = "Press SPACE to encode " .. frames .. " RGBA frames to " .. outputPath
 local verified = ""
 
@@ -51,22 +51,8 @@ local function encode()
 		return
 	end
 
-	local reader = sn.VideoReader.new()
-	if not reader:open(outputPath) then
-		status = "readback failed: " .. reader:lastError()
-		return
-	end
-
-	local info = reader:info()
-	local first = reader:readFrame(0)
-	reader:close()
-
-	status = "Encoded " .. info.frameCount .. " frames to " .. outputPath
-	if first then
-		verified = "Readback OK: " .. info.width .. "x" .. info.height .. " @ " .. info.fps .. "fps"
-	else
-		verified = "Readback opened, but frame decode failed"
-	end
+	status = "Encoded " .. writer:frameCount() .. " frames to " .. outputPath
+	verified = "H.264/MP4: " .. width .. "x" .. height .. " @ 12fps; open in a video player"
 end
 
 function update()

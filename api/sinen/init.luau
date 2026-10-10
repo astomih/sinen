@@ -972,6 +972,7 @@ export type VideoFrame = {
 
 export type VideoWriter = {
 	new: () -> VideoWriter,
+	-- .mp4: H.264 (even dimensions up to 3840x2160, 1-60 FPS); otherwise AVI/MJPEG.
 	open: (self: VideoWriter, path: string, width: number, height: number, fps: number) -> boolean,
 	addFrame: (
 		self: VideoWriter,
@@ -982,6 +983,7 @@ export type VideoWriter = {
 		quality: number?,
 		strideBytes: number?
 	) -> boolean,
+	-- Pre-encoded JPEG frames; AVI only.
 	addEncodedFrame: (self: VideoWriter, encoded: Buffer) -> boolean,
 	close: (self: VideoWriter) -> boolean,
 	frameCount: (self: VideoWriter) -> number,

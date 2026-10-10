@@ -79,6 +79,10 @@ function(sinen_generate_license_header output_file)
                       "libs/meshoptimizer/LICENSE.md" 0 "")
   sinen_embed_license("miniaudio" "https://github.com/mackron/miniaudio"
                       "libs/miniaudio/LICENSE" 0 "")
+  sinen_embed_license("OpenH264" "https://github.com/cisco/openh264"
+                      "libs/openh264/LICENSE" 0 "")
+  sinen_embed_license("minimp4" "https://github.com/lieff/minimp4"
+                      "libs/minimp4/LICENSE" 0 "")
   sinen_embed_license("msdfgen" "https://github.com/Chlumsky/msdfgen"
                       "libs/msdfgen/LICENSE.txt" 0 "")
   sinen_embed_license("RapidJSON" "https://github.com/Tencent/rapidjson"

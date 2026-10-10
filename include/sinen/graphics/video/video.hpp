@@ -38,10 +38,13 @@ public:
   VideoWriter() = default;
   ~VideoWriter();
 
+  // .mp4 selects H.264/MP4; other extensions retain AVI/MJPEG.
+  // MP4 requires even dimensions up to 3840x2160 and 1-60 FPS.
   bool open(StringView path, UInt32 width, UInt32 height, UInt32 fps);
   bool addFrame(const UInt8 *pixels, UInt32 width, UInt32 height,
                 VideoPixelFormat format = VideoPixelFormat::RGBA8,
                 UInt32 strideBytes = 0, int quality = 90);
+  // Pre-encoded JPEG frames are supported only for AVI.
   bool addEncodedFrame(const UInt8 *encodedData, Size encodedSize);
   bool close();
 
@@ -58,6 +61,12 @@ private:
   void setError(StringView message);
   bool writeHeaders();
   bool patchHeaders();
+  struct Mp4State;
+  bool openMp4();
+  bool addMp4Frame(const UInt8 *pixels, VideoPixelFormat format,
+                   UInt32 strideBytes, int quality);
+  bool closeMp4();
+  Ptr<Mp4State> mp4;
 
   std::ofstream output;
   String error;

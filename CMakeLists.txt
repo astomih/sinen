@@ -96,6 +96,7 @@ endif()
 
 if(SINEN_MODULE_GRAPHICS)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/assimp EXCLUDE_FROM_ALL)
+  include(${SINEN_SOURCE_DIR}/cmake/openh264.cmake)
 endif()
 
 if(SINEN_MODULE_PHYSICS)
@@ -287,9 +288,10 @@ function(sinen_add_graphics_module)
     sinen_graphics
     PUBLIC ${SINEN_SOURCE_DIR}/libs/stb ${SINEN_SOURCE_DIR}/libs/tinyexr
            ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz
-    PRIVATE ${SINEN_SOURCE_DIR}/src)
+    PRIVATE ${SINEN_SOURCE_DIR}/src ${SINEN_SOURCE_DIR}/libs/minimp4)
   target_link_libraries(sinen_graphics PUBLIC SDL3::SDL3 assimp meshoptimizer
-                                              ktx_read msdfgen-core)
+                                              ktx_read msdfgen-core
+                                     PRIVATE sinen_openh264)
 endfunction()
 
 function(sinen_add_physics_module)

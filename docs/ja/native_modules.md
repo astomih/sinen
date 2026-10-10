@@ -60,9 +60,9 @@ local nativeModule = require("@sinen/plugin/my_native_module")
 print(nativeModule.hello())
 ```
 
-拡張子を省略すると、Windows では `.dll`、Emscripten では `.wasm` など、プラットフォームの拡張子が自動で補われます。プラグイン名にはディレクトリ区切りや絶対パスを指定できず、プロセスのカレントディレクトリ直下からのみロードされます。プラグインのモジュールテーブルは `SINEN_LUA_PLUGIN_REGISTRY_PREFIX` と同じプラグイン名を組み合わせたキーへ登録してください。ロード後は `require("@sinen/plugin/<プラグイン名>")` で取得できます。Wasm ファイルは、事前ロードまたは JavaScript からの書き込みによって Emscripten の仮想ファイルシステム上に配置してからロードしてください。
+拡張子を省略すると、Windows では `.dll`、Emscripten では `.wasm` など、プラットフォームの拡張子が自動で補われます。プラグイン名にはディレクトリ区切りや絶対パスを指定できません。Android では `loadPlugin("shader_compiler")` が APK 内の `libshader_compiler.so` をアプリのリンカー名前空間からロードします。それ以外の環境ではプロセスのカレントディレクトリ直下からロードされます。プラグインのモジュールテーブルは `SINEN_LUA_PLUGIN_REGISTRY_PREFIX` と同じプラグイン名を組み合わせたキーへ登録してください。ロード後は `require("@sinen/plugin/<プラグイン名>")` で取得できます。Wasm ファイルは、事前ロードまたは JavaScript からの書き込みによって Emscripten の仮想ファイルシステム上に配置してからロードしてください。
 
-C++ からは `sinen::Script::load_plugin(name)` を使用できます。失敗理由は `sinen::Script::getPluginError()` で取得できます。同じプラグインを再度指定した場合は既にロード済みとして成功します。従来の `loadNativeModule` は互換エイリアスとして残っていますが、同じカレントディレクトリ制約が適用されます。
+C++ からは `sinen::Script::load_plugin(name)` を使用できます。失敗理由は `sinen::Script::getPluginError()` で取得できます。同じプラグインを再度指定した場合は既にロード済みとして成功します。従来の `loadNativeModule` は互換エイリアスとして残り、同じ検索規則が適用されます。
 
 ## nativefs
 

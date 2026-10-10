@@ -60,9 +60,9 @@ local nativeModule = require("@sinen/plugin/my_native_module")
 print(nativeModule.hello())
 ```
 
-When omitted, the platform extension (`.dll` on Windows, `.wasm` on Emscripten, and so on) is appended automatically. Plugin names cannot contain directory separators or absolute paths; plugins are loaded only from the process current directory. Register a plugin's module table under a registry key formed from `SINEN_LUA_PLUGIN_REGISTRY_PREFIX` and the same plugin name. After loading, scripts can retrieve it with `require("@sinen/plugin/<plugin name>")`. A Wasm file must already exist in Emscripten's virtual filesystem, either through preloading or a JavaScript-side write.
+When omitted, the platform extension (`.dll` on Windows, `.wasm` on Emscripten, and so on) is appended automatically. Plugin names cannot contain directory separators or absolute paths. On Android, `loadPlugin("shader_compiler")` loads the APK's `libshader_compiler.so` through the application linker namespace; other platforms load plugins from the process current directory. Register a plugin's module table under a registry key formed from `SINEN_LUA_PLUGIN_REGISTRY_PREFIX` and the same plugin name. After loading, scripts can retrieve it with `require("@sinen/plugin/<plugin name>")`. A Wasm file must already exist in Emscripten's virtual filesystem, either through preloading or a JavaScript-side write.
 
-C++ code can call `sinen::Script::load_plugin(name)` and retrieve failures through `sinen::Script::getPluginError()`. Loading the same plugin again succeeds without opening a second copy. The former `loadNativeModule` API remains as a compatibility alias and applies the same current-directory restriction.
+C++ code can call `sinen::Script::load_plugin(name)` and retrieve failures through `sinen::Script::getPluginError()`. Loading the same plugin again succeeds without opening a second copy. The former `loadNativeModule` API remains as a compatibility alias and applies the same lookup rules.
 
 ## nativefs
 

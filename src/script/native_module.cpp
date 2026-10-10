@@ -287,6 +287,7 @@ bool NativeModuleManager::loadPlugin(lua_State *state, std::string_view name) {
     fileName += nativeModuleExtension();
   }
 
+#ifndef __ANDROID__
   std::error_code filesystemError;
   const std::filesystem::path currentDirectory =
       std::filesystem::current_path(filesystemError);
@@ -295,9 +296,18 @@ bool NativeModuleManager::loadPlugin(lua_State *state, std::string_view name) {
         "cannot resolve current directory: " + filesystemError.message();
     return false;
   }
+#endif
 
   try {
+#ifdef __ANDROID__
+    // APK native libraries use lib*.so names and are resolved by Android's
+    // application linker namespace, rather than the working directory.
+    const std::string path =
+        (name.starts_with("lib") ? std::string() : std::string("lib")) +
+        pathToUtf8(fileName);
+#else
     const std::string path = pathToUtf8(currentDirectory / fileName);
+#endif
     if (!load(state, path)) {
       return false;
     }

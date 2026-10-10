@@ -8,7 +8,8 @@ set BUILD_CONFIGURATION=Release
 set BUILD_DIR=%CURRENT_DIR%android\%BUILD_ABI%_%BUILD_API_LEVEL%_%BUILD_CONFIGURATION%
 set JNI_LIB_DIR=%CURRENT_DIR%android\app\src\main\jniLibs\%BUILD_ABI%
 
-cmake --build "%BUILD_DIR%" --target sinen
+@REM Slang/miniz belong to the plugin and are no longer dependencies of sinen.
+cmake --build "%BUILD_DIR%" --target sinen sinen_plugin_shader_compiler
 if errorlevel 1 exit /b %ERRORLEVEL%
 
 if not exist "%JNI_LIB_DIR%" mkdir "%JNI_LIB_DIR%"
@@ -29,6 +30,8 @@ if errorlevel 1 exit /b %ERRORLEVEL%
 call :copy_lib "%BUILD_DIR%\plugins\shader_compiler\libs\slang\external\miniz\lib\libminiz.so" "%JNI_LIB_DIR%\libminiz.so"
 if errorlevel 1 exit /b %ERRORLEVEL%
 call :copy_lib "%BUILD_DIR%\plugins\shader_compiler\libs\slang\source\slang\lib\libslang-compiler.so" "%JNI_LIB_DIR%\libslang-compiler.so"
+if errorlevel 1 exit /b %ERRORLEVEL%
+call :copy_lib "%BUILD_DIR%\shader_compiler.so" "%JNI_LIB_DIR%\libshader_compiler.so"
 if errorlevel 1 exit /b %ERRORLEVEL%
 call :copy_lib "%BUILD_DIR%\libs\ktx-software\lib\lib\libktx_read.so" "%JNI_LIB_DIR%\libktx_read.so"
 if errorlevel 1 exit /b %ERRORLEVEL%

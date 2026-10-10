@@ -19,9 +19,18 @@ String Script::getBaseDirectory() { return "."; }
 } // namespace sinen
 
 namespace {
+sinen::String testVideoPath(sinen::StringView name) {
+#ifdef EMSCRIPTEN
+  // Emscripten supports the virtual filesystem, but not the user:// scheme.
+  return sinen::String("/") + sinen::String(name);
+#else
+  return sinen::String("user://") + sinen::String(name);
+#endif
+}
+
 class VideoTests : public testing::Test {
 protected:
-  sinen::String path = "user://sinen_video_encoder_test.mp4";
+  sinen::String path = testVideoPath("sinen_video_encoder_test.mp4");
   sinen::String resolved;
   void SetUp() override {
     ASSERT_TRUE(sinen::Filesystem::resolveSandboxPath(
@@ -53,6 +62,7 @@ struct Demux {
   }
 };
 
+#ifndef EMSCRIPTEN
 struct Decoder {
   ISVCDecoder *decoder = nullptr;
   Decoder() { WelsCreateDecoder(&decoder); }
@@ -63,6 +73,7 @@ struct Decoder {
     }
   }
 };
+#endif
 
 void appendNal(std::vector<unsigned char> &out, const void *data, size_t size) {
   out.insert(out.end(), {0, 0, 0, 1});
@@ -71,7 +82,7 @@ void appendNal(std::vector<unsigned char> &out, const void *data, size_t size) {
 }
 } // namespace
 
-TEST_F(VideoTests, WritesDecodableH264WithExactTimingAndAllPixelFormats) {
+TEST_F(VideoTests, WritesH264WithExactTimingAndAllPixelFormats) {
   // Non-macroblock dimensions exercise SPS cropping. Padding exercises stride.
   constexpr unsigned width = 34, height = 18, fps = 29, frameCount = 65;
   sinen::VideoWriter writer;
@@ -110,11 +121,13 @@ TEST_F(VideoTests, WritesDecodableH264WithExactTimingAndAllPixelFormats) {
   EXPECT_EQ(track.sample_count, frameCount);
   EXPECT_EQ(track.duration_lo, frameCount);
 
+#ifndef EMSCRIPTEN
   Decoder decoder;
   ASSERT_NE(decoder.decoder, nullptr);
   SDecodingParam params{};
   params.sVideoProperty.eVideoBsType = VIDEO_BITSTREAM_AVC;
   ASSERT_EQ(decoder.decoder->Initialize(&params), 0);
+#endif
   std::vector<unsigned char> annexB;
   int size = 0;
   const void *sps = MP4D_read_sps(&file.mp4, 0, 0, &size);
@@ -142,6 +155,7 @@ TEST_F(VideoTests, WritesDecodableH264WithExactTimingAndAllPixelFormats) {
       appendNal(annexB, sample + pos, nalSize);
       pos += nalSize;
     }
+#ifndef EMSCRIPTEN
     unsigned char *planes[3]{};
     SBufferInfo decoded{};
     ASSERT_EQ(
@@ -155,6 +169,7 @@ TEST_F(VideoTests, WritesDecodableH264WithExactTimingAndAllPixelFormats) {
     EXPECT_NEAR(planes[0][0], 82, 5);
     EXPECT_NEAR(planes[1][0], 90, 5);
     EXPECT_NEAR(planes[2][0], 240, 5);
+#endif
     annexB.clear();
   }
 }
@@ -183,7 +198,7 @@ TEST_F(VideoTests, RejectsInvalidInputAndCanReopen) {
 }
 
 TEST_F(VideoTests, DestructorFinalizesFileAndExtensionIsCaseInsensitive) {
-  path = "user://sinen_video_encoder_test.MP4";
+  path = testVideoPath("sinen_video_encoder_test.MP4");
   ASSERT_TRUE(sinen::Filesystem::resolveSandboxPath(
       path, sinen::FilesystemAccess::Write, resolved));
   {
@@ -199,7 +214,7 @@ TEST_F(VideoTests, DestructorFinalizesFileAndExtensionIsCaseInsensitive) {
 }
 
 TEST_F(VideoTests, PreservesAviMjpegWriterAndReader) {
-  path = "user://sinen_video_encoder_test.avi";
+  path = testVideoPath("sinen_video_encoder_test.avi");
   ASSERT_TRUE(sinen::Filesystem::resolveSandboxPath(
       path, sinen::FilesystemAccess::Write, resolved));
   sinen::VideoWriter writer;

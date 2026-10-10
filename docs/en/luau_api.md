@@ -239,6 +239,8 @@ end
 
 `addEncodedFrame` accepts JPEG frames for AVI only. `sn.VideoReader` currently reads AVI/MJPEG only; play MP4 output in an external player.
 
+Emscripten also supports single-threaded MP4 encoding. Write to a virtual filesystem path such as `/capture.mp4`; the `user://` scheme is unavailable on Emscripten.
+
 ```luau
 local writer = sn.VideoWriter.new()
 assert(writer:open("capture.mp4", 640, 360, 30), writer:lastError())

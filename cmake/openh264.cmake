@@ -6,6 +6,8 @@ file(GLOB SINEN_OPENH264_COMMON CONFIGURE_DEPENDS
 file(GLOB SINEN_OPENH264_ENCODER CONFIGURE_DEPENDS
      ${SINEN_OPENH264_DIR}/codec/encoder/core/src/*.cpp
      ${SINEN_OPENH264_DIR}/codec/encoder/plus/src/*.cpp)
+# DllEntry.cpp is Windows DLL glue, unused by our static library.
+list(FILTER SINEN_OPENH264_ENCODER EXCLUDE REGEX "/DllEntry\\.cpp$")
 file(GLOB_RECURSE SINEN_OPENH264_PROCESSING CONFIGURE_DEPENDS
      ${SINEN_OPENH264_DIR}/codec/processing/src/*.cpp)
 add_library(sinen_openh264 STATIC ${SINEN_OPENH264_COMMON}

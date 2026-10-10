@@ -239,6 +239,8 @@ end
 
 `addEncodedFrame` は AVI 向けの JPEG フレーム専用です。`sn.VideoReader` は現在 AVI/MJPEG のみ対応しています。MP4 の再生には外部プレイヤーを使用してください。
 
+Emscripten でもシングルスレッドの MP4 エンコードに対応します。出力先は仮想ファイルシステム上のパス（例: `/capture.mp4`）を使ってください。Emscripten では `user://` スキームは使用できません。
+
 ```luau
 local writer = sn.VideoWriter.new()
 assert(writer:open("capture.mp4", 640, 360, 30), writer:lastError())

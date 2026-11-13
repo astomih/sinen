@@ -62,41 +62,14 @@ local up: sn.Vec3 = sn.Vec3.new(0, 1, 0)
 local camera: sn.Camera3D = sn.Camera3D.new()
 camera:lookat(pos, at, up)
 
-local vertex_shader = sn.Shader.new("shader_custom.vert.snb", sn.ShaderStage.Vertex)
-local fragment_shader = sn.Shader.new("shader_custom.frag.snb", sn.ShaderStage.Fragment)
-
-local pipeline3d = sn.GraphicsPipeline.new()
-pipeline3d:setVertexShader(vertex_shader)
-pipeline3d:setFragmentShader(fragment_shader)
-pipeline3d:setEnableTangent(true)
-pipeline3d:setEnableDepthTest(true)
-pipeline3d:build()
-local material = sn.Material.new(pipeline3d)
-material:setTexture(5, lut)
-material:setTexture(6, cubemap)
-material:setTexture(7, irradiance)
-material:setTexture(8, prefiltered)
+local renderer = sn.PBRRenderer.new()
+renderer:setEnvironment(lut, irradiance, prefiltered)
 
 local lightPos: sn.Vec3 = sn.Vec3.new(1.05, 0.8, 0.75)
 local lightIntensity: number = 4.0
 lightTransform.position = lightPos
 
-local uniformData: { any } = {
-	pos,
-	lightPos,
-	lightIntensity,
-}
-
-local function setWorldUniform(t: sn.Transform)
-	material:setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
-end
-
-function ready()
-	material:setTexture(1, model:getTexture(sn.TextureKey.Normal))
-	material:setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-	material:setTexture(3, model:getTexture(sn.TextureKey.Emissive))
-	material:setTexture(4, model:getTexture(sn.TextureKey.LightMap))
-end
+renderer:setPointLight(lightPos, lightIntensity)
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.P) then
@@ -128,7 +101,7 @@ function update()
 			lightPos.y = lightPos.y - sn.Time.delta() * 5
 		end
 	end
-	uniformData[2] = lightPos
+	renderer:setPointLight(lightPos, lightIntensity)
 	lightTransform.position = lightPos
 end
 
@@ -136,9 +109,7 @@ function draw()
 	local pass = sn.Graphics.begin3DPass(camera)
 	pass:drawCubemap(cubemap)
 
-	material:setUniformBuffer(0, sn.Buffer.new(uniformData))
-	setWorldUniform(transform)
-	pass:drawModel(model, transform, material)
+	renderer:drawModel(pass, model, transform)
 
 	pass:drawModel(lightModel, lightTransform)
 	sn.Graphics.endPass(pass)

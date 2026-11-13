@@ -6,6 +6,8 @@ class BuiltinShader {
 public:
   static bool initialize();
   static void shutdown();
+  static Shader createFromBundle(const unsigned char *data, size_t size,
+                                 ShaderStage stage);
   static Shader getDefaultVS();
   static Shader getDefaultInstancedVS();
   static Shader getDefaultFS();

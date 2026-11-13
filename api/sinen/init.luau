@@ -746,6 +746,22 @@ export type Render3DPass = {
 	setUniformBuffer: (self: Render3DPass, binding: number | string, data: Buffer) -> nil,
 }
 
+export type PBRRenderer = {
+	new: () -> PBRRenderer,
+	setPointLight: (self: PBRRenderer, position: Vec3, intensity: number, color: Color?) -> nil,
+	setEnvironment: (self: PBRRenderer, brdfLut: Texture, irradiance: Texture, prefiltered: Texture) -> nil,
+	clearEnvironment: (self: PBRRenderer) -> nil,
+	drawModel: (self: PBRRenderer, pass: Render3DPass, model: Model, transform: Transform) -> nil,
+}
+
+export type NPRRenderer = {
+	new: () -> NPRRenderer,
+	setLightDirection: (self: NPRRenderer, direction: Vec3) -> nil,
+	setShadowColor: (self: NPRRenderer, color: Color) -> nil,
+	setBands: (self: NPRRenderer, bands: number) -> nil,
+	drawModel: (self: NPRRenderer, pass: Render3DPass, model: Model, transform: Transform) -> nil,
+}
+
 export type Graphics = {
 	-- 2D drawing uses Processing/raylib-style screen coordinates:
 	-- (0, 0) is the top-left of the window, x grows right, y grows down.
@@ -1065,6 +1081,8 @@ return {
 	BuiltinShader = {} :: BuiltinShader,
 	BuiltinPipelines = {} :: BuiltinPipelines,
 	Graphics = {} :: Graphics,
+	PBRRenderer = {} :: PBRRenderer,
+	NPRRenderer = {} :: NPRRenderer,
 	Compute = {} :: Compute,
 	Gui = {} :: Gui,
 	Physics = {} :: Physics,

@@ -14,6 +14,7 @@ option(SINEN_MODULE_PLATFORM "Build the Platform module" ON)
 option(SINEN_MODULE_AUDIO "Build the Audio module" ON)
 option(SINEN_MODULE_GPU "Build the GPU module" ON)
 option(SINEN_MODULE_GRAPHICS "Build the Graphics module" ON)
+option(SINEN_MODULE_RENDERER "Build the Renderer module" ${SINEN_MODULE_GRAPHICS})
 option(SINEN_MODULE_PHYSICS "Build the Physics module" ON)
 option(SINEN_MODULE_SCRIPT "Build the Script module" ON)
 option(SINEN_MODULE_PROFILER "Build the profiler integration module" ON)
@@ -50,6 +51,7 @@ sinen_require_module(GRAPHICS CORE)
 sinen_require_module(GRAPHICS MATH)
 sinen_require_module(GRAPHICS GPU)
 sinen_require_module(GRAPHICS PLATFORM)
+sinen_require_module(RENDERER GRAPHICS)
 sinen_require_module(PHYSICS CORE)
 sinen_require_module(PHYSICS MATH)
 sinen_require_module(SCRIPT CORE)
@@ -173,8 +175,8 @@ target_compile_definitions(
   sinen_common
   INTERFACE $<$<CONFIG:Debug>:SINEN_DEBUG_WORKING_DIRECTORY>)
 
-foreach(SINEN_MODULE_NAME CORE MATH PLATFORM AUDIO GPU GRAPHICS PHYSICS SCRIPT
-                          PROFILER)
+foreach(SINEN_MODULE_NAME CORE MATH PLATFORM AUDIO GPU GRAPHICS RENDERER PHYSICS
+                          SCRIPT PROFILER)
   if(SINEN_MODULE_${SINEN_MODULE_NAME})
     target_compile_definitions(
       sinen_common INTERFACE SINEN_MODULE_${SINEN_MODULE_NAME})
@@ -300,6 +302,12 @@ function(sinen_add_physics_module)
   target_link_libraries(sinen_physics PUBLIC box2d::box2d box3d::box3d)
 endfunction()
 
+function(sinen_add_renderer_module)
+  sinen_glob_module(sinen_renderer renderer)
+  target_include_directories(sinen_renderer PRIVATE ${SINEN_SOURCE_DIR}/src)
+  target_link_libraries(sinen_renderer PUBLIC sinen_graphics)
+endfunction()
+
 function(sinen_add_script_module)
   sinen_glob_module(sinen_script script)
   target_include_directories(
@@ -354,6 +362,7 @@ sinen_add_enabled_module(SINEN_MODULE_PLATFORM platform sinen_platform)
 sinen_add_enabled_module(SINEN_MODULE_AUDIO audio sinen_audio)
 sinen_add_enabled_module(SINEN_MODULE_GPU gpu sinen_gpu)
 sinen_add_enabled_module(SINEN_MODULE_GRAPHICS graphics sinen_graphics)
+sinen_add_enabled_module(SINEN_MODULE_RENDERER renderer sinen_renderer)
 sinen_add_enabled_module(SINEN_MODULE_PHYSICS physics sinen_physics)
 sinen_add_enabled_module(SINEN_MODULE_SCRIPT script sinen_script)
 
@@ -381,6 +390,9 @@ if(TARGET sinen_script)
                                            sinen_audio sinen_gpu sinen_graphics
                                            sinen_physics
                                            )
+  if(TARGET sinen_renderer)
+    target_link_libraries(sinen_script PUBLIC sinen_renderer)
+  endif()
 endif()
 
 add_subdirectory(${SINEN_SOURCE_DIR}/plugins)

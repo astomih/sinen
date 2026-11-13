@@ -236,6 +236,9 @@ void registerBuiltinShader(lua_State *);
 void registerBuiltinPipeline(lua_State *);
 void registerEvent(lua_State *);
 void registerGraphics(lua_State *);
+#ifdef SINEN_MODULE_RENDERER
+void registerRenderer(lua_State *);
+#endif
 void registerGui(lua_State *);
 void registerMouse(lua_State *);
 void registerKeyboard(lua_State *);
@@ -312,6 +315,9 @@ static void registerAll(lua_State *L) {
   registerEvent(L);
 
   registerGraphics(L);
+#ifdef SINEN_MODULE_RENDERER
+  registerRenderer(L);
+#endif
   registerCompute(L);
   registerGui(L);
   registerMouse(L);

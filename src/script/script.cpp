@@ -28,8 +28,10 @@
 #include <SDL3/SDL.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cctype>
 #include <cstring>
+#include <memory>
 #include <optional>
 #include <string_view>
 
@@ -38,6 +40,9 @@ namespace {
 String gFileName = "main.luau";
 String gBaseDirectory = "/";
 bool reload = true;
+std::unique_ptr<luau::debugger::Debugger> debugger;
+std::atomic<bool> debuggerConnected = false;
+bool debuggerAttached = false;
 } // namespace
 auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   (void)ud;
@@ -61,9 +66,6 @@ auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   sinen::GlobalAllocator::get()->deallocate(ptr, osize);
   return nptr;
 };
-bool isEnableDebugger = false;
-bool isDebuggerConnected = false;
-luau::debugger::Debugger debugger(false);
 int luaLError2(lua_State *L, const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
@@ -170,8 +172,8 @@ int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
   int status =
       luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
   if (status == LUA_OK) {
-    if (isEnableDebugger && isDebuggerConnected) {
-      debugger.onLuaFileLoaded(gLua, fullPath, true);
+    if (debuggerAttached) {
+      debugger->onLuaFileLoaded(gLua, fullPath, true);
     }
     return LUA_OK;
   }
@@ -186,8 +188,8 @@ static int luaLoadBytecode(lua_State *L, const String &bytecode,
   int status =
       luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
   if (status == LUA_OK) {
-    if (isEnableDebugger) {
-      debugger.onLuaFileLoaded(gLua, fullPath, true);
+    if (debuggerAttached) {
+      debugger->onLuaFileLoaded(gLua, fullPath, true);
     }
     return LUA_OK;
   }
@@ -332,13 +334,11 @@ static void registerAll(lua_State *L) {
 }
 
 bool Script::initialize(bool isScriptDebug) {
-  isEnableDebugger = isScriptDebug;
-  isDebuggerConnected = false;
-  if (isScriptDebug && !isDebuggerConnected) {
-    auto logHandler = [&](std::string_view msg) {
-      if (msg == "[info][Luau.Debugger][debugger.cpp:126] Debugger client "
-                 "connected\n") {
-        isDebuggerConnected = true;
+  if (isScriptDebug) {
+    debuggerConnected = false;
+    auto logHandler = [](std::string_view msg) {
+      if (msg.ends_with("] Debugger client connected\n")) {
+        debuggerConnected = true;
       }
       Log::info("{}", msg.data());
     };
@@ -347,28 +347,33 @@ bool Script::initialize(bool isScriptDebug) {
     };
 
     luau::debugger::log::install(logHandler, errorHandler);
-    debugger.listen(58000);
-    Log::info("Luau Debug server started on 58000");
-    const UInt32 delayStep = 10; // ms
-    UInt32 timeout = 5000;
-    while (!isDebuggerConnected) {
-      SDL_Delay(delayStep);
-      timeout -= delayStep;
-      if (timeout == 0) {
-        Log::error("Luau debugger connection timed out.");
-        break;
+    debugger = std::make_unique<luau::debugger::Debugger>(false);
+    if (debugger->listen(58000)) {
+      Log::info("Luau Debug server started on 58000");
+      const UInt32 delayStep = 10; // ms
+      for (UInt32 elapsed = 0; elapsed < 5000 && !debuggerConnected;
+           elapsed += delayStep) {
+        SDL_Delay(delayStep);
       }
+      if (!debuggerConnected) {
+        Log::error("Luau debugger connection timed out.");
+        debugger.reset();
+      }
+    } else {
+      debugger.reset();
     }
   }
   // bindings are implemented using Lua C API (see per-module *lua.cpp files)
   gLua = lua_newstate(alloc, nullptr);
   if (!gLua) {
+    debugger.reset();
     Log::error("lua_newstate failed");
     return false;
   }
   luaL_openlibs(gLua);
-  if (isScriptDebug && isDebuggerConnected) {
-    debugger.initialize(gLua);
+  if (debugger) {
+    debugger->initialize(gLua);
+    debuggerAttached = true;
   }
   if (auto *cb = lua_callbacks(gLua)) {
     cb->panic = [](lua_State *L, int errcode) {
@@ -388,6 +393,11 @@ bool Script::initialize(bool isScriptDebug) {
   return true;
 }
 void Script::shutdown() {
+  if (debuggerAttached) {
+    debugger->release(gLua);
+    debuggerAttached = false;
+  }
+  debugger.reset();
   if (!gLua) {
     unregisterShaderCompilerPlugin();
     nativeModuleManager().unload();
@@ -420,9 +430,6 @@ void Script::shutdown() {
   nativeModuleManager().close(gLua);
   lua_close(gLua);
   nativeModuleManager().unload();
-  if (isEnableDebugger && isDebuggerConnected) {
-    debugger.stop();
-  }
   gLua = nullptr;
   gScenePhase = ScriptScenePhase::Running;
   gSetupTasks = TaskGroup();

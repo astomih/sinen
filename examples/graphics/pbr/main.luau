@@ -11,8 +11,7 @@ local lightModel: sn.Model = createLightModel()
 local transform: sn.Transform = sn.Transform.new()
 local lightTransform: sn.Transform = sn.Transform.new()
 local renderer = sn.PBRRenderer.new()
-local lightPos: sn.Vec3 = sn.Vec3.new(1.05, 0.8, 0.75)
-local lightIntensity: number = 4.0
+local light = sn.PointLight.new(sn.Vec3.new(1.05, 0.8, 0.75), 4.0)
 local camera: sn.Camera3D = sn.Camera3D.new()
 
 function setup()
@@ -20,7 +19,7 @@ function setup()
 	transform.rotation = sn.Vec3.new(90, 0, 0)
 	transform.scale = sn.Vec3.new(1, 1, 1)
 
-	lightTransform.position = lightPos
+	lightTransform.position = light:getPosition()
 	lightTransform.rotation = sn.Vec3.new(0, 0, 0)
 	lightTransform.scale = sn.Vec3.new(0.12)
 
@@ -29,7 +28,7 @@ function setup()
 	local up = sn.Vec3.new(0, 1, 0)
 	camera:lookat(pos, at, up)
 
-	renderer:setPointLight(lightPos, lightIntensity)
+	renderer:setLight(light)
 end
 
 function update()
@@ -37,6 +36,7 @@ function update()
 		sn.Script.load("/main.luau")
 	end
 	transform.rotation.z = transform.rotation.z + sn.Time.delta() * 10
+	local lightPos = light:getPosition()
 	if sn.Keyboard.isDown(sn.Scancode.LEFT) then
 		lightPos.x = lightPos.x - sn.Time.delta() * 5
 	end
@@ -57,7 +57,8 @@ function update()
 			lightPos.y = lightPos.y - sn.Time.delta() * 5
 		end
 	end
-	renderer:setPointLight(lightPos, lightIntensity)
+	light:setPosition(lightPos)
+	renderer:setLight(light)
 	lightTransform.position = lightPos
 end
 

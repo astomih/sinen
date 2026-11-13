@@ -65,11 +65,10 @@ camera:lookat(pos, at, up)
 local renderer = sn.PBRRenderer.new()
 renderer:setEnvironment(lut, irradiance, prefiltered)
 
-local lightPos: sn.Vec3 = sn.Vec3.new(1.05, 0.8, 0.75)
-local lightIntensity: number = 4.0
-lightTransform.position = lightPos
-
-renderer:setPointLight(lightPos, lightIntensity)
+local lightPosition = sn.Vec3.new(1.05, 0.8, 0.75)
+local light = sn.SpotLight.new(lightPosition, at - lightPosition, 20, 35, 4.0)
+lightTransform.position = light:getPosition()
+renderer:setLight(light)
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.P) then
@@ -81,6 +80,7 @@ function update()
 		sn.Script.load("/main.luau")
 	end
 	transform.rotation.z = transform.rotation.z + sn.Time.delta() * 10
+	local lightPos = light:getPosition()
 	if sn.Keyboard.isDown(sn.Scancode.LEFT) then
 		lightPos.x = lightPos.x - sn.Time.delta() * 5
 	end
@@ -101,7 +101,9 @@ function update()
 			lightPos.y = lightPos.y - sn.Time.delta() * 5
 		end
 	end
-	renderer:setPointLight(lightPos, lightIntensity)
+	light:setPosition(lightPos)
+	light:setDirection(at - lightPos)
+	renderer:setLight(light)
 	lightTransform.position = lightPos
 end
 

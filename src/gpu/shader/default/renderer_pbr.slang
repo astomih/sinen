@@ -1,4 +1,5 @@
 #include "renderer_common.slang"
+#include "renderer_light.slang"
 
 static const float PI = 3.14159265358979323846;
 
@@ -15,8 +16,8 @@ RENDERER_SAMPLER(SamplerCube, prefilteredMap, 7, 14, 15)
 
 UNIFORM_FRAG(Lighting, 0) {
   float4 cameraPositionAndMaxMip;
-  float4 lightPositionAndIntensity;
-  float4 lightColorAndNormalMap;
+  float4 normalMapEnabled;
+  DirectLight directLight;
 }
 
 float3 schlickFresnel(float cosine, float3 reflectance) {
@@ -46,7 +47,7 @@ float3 surfaceNormal(Surface input) {
   float det = duvdx.x * duvdy.y - duvdx.y * duvdy.x;
   float3 tangent = dpdx * duvdy.y - dpdy * duvdx.y;
   tangent -= normal * dot(normal, tangent);
-  if (lightColorAndNormalMap.w == 0.0 || det == 0.0 ||
+  if (normalMapEnabled.x == 0.0 || det == 0.0 ||
       dot(tangent, tangent) == 0.0) {
     return normal;
   }
@@ -68,9 +69,8 @@ float4 FSMain(Surface input) : SV_Target {
   float3 emissive = emissiveMap.Sample(input.uv).rgb;
   float3 normal = surfaceNormal(input);
   float3 view = normalize(cameraPositionAndMaxMip.xyz - input.worldPosition);
-  float3 toLight = lightPositionAndIntensity.xyz - input.worldPosition;
-  float distanceSquared = max(dot(toLight, toLight), 1e-6);
-  float3 light = toLight * rsqrt(distanceSquared);
+  LightSample sample = sampleDirectLight(directLight, input.worldPosition);
+  float3 light = sample.direction;
   float3 halfVector = normalize(view + light);
 
   float3 reflectance = lerp(float3(0.04), albedo, metallic);
@@ -82,8 +82,7 @@ float4 FSMain(Surface input) : SV_Target {
   float3 specular = distribution * geometry * fresnel /
                     max(4.0 * nDotV * nDotL, 1e-6);
   float3 diffuse = (1.0 - fresnel) * (1.0 - metallic) * albedo / PI;
-  float3 radiance = lightColorAndNormalMap.rgb * lightPositionAndIntensity.w /
-                    (distanceSquared * 0.23);
+  float3 radiance = directLight.colorAndInnerCos.rgb * sample.strength;
   float3 direct = (diffuse + specular) * radiance * nDotL;
 
 #ifdef SINEN_RENDERER_IBL

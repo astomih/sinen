@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <type_traits>
 
 namespace sinen {
 namespace {
@@ -50,6 +51,46 @@ template <class T> Buffer uniformBuffer(const T &value) {
   return buffer;
 }
 
+struct LightUniform {
+  float positionAndType[4];
+  float directionAndIntensity[4];
+  float colorAndInnerCos[4];
+  float outerCos[4];
+};
+static_assert(sizeof(LightUniform) == 64);
+
+LightUniform makeLightUniform(const Light &light) {
+  return std::visit(
+      [](const auto &value) {
+        using T = std::decay_t<decltype(value)>;
+        Vec3 position;
+        Vec3 direction;
+        float type = 0.0f;
+        float innerCos = 1.0f;
+        float outerCos = 1.0f;
+        if constexpr (!std::is_same_v<T, DirectionalLight>) {
+          position = value.getPosition();
+          type = 1.0f;
+        }
+        if constexpr (!std::is_same_v<T, PointLight>) {
+          direction = value.getDirection();
+        }
+        if constexpr (std::is_same_v<T, SpotLight>) {
+          type = 2.0f;
+          innerCos = std::cos(Math::toRadians(value.getInnerAngle()));
+          outerCos = std::cos(Math::toRadians(value.getOuterAngle()));
+        }
+        const auto &color = value.getColor();
+        return LightUniform{
+            {position.x, position.y, position.z, type},
+            {direction.x, direction.y, direction.z, value.getIntensity()},
+            {color.r, color.g, color.b, innerCos},
+            {outerCos, 0.0f, 0.0f, 0.0f},
+        };
+      },
+      light);
+}
+
 bool hasTexture(const Ptr<Texture> &texture, gpu::TextureType type) {
   return texture && texture->getRaw() &&
          texture->getRaw()->getCreateInfo().type == type;
@@ -71,11 +112,11 @@ void bindTexture(Material &material, UInt32 slot, const Model &model,
 
 } // namespace
 
+void PBRRenderer::setLight(const Light &value) { light = value; }
+
 void PBRRenderer::setPointLight(const Vec3 &position, float intensity,
                                 const Color &color) {
-  lightPosition = position;
-  lightIntensity = std::max(0.0f, intensity);
-  lightColor = color;
+  setLight(PointLight(position, intensity, color));
 }
 
 void PBRRenderer::setEnvironment(const Environment &value) {
@@ -131,20 +172,29 @@ void PBRRenderer::drawModel(Render3DPass &pass, const Model &model,
   const auto &cameraPosition = pass.getCamera().getPosition();
   const bool useNormalMap = hasTexture(model.getTexture(TextureKey::Normal),
                                        gpu::TextureType::Texture2D);
-  const float lighting[3][4] = {
+  const struct {
+    float cameraPositionAndMaxMip[4];
+    float normalMap[4];
+    LightUniform light;
+  } lighting = {
       {cameraPosition.x, cameraPosition.y, cameraPosition.z, maxMip},
-      {lightPosition.x, lightPosition.y, lightPosition.z, lightIntensity},
-      {lightColor.r, lightColor.g, lightColor.b, useNormalMap ? 1.0f : 0.0f},
+      {useNormalMap ? 1.0f : 0.0f},
+      makeLightUniform(light),
   };
   material.setUniformBuffer(0, uniformBuffer(lighting));
   material.setUniformBuffer(1, uniformBuffer(transform.getWorldMatrix()));
   pass.drawModel(model, transform, material);
 }
 
+void NPRRenderer::setLight(const Light &value) { light = value; }
+
 void NPRRenderer::setLightDirection(const Vec3 &direction) {
-  const float length = direction.length();
-  if (std::isfinite(length) && length > 0.0f) {
-    lightDirection = direction * (1.0f / length);
+  if (const auto *current = std::get_if<DirectionalLight>(&light)) {
+    auto updated = *current;
+    updated.setDirection(-1.0f * direction);
+    setLight(updated);
+  } else {
+    setLight(DirectionalLight(-1.0f * direction));
   }
 }
 
@@ -160,10 +210,12 @@ void NPRRenderer::drawModel(Render3DPass &pass, const Model &model,
     return;
   }
 
-  const float lighting[2][4] = {
-      {lightDirection.x, lightDirection.y, lightDirection.z,
-       static_cast<float>(bands)},
-      {shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a},
+  const struct {
+    float shadowColorAndBands[4];
+    LightUniform light;
+  } lighting = {
+      {shadowColor.r, shadowColor.g, shadowColor.b, static_cast<float>(bands)},
+      makeLightUniform(light),
   };
   Material material(pipeline);
   material.setUniformBuffer(0, uniformBuffer(lighting));

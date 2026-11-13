@@ -746,8 +746,49 @@ export type Render3DPass = {
 	setUniformBuffer: (self: Render3DPass, binding: number | string, data: Buffer) -> nil,
 }
 
+export type DirectionalLight = {
+	new: (direction: Vec3?, intensity: number?, color: Color?) -> DirectionalLight,
+	-- Direction of emission in world space.
+	setDirection: (self: DirectionalLight, direction: Vec3) -> nil,
+	getDirection: (self: DirectionalLight) -> Vec3,
+	setIntensity: (self: DirectionalLight, intensity: number) -> nil,
+	getIntensity: (self: DirectionalLight) -> number,
+	setColor: (self: DirectionalLight, color: Color) -> nil,
+	getColor: (self: DirectionalLight) -> Color,
+}
+
+export type PointLight = {
+	new: (position: Vec3?, intensity: number?, color: Color?) -> PointLight,
+	setPosition: (self: PointLight, position: Vec3) -> nil,
+	getPosition: (self: PointLight) -> Vec3,
+	setIntensity: (self: PointLight, intensity: number) -> nil,
+	getIntensity: (self: PointLight) -> number,
+	setColor: (self: PointLight, color: Color) -> nil,
+	getColor: (self: PointLight) -> Color,
+}
+
+export type SpotLight = {
+	new: (position: Vec3?, direction: Vec3?, innerAngle: number?, outerAngle: number?, intensity: number?, color: Color?) -> SpotLight,
+	setPosition: (self: SpotLight, position: Vec3) -> nil,
+	getPosition: (self: SpotLight) -> Vec3,
+	-- Direction of emission in world space.
+	setDirection: (self: SpotLight, direction: Vec3) -> nil,
+	getDirection: (self: SpotLight) -> Vec3,
+	-- Cone half-angles in degrees.
+	setConeAngles: (self: SpotLight, innerAngle: number, outerAngle: number) -> nil,
+	getConeAngles: (self: SpotLight) -> (number, number),
+	setIntensity: (self: SpotLight, intensity: number) -> nil,
+	getIntensity: (self: SpotLight) -> number,
+	setColor: (self: SpotLight, color: Color) -> nil,
+	getColor: (self: SpotLight) -> Color,
+}
+
+export type Light = DirectionalLight | PointLight | SpotLight
+
 export type PBRRenderer = {
 	new: () -> PBRRenderer,
+	-- Copy the supplied light into the renderer.
+	setLight: (self: PBRRenderer, light: Light) -> nil,
 	setPointLight: (self: PBRRenderer, position: Vec3, intensity: number, color: Color?) -> nil,
 	setEnvironment: (self: PBRRenderer, brdfLut: Texture, irradiance: Texture, prefiltered: Texture) -> nil,
 	clearEnvironment: (self: PBRRenderer) -> nil,
@@ -756,6 +797,8 @@ export type PBRRenderer = {
 
 export type NPRRenderer = {
 	new: () -> NPRRenderer,
+	-- Copy the supplied light into the renderer.
+	setLight: (self: NPRRenderer, light: Light) -> nil,
 	setLightDirection: (self: NPRRenderer, direction: Vec3) -> nil,
 	setShadowColor: (self: NPRRenderer, color: Color) -> nil,
 	setBands: (self: NPRRenderer, bands: number) -> nil,
@@ -1081,6 +1124,9 @@ return {
 	BuiltinShader = {} :: BuiltinShader,
 	BuiltinPipelines = {} :: BuiltinPipelines,
 	Graphics = {} :: Graphics,
+	DirectionalLight = {} :: DirectionalLight,
+	PointLight = {} :: PointLight,
+	SpotLight = {} :: SpotLight,
 	PBRRenderer = {} :: PBRRenderer,
 	NPRRenderer = {} :: NPRRenderer,
 	Compute = {} :: Compute,

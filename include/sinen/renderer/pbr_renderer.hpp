@@ -2,6 +2,7 @@
 #define SINEN_PBR_RENDERER_HPP
 
 #include <graphics/render_pass.hpp>
+#include <renderer/light.hpp>
 
 namespace sinen {
 
@@ -15,6 +16,8 @@ public:
 
   static constexpr const char *metaTableName() { return "sn.PBRRenderer"; }
 
+  // Replace the direct light with a copy of the supplied light.
+  void setLight(const Light &light);
   void setPointLight(const Vec3 &position, float intensity,
                      const Color &color = Color(1.0f));
   // Use the supplied lighting textures when all three are ready.
@@ -27,9 +30,7 @@ public:
 
 private:
   Environment environment;
-  Vec3 lightPosition{1.0f, 1.0f, 1.0f};
-  Color lightColor{1.0f};
-  float lightIntensity = 4.0f;
+  Light light = PointLight(Vec3(1.0f, 1.0f, 1.0f));
   Ptr<GraphicsPipeline> directPipeline;
   Ptr<GraphicsPipeline> iblPipeline;
   Ptr<Texture> white;

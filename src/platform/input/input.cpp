@@ -134,6 +134,8 @@ Vec2 Mouse::getPosition() {
 }
 Vec2 Mouse::getPositionOnScene() { return Mouse::getPosition(); }
 
+Vec2 Mouse::getDelta() { return Input::mMouse.mDelta; }
+
 Vec2 Mouse::getScrollWheel() { return Input::mMouse.mScrollWheel; }
 
 void Mouse::setRelative(bool is_relative) {
@@ -218,6 +220,9 @@ void Input::update() {
   // Mouse
   float x = 0, y = 0;
   mMouse.mCurrButtons = SDL_GetMouseState(&x, &y);
+
+  SDL_GetRelativeMouseState(&x, &y);
+  mMouse.mDelta = Vec2(x, -y);
 
   // Controller
   // Buttons

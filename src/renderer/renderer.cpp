@@ -118,6 +118,9 @@ void PBRRenderer::setPointLight(const Vec3 &position, float intensity,
                                 const Color &color) {
   setLight(PointLight(position, intensity, color));
 }
+void PBRRenderer::setFillLight(const Light &value) { fillLight = value; }
+void PBRRenderer::clearFillLight() { fillLight.reset(); }
+void PBRRenderer::setExposure(float value) { exposure = std::max(0.0f, value); }
 
 void PBRRenderer::setEnvironment(const Environment &value) {
   environment = value;
@@ -174,12 +177,14 @@ void PBRRenderer::drawModel(Render3DPass &pass, const Model &model,
                                        gpu::TextureType::Texture2D);
   const struct {
     float cameraPositionAndMaxMip[4];
-    float normalMap[4];
+    float settings[4];
     LightUniform light;
+    LightUniform fillLight;
   } lighting = {
       {cameraPosition.x, cameraPosition.y, cameraPosition.z, maxMip},
-      {useNormalMap ? 1.0f : 0.0f},
+      {useNormalMap ? 1.0f : 0.0f, exposure, fillLight ? 1.0f : 0.0f},
       makeLightUniform(light),
+      fillLight ? makeLightUniform(*fillLight) : LightUniform{},
   };
   material.setUniformBuffer(0, uniformBuffer(lighting));
   material.setUniformBuffer(1, uniformBuffer(transform.getWorldMatrix()));

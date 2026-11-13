@@ -16,8 +16,10 @@ RENDERER_SAMPLER(SamplerCube, prefilteredMap, 7, 14, 15)
 
 UNIFORM_FRAG(Lighting, 0) {
   float4 cameraPositionAndMaxMip;
-  float4 normalMapEnabled;
+  // Normal map enabled, SDR exposure, fill light enabled.
+  float4 settings;
   DirectLight directLight;
+  DirectLight fillLight;
 }
 
 float3 schlickFresnel(float cosine, float3 reflectance) {
@@ -47,7 +49,7 @@ float3 surfaceNormal(Surface input) {
   float det = duvdx.x * duvdy.y - duvdx.y * duvdy.x;
   float3 tangent = dpdx * duvdy.y - dpdy * duvdx.y;
   tangent -= normal * dot(normal, tangent);
-  if (normalMapEnabled.x == 0.0 || det == 0.0 ||
+  if (settings.x == 0.0 || det == 0.0 ||
       dot(tangent, tangent) == 0.0) {
     return normal;
   }
@@ -58,9 +60,41 @@ float3 surfaceNormal(Surface input) {
   return normalize(mapped.x * tangent + mapped.y * bitangent + mapped.z * normal);
 }
 
+float3 evaluateLight(DirectLight source, float3 position, float3 normal,
+                     float3 view, float nDotV, float3 reflectance,
+                     float3 albedo, float roughness, float metallic) {
+  LightSample sample = sampleDirectLight(source, position);
+  float3 light = sample.direction;
+  float nDotL = max(dot(normal, light), 0.0);
+  if (nDotL == 0.0 || sample.strength <= 0.0) {
+    return float3(0.0);
+  }
+  float3 halfVector = normalize(view + light);
+  float3 fresnel = schlickFresnel(saturate(dot(halfVector, view)), reflectance);
+  float distribution = ggxDistribution(saturate(dot(normal, halfVector)), roughness);
+  float geometry = smithGeometry(nDotV, nDotL, roughness);
+  float3 specular = distribution * geometry * fresnel /
+                    max(4.0 * nDotV * nDotL, 1e-6);
+  float3 diffuse = (1.0 - fresnel) * (1.0 - metallic) * albedo / PI;
+  float3 radiance = source.colorAndInnerCos.rgb * sample.strength;
+  return (diffuse + specular) * radiance * nDotL;
+}
+
+float3 linearToSrgb(float3 value) {
+  return select(value <= 0.0031308, value * 12.92,
+                1.055 * pow(value, 1.0 / 2.4) - 0.055);
+}
+
+float3 srgbToLinear(float3 value) {
+  return select(value <= 0.04045, value / 12.92,
+                pow((value + 0.055) / 1.055, 2.4));
+}
+
 [shader("fragment")]
 float4 FSMain(Surface input) : SV_Target {
-  float3 albedo = albedoMap.Sample(input.uv).rgb * input.color.rgb;
+  float3 baseColor = albedoMap.Sample(input.uv).rgb;
+  // The SDR path accepts conventional sRGB base-color textures in UNORM slots.
+  float3 albedo = (settings.y > 0.0 ? srgbToLinear(baseColor) : baseColor) * input.color.rgb;
   // glTF packs roughness in green and metallic in blue.
   float2 roughnessMetallic = metallicRoughnessMap.Sample(input.uv).gb;
   float roughness = clamp(roughnessMetallic.x, 0.045, 1.0);
@@ -69,21 +103,14 @@ float4 FSMain(Surface input) : SV_Target {
   float3 emissive = emissiveMap.Sample(input.uv).rgb;
   float3 normal = surfaceNormal(input);
   float3 view = normalize(cameraPositionAndMaxMip.xyz - input.worldPosition);
-  LightSample sample = sampleDirectLight(directLight, input.worldPosition);
-  float3 light = sample.direction;
-  float3 halfVector = normalize(view + light);
-
   float3 reflectance = lerp(float3(0.04), albedo, metallic);
   float nDotV = max(dot(normal, view), 1e-6);
-  float nDotL = max(dot(normal, light), 0.0);
-  float3 fresnel = schlickFresnel(saturate(dot(halfVector, view)), reflectance);
-  float distribution = ggxDistribution(saturate(dot(normal, halfVector)), roughness);
-  float geometry = smithGeometry(nDotV, nDotL, roughness);
-  float3 specular = distribution * geometry * fresnel /
-                    max(4.0 * nDotV * nDotL, 1e-6);
-  float3 diffuse = (1.0 - fresnel) * (1.0 - metallic) * albedo / PI;
-  float3 radiance = directLight.colorAndInnerCos.rgb * sample.strength;
-  float3 direct = (diffuse + specular) * radiance * nDotL;
+  float3 direct = evaluateLight(directLight, input.worldPosition, normal, view,
+                                nDotV, reflectance, albedo, roughness, metallic);
+  if (settings.z != 0.0) {
+    direct += evaluateLight(fillLight, input.worldPosition, normal, view,
+                            nDotV, reflectance, albedo, roughness, metallic);
+  }
 
 #ifdef SINEN_RENDERER_IBL
   float3 envFresnel = schlickFresnel(saturate(nDotV), reflectance);
@@ -97,5 +124,10 @@ float4 FSMain(Surface input) : SV_Target {
 #else
   float3 ambient = albedo * 0.4;
 #endif
-  return float4(direct + ambient * occlusion + emissive, 1.0);
+  float3 result = direct + ambient * occlusion + emissive;
+  if (settings.y > 0.0) {
+    float3 exposed = max(result * settings.y, 0.0);
+    result = linearToSrgb(exposed / (1.0 + exposed));
+  }
+  return float4(result, 1.0);
 }

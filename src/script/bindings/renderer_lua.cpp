@@ -8,14 +8,14 @@
 namespace sinen {
 namespace {
 
-template <class T> int setLight(lua_State *L) {
+template <class T, auto Set = &T::setLight> int setLight(lua_State *L) {
   auto &renderer = udValue<T>(L, 1);
   if (luaLTestudata2(L, 2, DirectionalLight::metaTableName())) {
-    renderer.setLight(udValue<DirectionalLight>(L, 2));
+    (renderer.*Set)(udValue<DirectionalLight>(L, 2));
   } else if (luaLTestudata2(L, 2, PointLight::metaTableName())) {
-    renderer.setLight(udValue<PointLight>(L, 2));
+    (renderer.*Set)(udValue<PointLight>(L, 2));
   } else if (luaLTestudata2(L, 2, SpotLight::metaTableName())) {
-    renderer.setLight(udValue<SpotLight>(L, 2));
+    (renderer.*Set)(udValue<SpotLight>(L, 2));
   } else {
     luaL_argerror(L, 2, "expected DirectionalLight, PointLight, or SpotLight");
   }
@@ -154,6 +154,17 @@ int setEnvironment(lua_State *L) {
   return 0;
 }
 
+int clearFillLight(lua_State *L) {
+  udValue<PBRRenderer>(L, 1).clearFillLight();
+  return 0;
+}
+
+int setExposure(lua_State *L) {
+  udValue<PBRRenderer>(L, 1).setExposure(
+      static_cast<float>(luaL_checknumber(L, 2)));
+  return 0;
+}
+
 int clearEnvironment(lua_State *L) {
   udValue<PBRRenderer>(L, 1).clearEnvironment();
   return 0;
@@ -206,6 +217,10 @@ void registerRenderer(lua_State *L) {
 
   registerRendererMetatable<PBRRenderer>(L);
   Binding::registerFunction(L, "setPointLight", setPointLight);
+  Binding::registerFunction(L, "setFillLight",
+                            setLight<PBRRenderer, &PBRRenderer::setFillLight>);
+  Binding::registerFunction(L, "clearFillLight", clearFillLight);
+  Binding::registerFunction(L, "setExposure", setExposure);
   Binding::registerFunction(L, "setEnvironment", setEnvironment);
   Binding::registerFunction(L, "clearEnvironment", clearEnvironment);
   lua_pop(L, 1);

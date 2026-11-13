@@ -22,6 +22,7 @@ struct KeyInputState {
 
 struct MouseStateImpl {
 public:
+  Vec2 mDelta;
   // Motion of scroll wheel
   Vec2 mScrollWheel;
   // Store button data

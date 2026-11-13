@@ -3,6 +3,7 @@
 
 #include <graphics/render_pass.hpp>
 #include <renderer/light.hpp>
+#include <optional>
 
 namespace sinen {
 
@@ -20,6 +21,10 @@ public:
   void setLight(const Light &light);
   void setPointLight(const Vec3 &position, float intensity,
                      const Color &color = Color(1.0f));
+  void setFillLight(const Light &light);
+  void clearFillLight();
+  // Positive exposure enables tone mapping and sRGB output for an SDR target.
+  void setExposure(float value);
   // Use the supplied lighting textures when all three are ready.
   void setEnvironment(const Environment &environment);
   void clearEnvironment();
@@ -31,6 +36,8 @@ public:
 private:
   Environment environment;
   Light light = PointLight(Vec3(1.0f, 1.0f, 1.0f));
+  std::optional<Light> fillLight;
+  float exposure = 0.0f;
   Ptr<GraphicsPipeline> directPipeline;
   Ptr<GraphicsPipeline> iblPipeline;
   Ptr<Texture> white;

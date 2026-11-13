@@ -20,6 +20,10 @@ end
 
 ![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 
+# Games
+
+[FOUNDRY](game/fps/README.md) is a single-player PBR FPS set in an industrial drone bay.
+
 # Documents
 
 [![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  

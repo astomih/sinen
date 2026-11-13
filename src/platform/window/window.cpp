@@ -116,6 +116,9 @@ void Window::rename(StringView name) {
 
 Vec2 Window::size() { return windowSize; }
 bool Window::resized() { return bResizedInFrame; }
+bool Window::hasFocus() {
+  return pSdlWindow && (SDL_GetWindowFlags(pSdlWindow) & SDL_WINDOW_INPUT_FOCUS);
+}
 Vec2 Window::half() { return Vec2(windowSize.x / 2.0, windowSize.y / 2.0); }
 String Window::name() { return windowName; }
 Rect Window::rect() { return Rect(Vec2(0), size()); }

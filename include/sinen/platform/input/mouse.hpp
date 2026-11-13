@@ -17,6 +17,8 @@ public:
   static void setPositionOnScene(const Vec2 &pos);
   static Vec2 getPosition();
   static Vec2 getPositionOnScene();
+  // Movement since the previous frame, with positive Y pointing up.
+  static Vec2 getDelta();
   static void hideCursor(bool hide);
   static Vec2 getScrollWheel();
   static void setRelative(bool is_relative);

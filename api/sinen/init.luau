@@ -223,6 +223,7 @@ export type RenderTexture = {
 export type Sound = {
 	new: (source: string | Buffer | ExternalFile) -> Sound,
 	play: (self: Sound) -> nil,
+	restart: (self: Sound) -> nil,
 	setVolume: (self: Sound, volume: number) -> nil,
 	setPitch: (self: Sound, pitch: number) -> nil,
 	setListener: (self: Sound, position: Vec3) -> nil,
@@ -669,6 +670,7 @@ export type Window = {
 	setFullscreen: (full: boolean) -> nil,
 	rename: (name: string) -> nil,
 	resized: () -> boolean,
+	hasFocus: () -> boolean,
 	topLeft: () -> Vec2,
 	topCenter: () -> Vec2,
 	topRight: () -> Vec2,
@@ -790,6 +792,10 @@ export type PBRRenderer = {
 	-- Copy the supplied light into the renderer.
 	setLight: (self: PBRRenderer, light: Light) -> nil,
 	setPointLight: (self: PBRRenderer, position: Vec3, intensity: number, color: Color?) -> nil,
+	setFillLight: (self: PBRRenderer, light: Light) -> nil,
+	clearFillLight: (self: PBRRenderer) -> nil,
+	-- Positive exposure enables tone mapping and sRGB output for an SDR target.
+	setExposure: (self: PBRRenderer, exposure: number) -> nil,
 	setEnvironment: (self: PBRRenderer, brdfLut: Texture, irradiance: Texture, prefiltered: Texture) -> nil,
 	clearEnvironment: (self: PBRRenderer) -> nil,
 	drawModel: (self: PBRRenderer, pass: Render3DPass, model: Model, transform: Transform) -> nil,
@@ -953,11 +959,14 @@ export type Mouse = {
 	isDown: (btn: number) -> boolean,
 	getPosition: () -> Vec2,
 	getPositionOnScene: () -> Vec2,
+	-- Movement since the previous frame, with positive Y pointing up.
+	getDelta: () -> Vec2,
 	setPosition: (pos: Vec2) -> nil,
 	setPositionOnScene: (pos: Vec2) -> nil,
 	getScrollWheel: () -> Vec2,
 	hideCursor: (isHide: boolean) -> nil,
 	setRelative: (isRelative: boolean) -> nil,
+	isRelative: () -> boolean,
 }
 
 export type GamepadButton = {

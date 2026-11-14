@@ -12,6 +12,15 @@
       }
     },
     {
+      "label": "build_msvc2026-release",
+      "type": "shell",
+      "command": "${workspaceFolder:sinen}/build/build_msvc2026-release.bat",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
       "label": "generate_msvc2026",
       "type": "shell",
       "command": "${workspaceFolder:sinen}/build/generate_msvc2026-debug.bat",

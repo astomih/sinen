@@ -22,6 +22,9 @@
 #include "require.hpp"
 #include "require_alias.hpp"
 #include <Luau/Require.h>
+#ifdef SINEN_LUAU_CODEGEN
+#include <Luau/CodeGen.h>
+#endif
 
 #include <debugger.h>
 
@@ -163,18 +166,19 @@ static void drawNowLoadingOverlay() {
                      Color(0.18f, 0.62f, 0.95f, 0.95f));
 }
 
-int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
-                  StringView fullPath) {
-  Luau::CompileOptions options{};
-  options.debugLevel = 2;
-  std::string bytecode =
-      Luau::compile(std::string(source.data(), source.size()), options);
+static int luaLoadBytecode(lua_State *L, std::string_view bytecode,
+                           const String &chunkname, StringView fullPath) {
   int status =
       luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
   if (status == LUA_OK) {
     if (debuggerAttached) {
       debugger->onLuaFileLoaded(gLua, fullPath, true);
     }
+#ifdef SINEN_LUAU_CODEGEN
+    if (Luau::CodeGen::isNativeExecutionEnabled(L)) {
+      Luau::CodeGen::compile(L, -1, Luau::CodeGen::CompilationOptions{});
+    }
+#endif
     return LUA_OK;
   }
   const char *msg = lua_tostring(L, -1);
@@ -183,20 +187,13 @@ int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
   return status;
 }
 
-static int luaLoadBytecode(lua_State *L, const String &bytecode,
-                           const String &chunkname, StringView fullPath) {
-  int status =
-      luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
-  if (status == LUA_OK) {
-    if (debuggerAttached) {
-      debugger->onLuaFileLoaded(gLua, fullPath, true);
-    }
-    return LUA_OK;
-  }
-  const char *msg = lua_tostring(L, -1);
-  Log::error("[luau load error] {}", msg ? msg : "(unknown error)");
-  lua_pop(L, 1);
-  return status;
+int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
+                  StringView fullPath) {
+  Luau::CompileOptions options{};
+  options.debugLevel = 2;
+  std::string bytecode =
+      Luau::compile(std::string(source.data(), source.size()), options);
+  return luaLoadBytecode(L, bytecode, chunkname, fullPath);
 }
 void registerVec2(lua_State *);
 void registerVec3(lua_State *);
@@ -375,6 +372,12 @@ bool Script::initialize(bool isScriptDebug) {
     debugger->initialize(gLua);
     debuggerAttached = true;
   }
+#ifdef SINEN_LUAU_CODEGEN
+  // An attached debugger needs the interpreter for stepping and breakpoints.
+  if (!debuggerAttached && Luau::CodeGen::isSupported()) {
+    Luau::CodeGen::create(gLua);
+  }
+#endif
   if (auto *cb = lua_callbacks(gLua)) {
     cb->panic = [](lua_State *L, int errcode) {
       const char *msg = lua_tostring(L, -1);

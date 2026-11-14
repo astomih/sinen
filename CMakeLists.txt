@@ -319,6 +319,10 @@ function(sinen_add_script_module)
   target_link_libraries(sinen_script PUBLIC Luau.VM Luau.Compiler Luau.Ast
                                             Luau.Require cppdap
                                             Luau.Debugger SDL3::SDL3)
+  if(NOT EMSCRIPTEN)
+    target_link_libraries(sinen_script PRIVATE Luau.CodeGen)
+    target_compile_definitions(sinen_script PRIVATE SINEN_LUAU_CODEGEN)
+  endif()
   if(CMAKE_DL_LIBS)
     target_link_libraries(sinen_script PRIVATE ${CMAKE_DL_LIBS})
   endif()

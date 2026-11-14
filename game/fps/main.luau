@@ -52,6 +52,7 @@ local elapsed, intermission, cooldown, reload = 0, 1.35, 0, 0
 local flash, hit, damage, sway, recoil, aimBlend = 0, 0, 0, 0, 0, 0
 local fov, stride = 72, 0
 local readyToDraw = false
+local fromLauncher = sn.Filesystem.exists("/fps/main.luau") and sn.Filesystem.exists("/main.luau")
 
 local function changeState(nextState: State)
 	state = nextState
@@ -338,7 +339,10 @@ function update()
 	if not readyToDraw then return end
 	local dt = math.clamp(sn.Time.delta(), 0, 1 / 20)
 	if state ~= "playing" then
-		if pressed(keys.Q) then sn.Event.quit() end
+		if pressed(keys.Q) then
+			if fromLauncher then sn.Script.load("/main.luau") else sn.Event.quit() end
+			return
+		end
 		if pressed(keys.ENTER) or sn.Mouse.isPressed(sn.Mouse.LEFT) then
 			if state == "paused" then changeState("playing") else restart() end
 		elseif state == "paused" and pressed(keys.ESCAPE) then
@@ -424,5 +428,6 @@ function draw()
 	end
 
 	local reloadProgress = if reload > 0 then 1 - reload / reloadDuration else nil
-	hud:draw(state, wave, #waveSizes, #drones, health, charge, reserve, capacity, score, intermission, reloadProgress, hit, damage, aiming)
+	hud:draw(state, wave, #waveSizes, #drones, health, charge, reserve, capacity, score, intermission,
+		reloadProgress, hit, damage, aiming, fromLauncher)
 end

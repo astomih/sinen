@@ -30,7 +30,7 @@ end
 
 function Hud:draw(state: string, wave: number, total: number, enemies: number, health: number, charge: number,
 	reserve: number, capacity: number, score: number, intermission: number, reloadProgress: number?,
-	hit: number, damage: number, aiming: boolean)
+	hit: number, damage: number, aiming: boolean, fromLauncher: boolean)
 	local pass = sn.Graphics.begin2DPass()
 	local size = sn.Window.size()
 	local w, h = size.x, size.y
@@ -100,7 +100,7 @@ function Hud:draw(state: string, wave: number, total: number, enemies: number, h
 			text(pass, "WASD Move   /   Shift Sprint   /   Space Jump", self.text, cx, y + 223, pivot.TopCenter)
 			text(pass, "LMB Pulse   /   RMB Aim   /   R Recharge", self.text, cx, y + 248, pivot.TopCenter)
 		end
-		text(pass, "Q  QUIT", self.label, cx, y + 285, pivot.TopCenter)
+		text(pass, if fromLauncher then "Q  GAME SELECT" else "Q  QUIT", self.label, cx, y + 285, pivot.TopCenter)
 	end
 
 	sn.Graphics.endPass(pass)

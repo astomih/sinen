@@ -22,6 +22,8 @@ end
 
 # Games
 
+Open the repository in VS Code, select **Games** in **Run and Debug**, and press **F5**. If the debug executable has not been built yet, run the `generate_msvc2026` and `build_msvc2026` tasks first. Use the mouse, arrow keys, or a gamepad to choose a game. From a game's menu, press **Q** to return to the selector (**B** also works in RIDGELINE).
+
 [FOUNDRY](game/fps/README.md) is a single-player PBR FPS set in an industrial drone bay.
 
 [RIDGELINE](game/racing/README.md) is a PBR circuit racer with analog gamepad controls.

@@ -224,6 +224,7 @@ export type Sound = {
 	new: (source: string | Buffer | ExternalFile) -> Sound,
 	play: (self: Sound) -> nil,
 	restart: (self: Sound) -> nil,
+	stop: (self: Sound) -> nil,
 	setLooping: (self: Sound, looping: boolean) -> nil,
 	setVolume: (self: Sound, volume: number) -> nil,
 	setPitch: (self: Sound, pitch: number) -> nil,

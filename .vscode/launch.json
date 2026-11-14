@@ -20,6 +20,25 @@
       }
     },
     {
+      "name": "Games",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/msvc2026-debug/sinen.exe",
+      "args": [
+        "--debug-mode"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/game",
+      "environment": [],
+      "console": "internalConsole",
+      "serverReadyAction": {
+        "pattern": "Luau Debug server started on 58000",
+        "action": "startDebugging",
+        "name": "Luau Debugger",
+        "killOnServerStop": true
+      }
+    },
+    {
       "name": "Utils",
       "type": "cppvsdbg",
       "request": "launch",

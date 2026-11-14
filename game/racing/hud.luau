@@ -30,7 +30,7 @@ local function clock(t: number): string
 end
 
 function Hud:draw(phase: string, field: { Grid.Driver }, laps: number, lapTime: number, last: number, best: number,
-	elapsed: number, countdown: number, go: number, gamepad: string?)
+	elapsed: number, countdown: number, go: number, gamepad: string?, fromLauncher: boolean)
 	local pass = sn.Graphics.begin2DPass()
 	local size = sn.Window.size()
 	local w, h = size.x, size.y
@@ -117,7 +117,8 @@ function Hud:draw(phase: string, field: { Grid.Driver }, laps: number, lapTime: 
 			text("W / S   GAS / BRAKE     A / D   STEER", self.text, mx, y + 213, pivot.TopCenter)
 			text("C   CAMERA     R   RESET CAR     ESC   PAUSE", self.text, mx, y + 237, pivot.TopCenter)
 		end
-		text(if gamepad then "B / Q   QUIT" else "Q   QUIT", self.label, mx, y + 276, pivot.TopCenter)
+		local exitLabel = (if gamepad then "B / Q" else "Q") .. (if fromLauncher then "   GAME SELECT" else "   QUIT")
+		text(exitLabel, self.label, mx, y + 276, pivot.TopCenter)
 	end
 	sn.Graphics.endPass(pass)
 end

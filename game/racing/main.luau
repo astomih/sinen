@@ -37,6 +37,7 @@ local loaded = false
 local connected = false
 local padName: string? = nil
 local driveCommands: { Grid.Input } = {}
+local fromLauncher = sn.Filesystem.exists("/racing/main.luau") and sn.Filesystem.exists("/main.luau")
 
 local function pressed(k: sn.Scancode, b: sn.GamepadButton): boolean
 	return kb.isPressed(k) or pad.isPressed(b)
@@ -179,7 +180,9 @@ function update()
 	elseif focus then
 		if phase == "title" or phase == "finished" or phase == "paused" then
 			if pressed(key.Q, button.B) then
-				sn.Event.quit()
+				engine:stop()
+				if fromLauncher then sn.Script.load("/main.luau") else sn.Event.quit() end
+				return
 			elseif pressed(key.ENTER, button.A) or sn.Mouse.isPressed(sn.Mouse.LEFT)
 				or (phase == "paused" and pad.isPressed(button.START)) then
 				if phase == "paused" then phase = beforePause else begin() end
@@ -254,5 +257,5 @@ function draw()
 	for _, model in terrain do renderer:drawModel(pass, model, identity) end
 	for i, driver in field do drawCar(pass, driver.car, i) end
 	sn.Graphics.endPass(pass)
-	hud:draw(phase, field, totalLaps, elapsed - lapStart, lastLap, bestLap, elapsed, countdown, goFlash, padName)
+	hud:draw(phase, field, totalLaps, elapsed - lapStart, lastLap, bestLap, elapsed, countdown, goFlash, padName, fromLauncher)
 end

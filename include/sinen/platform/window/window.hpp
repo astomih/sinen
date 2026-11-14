@@ -20,6 +20,7 @@ public:
 
   static Vec2 size();
   static bool resized();
+  static bool hasFocus();
   static Vec2 half();
   static Rect rect();
   static Vec2 topLeft();

@@ -223,6 +223,9 @@ export type RenderTexture = {
 export type Sound = {
 	new: (source: string | Buffer | ExternalFile) -> Sound,
 	play: (self: Sound) -> nil,
+	restart: (self: Sound) -> nil,
+	stop: (self: Sound) -> nil,
+	setLooping: (self: Sound, looping: boolean) -> nil,
 	setVolume: (self: Sound, volume: number) -> nil,
 	setPitch: (self: Sound, pitch: number) -> nil,
 	setListener: (self: Sound, position: Vec3) -> nil,
@@ -669,6 +672,7 @@ export type Window = {
 	setFullscreen: (full: boolean) -> nil,
 	rename: (name: string) -> nil,
 	resized: () -> boolean,
+	hasFocus: () -> boolean,
 	topLeft: () -> Vec2,
 	topCenter: () -> Vec2,
 	topRight: () -> Vec2,
@@ -744,6 +748,69 @@ export type Render3DPass = {
 	resetTexture: (self: Render3DPass, binding: number | string) -> nil,
 	resetAllTexture: (self: Render3DPass) -> nil,
 	setUniformBuffer: (self: Render3DPass, binding: number | string, data: Buffer) -> nil,
+}
+
+export type DirectionalLight = {
+	new: (direction: Vec3?, intensity: number?, color: Color?) -> DirectionalLight,
+	-- Direction of emission in world space.
+	setDirection: (self: DirectionalLight, direction: Vec3) -> nil,
+	getDirection: (self: DirectionalLight) -> Vec3,
+	setIntensity: (self: DirectionalLight, intensity: number) -> nil,
+	getIntensity: (self: DirectionalLight) -> number,
+	setColor: (self: DirectionalLight, color: Color) -> nil,
+	getColor: (self: DirectionalLight) -> Color,
+}
+
+export type PointLight = {
+	new: (position: Vec3?, intensity: number?, color: Color?) -> PointLight,
+	setPosition: (self: PointLight, position: Vec3) -> nil,
+	getPosition: (self: PointLight) -> Vec3,
+	setIntensity: (self: PointLight, intensity: number) -> nil,
+	getIntensity: (self: PointLight) -> number,
+	setColor: (self: PointLight, color: Color) -> nil,
+	getColor: (self: PointLight) -> Color,
+}
+
+export type SpotLight = {
+	new: (position: Vec3?, direction: Vec3?, innerAngle: number?, outerAngle: number?, intensity: number?, color: Color?) -> SpotLight,
+	setPosition: (self: SpotLight, position: Vec3) -> nil,
+	getPosition: (self: SpotLight) -> Vec3,
+	-- Direction of emission in world space.
+	setDirection: (self: SpotLight, direction: Vec3) -> nil,
+	getDirection: (self: SpotLight) -> Vec3,
+	-- Cone half-angles in degrees.
+	setConeAngles: (self: SpotLight, innerAngle: number, outerAngle: number) -> nil,
+	getConeAngles: (self: SpotLight) -> (number, number),
+	setIntensity: (self: SpotLight, intensity: number) -> nil,
+	getIntensity: (self: SpotLight) -> number,
+	setColor: (self: SpotLight, color: Color) -> nil,
+	getColor: (self: SpotLight) -> Color,
+}
+
+export type Light = DirectionalLight | PointLight | SpotLight
+
+export type PBRRenderer = {
+	new: () -> PBRRenderer,
+	-- Copy the supplied light into the renderer.
+	setLight: (self: PBRRenderer, light: Light) -> nil,
+	setPointLight: (self: PBRRenderer, position: Vec3, intensity: number, color: Color?) -> nil,
+	setFillLight: (self: PBRRenderer, light: Light) -> nil,
+	clearFillLight: (self: PBRRenderer) -> nil,
+	-- Positive exposure enables tone mapping and sRGB output for an SDR target.
+	setExposure: (self: PBRRenderer, exposure: number) -> nil,
+	setEnvironment: (self: PBRRenderer, brdfLut: Texture, irradiance: Texture, prefiltered: Texture) -> nil,
+	clearEnvironment: (self: PBRRenderer) -> nil,
+	drawModel: (self: PBRRenderer, pass: Render3DPass, model: Model, transform: Transform) -> nil,
+}
+
+export type NPRRenderer = {
+	new: () -> NPRRenderer,
+	-- Copy the supplied light into the renderer.
+	setLight: (self: NPRRenderer, light: Light) -> nil,
+	setLightDirection: (self: NPRRenderer, direction: Vec3) -> nil,
+	setShadowColor: (self: NPRRenderer, color: Color) -> nil,
+	setBands: (self: NPRRenderer, bands: number) -> nil,
+	drawModel: (self: NPRRenderer, pass: Render3DPass, model: Model, transform: Transform) -> nil,
 }
 
 export type Graphics = {
@@ -894,11 +961,14 @@ export type Mouse = {
 	isDown: (btn: number) -> boolean,
 	getPosition: () -> Vec2,
 	getPositionOnScene: () -> Vec2,
+	-- Movement since the previous frame, with positive Y pointing up.
+	getDelta: () -> Vec2,
 	setPosition: (pos: Vec2) -> nil,
 	setPositionOnScene: (pos: Vec2) -> nil,
 	getScrollWheel: () -> Vec2,
 	hideCursor: (isHide: boolean) -> nil,
 	setRelative: (isRelative: boolean) -> nil,
+	isRelative: () -> boolean,
 }
 
 export type GamepadButton = {
@@ -932,7 +1002,10 @@ export type Gamepad = {
 	isDown: (btn: GamepadButton) -> boolean,
 	getLeftStick: () -> Vec2,
 	getRightStick: () -> Vec2,
+	getLeftTrigger: () -> number,
+	getRightTrigger: () -> number,
 	isConnected: () -> boolean,
+	getName: () -> string?,
 }
 
 export type Periodic = {
@@ -1065,6 +1138,11 @@ return {
 	BuiltinShader = {} :: BuiltinShader,
 	BuiltinPipelines = {} :: BuiltinPipelines,
 	Graphics = {} :: Graphics,
+	DirectionalLight = {} :: DirectionalLight,
+	PointLight = {} :: PointLight,
+	SpotLight = {} :: SpotLight,
+	PBRRenderer = {} :: PBRRenderer,
+	NPRRenderer = {} :: NPRRenderer,
 	Compute = {} :: Compute,
 	Gui = {} :: Gui,
 	Physics = {} :: Physics,

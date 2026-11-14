@@ -22,6 +22,7 @@ struct KeyInputState {
 
 struct MouseStateImpl {
 public:
+  Vec2 mDelta;
   // Motion of scroll wheel
   Vec2 mScrollWheel;
   // Store button data
@@ -63,6 +64,7 @@ public:
   static JoystickStateImpl mJoystick;
 
 private:
+  friend class GamePad;
   static float filter1d(int input);
   static Vec2 filter2d(int inputX, int inputY);
   static Joystick mController;

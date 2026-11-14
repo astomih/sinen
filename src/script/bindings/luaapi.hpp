@@ -53,7 +53,7 @@ template <class T> static int udGc(lua_State *L) {
   }
   return 0;
 }
-template <class T> static void udBoxDtor(void *p) {
+template <class T> static void udBoxDtor(lua_State *, void *p) {
   auto *ud = static_cast<UdBox<T> *>(p);
   if (ud && ud->owned && ud->ptr) {
     ud->ptr->~T();
@@ -85,8 +85,8 @@ template <class T> static UdBox<T> *udNewRef(lua_State *L, T *ref) {
 template <class T> static Ptr<T> &udPtr(lua_State *L, int idx) {
   return *static_cast<Ptr<T> *>(luaL_checkudata(L, idx, T::metaTableName()));
 }
-template <class T> static void udPtrGc(void *L) {
-  Ptr<T> *ud = static_cast<Ptr<T> *>(L);
+template <class T> static void udPtrGc(lua_State *, void *p) {
+  Ptr<T> *ud = static_cast<Ptr<T> *>(p);
   if (ud) {
     ud->~Ptr<T>();
   }

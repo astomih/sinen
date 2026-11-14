@@ -38,6 +38,10 @@ static int lWindowResized(lua_State *L) {
   lua_pushboolean(L, Window::resized());
   return 1;
 }
+static int lWindowHasFocus(lua_State *L) {
+  lua_pushboolean(L, Window::hasFocus());
+  return 1;
+}
 static int lWindowRect(lua_State *L) {
   udNewOwned<Rect>(L, Window::rect());
   return 1;
@@ -87,6 +91,7 @@ void registerWindow(lua_State *L) {
   Binding::registerFunction(L, "setFullscreen", lWindowSetFullscreen);
   Binding::registerFunction(L, "rename", lWindowRename);
   Binding::registerFunction(L, "resized", lWindowResized);
+  Binding::registerFunction(L, "hasFocus", lWindowHasFocus);
   Binding::registerFunction(L, "rect", lWindowRect);
   Binding::registerFunction(L, "topLeft", lWindowTopLeft);
   Binding::registerFunction(L, "topCenter", lWindowTopCenter);

@@ -13,6 +13,7 @@
 #include <gpu/gpu_render_pass.hpp>
 
 #include <array>
+#include <cstddef>
 #include <vector>
 
 namespace sinen::gpu::d3d12 {
@@ -23,6 +24,7 @@ public:
   CommandBuffer(const CreateInfo &createInfo, Ptr<Device> device,
                 ComPtr<ID3D12CommandAllocator> allocator,
                 ComPtr<ID3D12GraphicsCommandList> commandList);
+  ~CommandBuffer() override;
 
   ID3D12GraphicsCommandList *getNative() const { return commandList.Get(); }
   Ptr<Device> getDevice() const { return device; }
@@ -71,6 +73,13 @@ public:
 private:
   D3D12_GPU_VIRTUAL_ADDRESS uploadUniform(const void *data, size_t size);
 
+  struct UniformPage {
+    ComPtr<ID3D12Resource> resource;
+    std::byte *mapped = nullptr;
+    UINT64 capacity = 0;
+    UINT64 used = 0;
+  };
+
   Ptr<Device> device;
   ComPtr<ID3D12CommandAllocator> allocator;
   ComPtr<ID3D12GraphicsCommandList> commandList;
@@ -79,6 +88,7 @@ private:
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> vertexUniforms{};
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> fragmentUniforms{};
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> computeUniforms{};
+  std::vector<UniformPage> uniformPages;
   std::vector<ComPtr<ID3D12Resource>> referencedResources;
 };
 

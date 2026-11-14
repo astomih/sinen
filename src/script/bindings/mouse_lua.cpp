@@ -10,6 +10,10 @@ static int lMouseGetPosition(lua_State *L) {
   udNewOwned<Vec2>(L, Mouse::getPosition());
   return 1;
 }
+static int lMouseGetDelta(lua_State *L) {
+  udNewOwned<Vec2>(L, Mouse::getDelta());
+  return 1;
+}
 static int lMouseIsPressed(lua_State *L) {
   auto b = static_cast<Mouse::Code>(luaL_checkinteger(L, 1));
   lua_pushboolean(L, Mouse::isPressed(b));
@@ -59,6 +63,7 @@ void registerMouse(lua_State *L) {
   Binding::registerFunction(L, "isRelative", lMouseIsRelative);
   Binding::registerFunction(L, "getPositionOnScene", lMouseGetPositionOnScene);
   Binding::registerFunction(L, "getPosition", lMouseGetPosition);
+  Binding::registerFunction(L, "getDelta", lMouseGetDelta);
   Binding::registerFunction(L, "isPressed", lMouseIsPressed);
   Binding::registerFunction(L, "isReleased", lMouseIsReleased);
   Binding::registerFunction(L, "isDown", lMouseIsDown);

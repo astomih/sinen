@@ -61,6 +61,7 @@ protected:
 
 private:
   friend class Graphics;
+  friend class Render3DPass;
 
   Type type;
   UInt64 frameId;
@@ -103,6 +104,8 @@ public:
 
   Render3DPass(UInt64 frameId, const Camera3D &camera,
                std::optional<RenderTexture> target);
+
+  const Camera3D &getCamera() const { return *camera3D; }
 
   void drawCubemap(const Ptr<Texture> &cubemap);
   void drawCubemap(const Ptr<Texture> &cubemap, const Material &material);

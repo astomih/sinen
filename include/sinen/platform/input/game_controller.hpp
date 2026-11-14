@@ -22,6 +22,9 @@ public:
   };
 
   bool initialize();
+  void shutdown();
+  bool refresh();
+  const char *getName() const;
   int16_t getAxis(axis _axis);
   uint8_t getButton(GamepadButton button);
 

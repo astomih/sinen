@@ -6,6 +6,8 @@ local modelTransform: sn.Transform = sn.Transform.new()
 local floor: sn.Model = sn.Model.newSprite()
 local floorTransform: sn.Transform = sn.Transform.new()
 local shadowCamera: sn.Camera3D = sn.Camera3D.new()
+local shadowOffset = sn.Vec3.new(0.5, 2, 2)
+local light = sn.DirectionalLight.new(sn.Vec3.new(0) - shadowOffset)
 local depthVS: sn.Shader = sn.Shader.new("depth_write.vert.snb", sn.ShaderStage.Vertex)
 local depthFS: sn.Shader = sn.Shader.new("depth_write.frag.snb", sn.ShaderStage.Fragment)
 local depthPipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
@@ -37,8 +39,12 @@ function setup()
 	floorTransform.position.y = -1.0
 
 	shadowCamera:orthographic(20, 20, -10, 10.0)
-	shadowCamera:lookat(sn.Vec3.new(0.5, 2, 2), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
-
+	local shadowCenter = sn.Vec3.new(0)
+	shadowCamera:lookat(
+		shadowCenter - light:getDirection() * sn.Vec3.new(shadowOffset:length()),
+		shadowCenter,
+		sn.Vec3.new(0, 1, 0)
+	)
 
 	depthPipeline:setEnableDepthTest(true)
 	depthPipeline:setVertexShader(depthVS)

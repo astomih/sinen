@@ -20,8 +20,8 @@ static Shader rectFS;
 static Shader cubemapVS;
 static Shader cubemapFS;
 
-static Shader createBuiltinShader(const unsigned char *bundleData,
-                                  unsigned int bundleSize, ShaderStage stage) {
+Shader BuiltinShader::createFromBundle(const unsigned char *bundleData,
+                                       size_t bundleSize, ShaderStage stage) {
   auto *allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
   if (!device) {
@@ -51,21 +51,21 @@ static Shader createBuiltinShader(const unsigned char *bundleData,
 }
 
 bool BuiltinShader::initialize() {
-  defaultVS = createBuiltinShader(shader_vert_snb, shader_vert_snb_len,
-                                  ShaderStage::Vertex);
+  defaultVS = createFromBundle(shader_vert_snb, shader_vert_snb_len,
+                               ShaderStage::Vertex);
   defaultInstancedVS =
-      createBuiltinShader(shader_instance_vert_snb,
-                          shader_instance_vert_snb_len, ShaderStage::Vertex);
-  defaultFS = createBuiltinShader(shader_frag_snb, shader_frag_snb_len,
-                                  ShaderStage::Fragment);
-  fontFS = createBuiltinShader(font_frag_snb, font_frag_snb_len,
+      createFromBundle(shader_instance_vert_snb, shader_instance_vert_snb_len,
+                       ShaderStage::Vertex);
+  defaultFS = createFromBundle(shader_frag_snb, shader_frag_snb_len,
                                ShaderStage::Fragment);
-  rectFS = createBuiltinShader(rect_color_frag_snb, rect_color_frag_snb_len,
+  fontFS =
+      createFromBundle(font_frag_snb, font_frag_snb_len, ShaderStage::Fragment);
+  rectFS = createFromBundle(rect_color_frag_snb, rect_color_frag_snb_len,
+                            ShaderStage::Fragment);
+  cubemapVS = createFromBundle(cubemap_vert_snb, cubemap_vert_snb_len,
+                               ShaderStage::Vertex);
+  cubemapFS = createFromBundle(cubemap_frag_snb, cubemap_frag_snb_len,
                                ShaderStage::Fragment);
-  cubemapVS = createBuiltinShader(cubemap_vert_snb, cubemap_vert_snb_len,
-                                  ShaderStage::Vertex);
-  cubemapFS = createBuiltinShader(cubemap_frag_snb, cubemap_frag_snb_len,
-                                  ShaderStage::Fragment);
 
   return true;
 }

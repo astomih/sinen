@@ -55,6 +55,26 @@ local sourceTasks: { SourceTask } = {
 		out = "cubemap.vert",
 		stage = sn.ShaderStage.Vertex,
 	},
+	{
+		src = "renderer_vertex.slang",
+		out = "renderer_vertex.vert",
+		stage = sn.ShaderStage.Vertex,
+	},
+	{
+		src = "renderer_pbr.slang",
+		out = "renderer_pbr.frag",
+		stage = sn.ShaderStage.Fragment,
+	},
+	{
+		src = "renderer_pbr_ibl.slang",
+		out = "renderer_pbr_ibl.frag",
+		stage = sn.ShaderStage.Fragment,
+	},
+	{
+		src = "renderer_npr.slang",
+		out = "renderer_npr.frag",
+		stage = sn.ShaderStage.Fragment,
+	},
 }
 
 local tasks: { BundleTask } = {}

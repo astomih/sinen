@@ -29,6 +29,18 @@ static int lGamepadIsConnected(lua_State *L) {
   lua_pushboolean(L, GamePad::isConnected());
   return 1;
 }
+static int lGamepadGetName(lua_State *L) {
+  lua_pushstring(L, GamePad::getName());
+  return 1;
+}
+static int lGamepadGetLeftTrigger(lua_State *L) {
+  lua_pushnumber(L, GamePad::getLeftTrigger());
+  return 1;
+}
+static int lGamepadGetRightTrigger(lua_State *L) {
+  lua_pushnumber(L, GamePad::getRightTrigger());
+  return 1;
+}
 void registerGamepad(lua_State *L) {
   pushSnNamed(L, "Gamepad");
   Binding::registerFunction(L, "isPressed", lGamepadIsPressed);
@@ -37,6 +49,9 @@ void registerGamepad(lua_State *L) {
   Binding::registerFunction(L, "getLeftStick", lGamepadGetLeftStick);
   Binding::registerFunction(L, "getRightStick", lGamepadGetRightStick);
   Binding::registerFunction(L, "isConnected", lGamepadIsConnected);
+  Binding::registerFunction(L, "getName", lGamepadGetName);
+  Binding::registerFunction(L, "getLeftTrigger", lGamepadGetLeftTrigger);
+  Binding::registerFunction(L, "getRightTrigger", lGamepadGetRightTrigger);
   lua_pop(L, 1);
 
   pushSnNamed(L, "GamepadButton");

@@ -76,6 +76,9 @@ static button_state getButtonState(Mouse::Code _button) {
   }
 }
 static button_state getButtonState(GamepadButton _button) {
+  if (_button < GamepadButton::A || _button >= GamepadButton::COUNT) {
+    return button_state::None;
+  }
   if (Input::mJoystick.mPrevButtons[static_cast<int>(_button)] == 0) {
     if (Input::mJoystick.mCurrButtons[static_cast<int>(_button)] == 0) {
       return button_state::None;
@@ -179,9 +182,12 @@ bool GamePad::isReleased(GamepadButton _button) {
 }
 const Vec2 &GamePad::getLeftStick() { return Input::mJoystick.mLeftStick; }
 const Vec2 &GamePad::getRightStick() { return Input::mJoystick.mRightStick; }
+float GamePad::getLeftTrigger() { return Input::mJoystick.mLeftTrigger; }
+float GamePad::getRightTrigger() { return Input::mJoystick.mRightTrigger; }
 bool GamePad::isConnected() { return Input::mJoystick.mIsConnected; }
 
 Joystick Input::mController;
+const char *GamePad::getName() { return Input::mController.getName(); }
 bool Input::initialize() {
 
   mKeyboard.mCurrState = SDL_GetKeyboardState(NULL);
@@ -192,13 +198,13 @@ bool Input::initialize() {
 
   // Initialize controller state
   mJoystick.mIsConnected = mController.initialize();
-  memset(mJoystick.mCurrButtons, 0, SDL_GAMEPAD_BUTTON_COUNT);
-  memset(mJoystick.mPrevButtons, 0, SDL_GAMEPAD_BUTTON_COUNT);
+  memset(mJoystick.mCurrButtons, 0, sizeof(mJoystick.mCurrButtons));
+  memset(mJoystick.mPrevButtons, 0, sizeof(mJoystick.mPrevButtons));
 
   return true;
 }
 
-void Input::shutdown() {}
+void Input::shutdown() { mController.shutdown(); }
 
 void Input::prepareForUpdate() {
   // Copy current state to previous
@@ -211,7 +217,7 @@ void Input::prepareForUpdate() {
 
   // Controller
   memcpy(mJoystick.mPrevButtons, mJoystick.mCurrButtons,
-         SDL_GAMEPAD_BUTTON_COUNT);
+         sizeof(mJoystick.mCurrButtons));
   keyInputState.previousKeys = keyInputState.currentKeys;
   keyInputState.currentKeys.clear();
 }
@@ -224,9 +230,8 @@ void Input::update() {
   SDL_GetRelativeMouseState(&x, &y);
   mMouse.mDelta = Vec2(x, -y);
 
-  // Controller
-  // Buttons
-  for (int i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; i++) {
+  mJoystick.mIsConnected = mController.refresh();
+  for (int i = 0; i < static_cast<int>(GamepadButton::COUNT); ++i) {
     mJoystick.mCurrButtons[i] =
         mController.getButton(static_cast<GamepadButton>(i));
   }

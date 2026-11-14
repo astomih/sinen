@@ -64,6 +64,7 @@ public:
   static JoystickStateImpl mJoystick;
 
 private:
+  friend class GamePad;
   static float filter1d(int input);
   static Vec2 filter2d(int inputX, int inputY);
   static Joystick mController;

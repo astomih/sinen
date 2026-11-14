@@ -47,6 +47,14 @@ if(TARGET sinen_platform)
   set_property(TARGET sinen_external_file_tests PROPERTY CXX_STANDARD 23)
 
   add_test(NAME sinen_external_file_tests COMMAND sinen_external_file_tests)
+  if(WIN32)
+    add_executable(sinen_gamepad_tests gamepad_tests.cpp)
+    target_link_libraries(sinen_gamepad_tests PRIVATE sinen_platform GTest::gtest_main)
+    set_property(TARGET sinen_gamepad_tests PROPERTY CXX_STANDARD 23)
+    add_test(NAME sinen_gamepad_tests COMMAND sinen_gamepad_tests)
+    set_tests_properties(sinen_gamepad_tests PROPERTIES ENVIRONMENT
+      "SDL_XINPUT_ENABLED=0;SDL_JOYSTICK_HIDAPI=0;SDL_JOYSTICK_RAWINPUT=0;SDL_JOYSTICK_WGI=0;SDL_JOYSTICK_DIRECTINPUT=0")
+  endif()
 endif()
 
 if(TARGET sinen_gpu)

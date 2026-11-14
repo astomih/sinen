@@ -224,6 +224,7 @@ export type Sound = {
 	new: (source: string | Buffer | ExternalFile) -> Sound,
 	play: (self: Sound) -> nil,
 	restart: (self: Sound) -> nil,
+	setLooping: (self: Sound, looping: boolean) -> nil,
 	setVolume: (self: Sound, volume: number) -> nil,
 	setPitch: (self: Sound, pitch: number) -> nil,
 	setListener: (self: Sound, position: Vec3) -> nil,
@@ -1000,7 +1001,10 @@ export type Gamepad = {
 	isDown: (btn: GamepadButton) -> boolean,
 	getLeftStick: () -> Vec2,
 	getRightStick: () -> Vec2,
+	getLeftTrigger: () -> number,
+	getRightTrigger: () -> number,
 	isConnected: () -> boolean,
+	getName: () -> string?,
 }
 
 export type Periodic = {

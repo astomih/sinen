@@ -50,6 +50,7 @@ public:
   static float getRightTrigger();
 
   static bool isConnected();
+  static const char *getName();
   using enum GamepadButton;
 };
 } // namespace sinen

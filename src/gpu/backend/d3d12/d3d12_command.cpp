@@ -5,6 +5,7 @@
 #include "d3d12_convert.hpp"
 #include "d3d12_device.hpp"
 
+#include <core/profiler.hpp>
 #include <SDL3/SDL.h>
 
 #include <algorithm>
@@ -61,6 +62,12 @@ CommandBuffer::CommandBuffer(const CreateInfo &createInfo, Ptr<Device> device,
                              ComPtr<ID3D12GraphicsCommandList> commandList)
     : gpu::CommandBuffer(createInfo), device(device), allocator(allocator),
       commandList(commandList) {}
+
+CommandBuffer::~CommandBuffer() {
+  for (auto &page : uniformPages) {
+    page.resource->Unmap(0, nullptr);
+  }
+}
 
 void CommandBuffer::close() {
   if (!closed) {
@@ -151,26 +158,45 @@ D3D12_GPU_VIRTUAL_ADDRESS CommandBuffer::uploadUniform(const void *data,
   if (!data || size == 0) {
     return 0;
   }
-  const UINT64 uploadSize =
-      alignTo(size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-  ComPtr<ID3D12Resource> resource;
-  auto heap = heapProperties(D3D12_HEAP_TYPE_UPLOAD);
-  auto desc = bufferDesc(uploadSize);
-  HRESULT hr = device->getNative()->CreateCommittedResource(
-      &heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ,
-      nullptr, IID_PPV_ARGS(&resource));
-  if (FAILED(hr)) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "D3D12: uniform upload allocation failed");
+  ZoneScopedN("D3D12 uniform upload");
+  constexpr UINT64 pageSize = 1024 * 1024;
+  constexpr UINT64 alignment = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
+  if (size > UINT64_MAX - (alignment - 1)) {
     return 0;
   }
-  void *mapped = nullptr;
-  resource->Map(0, nullptr, &mapped);
-  std::memcpy(mapped, data, size);
-  resource->Unmap(0, nullptr);
-  auto address = resource->GetGPUVirtualAddress();
-  keepAlive(resource);
-  return address;
+  const UINT64 uploadSize = alignTo(static_cast<UINT64>(size), alignment);
+  // Each submission waits for completion before this command buffer is
+  // released, so its persistently mapped pages stay alive for every draw.
+  if (uniformPages.empty() ||
+      uploadSize > uniformPages.back().capacity - uniformPages.back().used) {
+    UniformPage page;
+    page.capacity = (std::max)(pageSize, uploadSize);
+    auto heap = heapProperties(D3D12_HEAP_TYPE_UPLOAD);
+    auto desc = bufferDesc(page.capacity);
+    HRESULT hr = device->getNative()->CreateCommittedResource(
+        &heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr, IID_PPV_ARGS(&page.resource));
+    if (FAILED(hr)) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12: uniform upload allocation failed");
+      return 0;
+    }
+    void *mapped = nullptr;
+    const D3D12_RANGE readRange{0, 0};
+    hr = page.resource->Map(0, &readRange, &mapped);
+    if (FAILED(hr) || !mapped) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12: uniform upload mapping failed");
+      return 0;
+    }
+    page.mapped = static_cast<std::byte *>(mapped);
+    uniformPages.push_back(std::move(page));
+  }
+  auto &page = uniformPages.back();
+  const UINT64 offset = page.used;
+  std::memcpy(page.mapped + offset, data, size);
+  page.used += uploadSize;
+  return page.resource->GetGPUVirtualAddress() + offset;
 }
 
 void CommandBuffer::pushVertexUniformData(UInt32 slot, const void *data,

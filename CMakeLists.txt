@@ -410,6 +410,10 @@ endif()
 
 add_subdirectory(${SINEN_SOURCE_DIR}/plugins)
 
+if(TARGET sinen_luau_to_cpp)
+  add_subdirectory(game/fps/plugin)
+endif()
+
 sinen_collect_platform_sources(SINEN_PLATFORM_SOURCES)
 
 if(SINEN_BUILD_APP)
@@ -424,6 +428,9 @@ if(SINEN_BUILD_APP)
   endif()
 
   target_link_libraries(sinen PRIVATE ${SINEN_INTERNAL_MODULES} SDL3::SDL3)
+  if(TARGET sinen_plugin_luau_to_cpp)
+    add_dependencies(sinen sinen_plugin_luau_to_cpp)
+  endif()
   target_include_directories(sinen PRIVATE ${SINEN_SOURCE_DIR}/src)
   sinen_configure_platform_app(sinen)
 

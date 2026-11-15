@@ -395,6 +395,8 @@ build/emscripten/*
 build/clang/*
 !build/clang/.gitkeep
 *.dll
+/game/fps/fps_collision.so
+/game/fps/fps_collision.dylib
 *.temp
 imgui.ini
 

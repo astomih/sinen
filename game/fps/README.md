@@ -15,6 +15,10 @@ Pop-Location
 
 配布用の `.sna` を作る場合は、このディレクトリの `main.luau`、関連する Luau モジュール、`assets/` を ZIP 内の `sna/` に配置します。配布時は [MIT ライセンス本文](../../LICENSE.md) を添付してください。実行時のネット接続は不要です。
 
+壁との交差判定で使う `slab.luau` は、デスクトップのネイティブビルド時に `sinen_luau_to_cpp` が C++ に変換します。生成したヘッダーはビルドディレクトリ内にあり、プラグインのソースは [plugin/](plugin/) にあります。ビルドは `fps_collision.dll`（Linux では `.so`、macOS では `.dylib`）をこのディレクトリに配置します。Sinen は起動時の作業ディレクトリからプラグインを読み込みます。読み込めない場合は、同じ `slab.luau` を実行します。
+
+Sinen のスクリプトから変換する方法と CLI の使い方は、[Luau → C++ プラグイン](../../plugins/luau_to_cpp/README.md)を参照してください。
+
 ## 操作
 
 | 入力 | 操作 |

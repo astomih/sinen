@@ -99,6 +99,18 @@ if(TARGET sinen_script)
         SINEN_TEST_FAILING_NATIVE_MODULE_PATH="$<TARGET_FILE:sinen_test_failing_native_module>")
     add_dependencies(sinen_luau_binding_tests sinen_test_native_module
                      sinen_test_failing_native_module)
+    if(TARGET sinen_plugin_luau_to_cpp)
+      target_compile_definitions(
+        sinen_luau_binding_tests PRIVATE
+        SINEN_TEST_LUAU_TO_CPP_DIR="$<TARGET_FILE_DIR:sinen_plugin_luau_to_cpp>")
+      add_dependencies(sinen_luau_binding_tests sinen_plugin_luau_to_cpp)
+    endif()
+    if(TARGET sinen_plugin_fps_collision)
+      target_compile_definitions(
+        sinen_luau_binding_tests PRIVATE
+        SINEN_TEST_FPS_DIR="${SINEN_SOURCE_DIR}/game/fps")
+      add_dependencies(sinen_luau_binding_tests sinen_deploy_fps_collision)
+    endif()
     if(TARGET sinen_plugin_nativefs)
       target_compile_definitions(
         sinen_luau_binding_tests

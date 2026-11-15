@@ -14,6 +14,9 @@
 
 #include <cstring>
 #include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <memory>
 #include <string>
 
 #ifndef SINEN_TEST_NATIVE_MODULE_PATH
@@ -105,6 +108,105 @@ TEST(NativeModuleTests, ReportsLoaderErrors) {
   lua_close(state);
   modules.unload();
 }
+
+#ifdef SINEN_TEST_LUAU_TO_CPP_DIR
+TEST(NativeModuleTests, LuauToCppPluginConvertsSourceAndReportsErrors) {
+  auto &modules = sinen::nativeModuleManager();
+  const auto closeState = [&](lua_State *state) {
+    modules.close(state);
+    lua_close(state);
+    modules.unload();
+  };
+  const std::unique_ptr<lua_State, decltype(closeState)> owner(luaL_newstate(),
+                                                               closeState);
+  lua_State *state = owner.get();
+  ASSERT_NE(state, nullptr);
+  luaL_openlibs(state);
+
+  const ScopedCurrentDirectory currentDirectory(SINEN_TEST_LUAU_TO_CPP_DIR);
+  ASSERT_TRUE(modules.loadPlugin(state, "luau_to_cpp")) << modules.lastError();
+  lua_pushcfunction(
+      state,
+      +[](lua_State *L) -> int {
+        luaL_error(L, "unexpected fallback require");
+      },
+      "fallback require");
+  lua_setglobal(state, "require");
+  sinen::installSinenRequireAlias(state);
+
+  const auto script = Luau::compile(R"luau(
+    local converter = require("@sinen/plugin/luau_to_cpp")
+    local cpp, err = converter.convert("local function f(x: number): number return x end return f")
+    assert(cpp and not err)
+    assert(string.find(cpp, "inline double run(double v0)", 1, true))
+
+    local bad, diagnostic = converter.convert("local function f(x: number): number\n  return print(x)\nend\nreturn f", "bad.luau")
+    assert(not bad and string.find(diagnostic, "bad.luau:2:10:", 1, true))
+
+    local invalid, syntaxError = converter.convert("local function", "syntax.luau")
+    assert(not invalid and string.find(syntaxError, "syntax.luau:1:", 1, true))
+  )luau");
+  ASSERT_EQ(luau_load(state, "convert", script.data(), script.size(), 0), LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK) << lua_tostring(state, -1);
+}
+#endif
+
+#ifdef SINEN_TEST_FPS_DIR
+TEST(NativeModuleTests, FpsCollisionPluginMatchesLuau) {
+  auto &modules = sinen::nativeModuleManager();
+  const auto closeState = [&](lua_State *state) {
+    modules.close(state);
+    lua_close(state);
+    modules.unload();
+  };
+  const std::unique_ptr<lua_State, decltype(closeState)> owner(luaL_newstate(),
+                                                               closeState);
+  lua_State *state = owner.get();
+  ASSERT_NE(state, nullptr);
+  luaL_openlibs(state);
+
+  const ScopedCurrentDirectory currentDirectory(SINEN_TEST_FPS_DIR);
+  ASSERT_TRUE(modules.loadPlugin(state, "fps_collision"))
+      << modules.lastError();
+  lua_pushcfunction(
+      state,
+      +[](lua_State *L) -> int {
+        luaL_error(L, "unexpected fallback require");
+      },
+      "fallback require");
+  lua_setglobal(state, "require");
+  sinen::installSinenRequireAlias(state);
+
+  std::ifstream input("slab.luau", std::ios::binary);
+  ASSERT_TRUE(input);
+  const std::string source{std::istreambuf_iterator<char>(input),
+                           std::istreambuf_iterator<char>()};
+  const auto fallback = Luau::compile(source);
+  ASSERT_EQ(luau_load(state, "slab.luau", fallback.data(), fallback.size(), 0),
+            LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 1, 0), LUA_OK);
+  lua_setglobal(state, "luauSlab");
+
+  const auto compare = Luau::compile(R"(
+    local nativeSlab = require("@sinen/plugin/fps_collision").slab
+    local function same(a, b)
+      return (a == b and (a ~= 0 or 1 / a == 1 / b)) or (a ~= a and b ~= b)
+    end
+    for _, origin in {-2, -1, -0.0, 0, 1, 2, math.huge, 0 / 0} do
+      for _, direction in {-2, -1e-7, -1e-8, -0.0, 0, 1e-8, 1e-7, 2, math.huge, 0 / 0} do
+        for _, bound in {0, 1} do
+          local a, b = luauSlab(origin, direction, -bound, bound)
+          local c, d = nativeSlab(origin, direction, -bound, bound)
+          assert(same(a, c) and same(b, d), "slab result differs")
+        end
+      end
+    end
+  )");
+  ASSERT_EQ(luau_load(state, "compare slab", compare.data(), compare.size(), 0),
+            LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK) << lua_tostring(state, -1);
+}
+#endif
 
 TEST(NativeModuleTests, PluginLookupIsLimitedToCurrentDirectory) {
   lua_State *state = luaL_newstate();

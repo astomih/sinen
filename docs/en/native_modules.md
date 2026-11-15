@@ -6,6 +6,8 @@ Native modules execute arbitrary code in the process. Load only trusted modules.
 
 ## C API
 
+For declarative C++ function and class registration, see the header-only [C++ / Luau binding library](luau_bind.md).
+
 Include `script/sinen_lua_module.h` and Luau's `lua.h`, then export the API version and registration function through the C ABI. Luau's own API symbols use C++ linkage, so compile the module source as C++.
 
 ```cpp

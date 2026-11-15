@@ -133,6 +133,14 @@ if(SINEN_MODULE_SCRIPT)
                                                  "${defs}")
     endif()
   endforeach()
+  # Header-only binding API; plugins resolve VM symbols through the existing
+  # sinen_add_lua_module platform rules (including Wasm side-module imports).
+  add_library(sinen_luau_bind INTERFACE)
+  add_library(sinen::luau_bind ALIAS sinen_luau_bind)
+  target_include_directories(sinen_luau_bind INTERFACE
+    ${SINEN_SOURCE_DIR}/include ${SINEN_SOURCE_DIR}/include/sinen
+    ${SINEN_SOURCE_DIR}/libs/luau/VM/include)
+  target_compile_features(sinen_luau_bind INTERFACE cxx_std_17)
   set_target_properties(Luau.Analysis Luau.CLI.lib Luau.CodeGen Luau.Config
                         Luau.Require PROPERTIES EXCLUDE_FROM_ALL 1)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/cppdap)
@@ -339,6 +347,7 @@ function(sinen_add_lua_module target)
   endif()
 
   add_library(${target} MODULE ${ARGN})
+  target_link_libraries(${target} PRIVATE sinen::luau_bind)
   target_include_directories(
     ${target}
     PRIVATE ${SINEN_SOURCE_DIR}/include/sinen

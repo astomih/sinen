@@ -6,6 +6,8 @@ Sinen は実行中の Luau VM にネイティブモジュールを読み込み�
 
 ## C API
 
+C++ の関数やクラスを簡潔に登録するには、ヘッダーオンリーの [C++ / Luau バインディング](luau_bind.md) を使用できます。
+
 モジュールは `script/sinen_lua_module.h` と Luau の `lua.h` をインクルードし、C ABI で API バージョンと登録関数をエクスポートします。Luau の API シンボル自体は C++ linkage なので、ソースは C++ としてコンパイルしてください。
 
 ```cpp

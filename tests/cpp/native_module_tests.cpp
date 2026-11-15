@@ -1,3 +1,4 @@
+#include <Luau/Compiler.h>
 #include <lua.h>
 #include <lualib.h>
 
@@ -9,6 +10,7 @@
 #include <script/sinen_lua_module.h>
 
 #include "script/native_module.hpp"
+#include "script/require_alias.hpp"
 
 #include <cstring>
 #include <filesystem>
@@ -57,6 +59,32 @@ TEST(NativeModuleTests, LoadsModuleAndKeepsItAliveUntilStateCloses) {
                                   : "unknown native module error");
   EXPECT_EQ(lua_tointeger(state, -1), 42);
   lua_settop(state, 0);
+
+  // Exercise the header-only binder across an actual DLL boundary, through
+  // the same plugin registry/require path used by application scripts.
+  lua_pushcfunction(
+      state,
+      +[](lua_State *L) -> int {
+        luaL_error(L, "unexpected fallback require");
+      },
+      "fallback require");
+  lua_setglobal(state, "require");
+  sinen::installSinenRequireAlias(state);
+  const auto bytecode = Luau::compile(R"(
+    local native = require('@sinen/plugin/native_module_fixture')
+    local c = native.Counter(5)
+    c.value = 8
+    assert(c:add(4) == 12 and native.answer() == 42)
+    assert(not pcall(function() c.value = 'invalid' end))
+    -- Keep an instance alive until lua_close, after module close is called.
+    native_instance = c
+  )");
+  ASSERT_EQ(
+      luau_load(state, "native_binding", bytecode.data(), bytecode.size(), 0),
+      LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK)
+      << (lua_tostring(state, -1) ? lua_tostring(state, -1)
+                                  : "unknown binding error");
 
   modules.close(state);
   lua_getglobal(state, "native_module_fixture_closed");

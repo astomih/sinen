@@ -81,6 +81,7 @@ if(TARGET sinen_script)
   add_executable(
     sinen_luau_binding_tests
     luau_binding_tests.cpp
+    luau_bind_library_tests.cpp
     ${SINEN_SOURCE_DIR}/src/script/bindings/binding_registration.cpp
     ${SINEN_SOURCE_DIR}/src/script/require_alias.cpp)
   if(WIN32)

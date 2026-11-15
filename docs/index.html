@@ -4,26 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirecting</title>
+  <title>Sinen Docs</title>
 
-  <link rel="alternate" hreflang="ja" href="https://astomih.github.io/sinen/ja/home" />
-  <link rel="alternate" hreflang="en" href="https://astomih.github.io/sinen/home" />
-  <link rel="alternate" hreflang="x-default" href="https://astomih.github.io/sinen/home" />
+  <link rel="alternate" hreflang="ja" href="./ja/home/" />
+  <link rel="alternate" hreflang="en" href="./home/" />
+  <link rel="alternate" hreflang="x-default" href="./home/" />
   <script>
-    (function () {
-      const lang = navigator.language || navigator.userLanguage;
-      if (!lang) return;
-      const path = location.pathname;
-      const short = lang.split("-")[0];
-
-      if (short == "ja") {
-        location.replace(`/sinen/ja/home/`);
-      }
-      else {
-        location.replace(`/sinen/home/`);
-      }
-    })();
+    const language = (navigator.language || "en").split("-")[0];
+    location.replace(language === "ja" ? "./ja/home/" : "./home/");
   </script>
 </head>
+
+<body>
+  <a href="./home/" hreflang="en">English</a>
+  <a href="./ja/home/" hreflang="ja" lang="ja">日本語</a>
+</body>
 
 </html>

@@ -107,6 +107,6 @@ C++ 側でオーバーロードされている関数は、`static_cast<int (*)(i
 
 Luau とプラグインの両方でC++例外を有効にし、`LUA_USE_LONGJMP=0` を使用してください。デストラクタは例外を投げないことが前提です。自動継承、Luau関数からC++コールバックへの変換、yieldをまたぐC++呼び出しは対象外です。
 
-登録の実例は [DLLテストプラグイン](../../tests/cpp/native_module_fixture.cpp)、動作仕様は [テスト](../../tests/cpp/luau_bind_library_tests.cpp) にあります。
+登録の実例は [DLLテストプラグイン](https://github.com/astomih/sinen/blob/main/tests/cpp/native_module_fixture.cpp)、動作仕様は [テスト](https://github.com/astomih/sinen/blob/main/tests/cpp/luau_bind_library_tests.cpp) にあります。
 
 API設計の参考: [sol2 usertype](https://sol2.readthedocs.io/en/latest/api/usertype.html)、[luaaa](https://github.com/gengyong/luaaa)。

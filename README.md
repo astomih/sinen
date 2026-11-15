@@ -32,3 +32,12 @@ Open the repository in VS Code, select **Games** in **Run and Debug**, and press
 
 [![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
 [https://astomih.github.io/sinen](https://astomih.github.io/sinen)
+
+To preview the documentation locally, run these commands from the repository root in an activated Python virtual environment (Python 3.13 in CI):
+
+```sh
+python -m pip install -r requirements-docs.txt
+zensical serve
+```
+
+To generate the static site in `site/`, run `zensical build --clean`. GitHub Pages publishes the site via GitHub Actions. Set **Settings → Pages → Source** to **GitHub Actions** when setting up deployment.

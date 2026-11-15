@@ -75,4 +75,4 @@ Specialize `sinen::luau::stack<T>` with `matches(L, index)`, `get(L, index)`, an
 
 C++ exceptions become Luau errors that scripts can catch with `pcall`. Wrap registration with `sinen::luau::open`. Raw C API callbacks manage their own return counts and exceptions. Enable C++ exceptions in both Luau and plugins, with `LUA_USE_LONGJMP=0`. Destructors must not throw. Automatic inheritance, Luau-to-C++ function callbacks, and yielding across C++ calls are outside this API's scope.
 
-See the [DLL fixture](../../tests/cpp/native_module_fixture.cpp), [behavior tests](../../tests/cpp/luau_bind_library_tests.cpp), and [native module loading guide](native_modules.md).
+See the [DLL fixture](https://github.com/astomih/sinen/blob/main/tests/cpp/native_module_fixture.cpp), [behavior tests](https://github.com/astomih/sinen/blob/main/tests/cpp/luau_bind_library_tests.cpp), and [native module loading guide](native_modules.md).

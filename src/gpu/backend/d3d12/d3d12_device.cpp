@@ -8,6 +8,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
 #include <core/logger/log.hpp>
+#include <core/profiler.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -999,6 +1000,7 @@ Ptr<gpu::ComputePipeline> Device::createComputePipeline(
 
 Ptr<gpu::CommandBuffer>
 Device::acquireCommandBuffer(const gpu::CommandBuffer::CreateInfo &createInfo) {
+  ZoneScopedN("D3D12 acquireCommandBuffer");
   if (deviceLost || !isValid()) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "D3D12: cannot acquire command buffer because device is "
@@ -1074,6 +1076,7 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
   ID3D12CommandList *lists[] = {cb->getNative()};
   commandQueue->ExecuteCommandLists(1, lists);
   if (cb->usesSwapchain() && swapchain) {
+    ZoneScopedN("D3D12 Present (vsync)");
     HRESULT hr = swapchain->Present(1, 0);
     if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
       markDeviceLost("D3D12: device removed during Present",
@@ -1120,6 +1123,7 @@ void Device::markDeviceLost(const char *context, HRESULT hr) {
 }
 
 void Device::signalAndWait() {
+  ZoneScopedN("D3D12 signalAndWait");
   if (deviceLost || !commandQueue || !fence || !fenceEvent) {
     return;
   }

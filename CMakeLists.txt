@@ -270,6 +270,8 @@ function(sinen_add_gpu_module)
   endif()
 
   sinen_add_module(sinen_gpu ${SINEN_GPU_SOURCES} ${SINEN_GPU_HEADERS})
+  target_include_directories(sinen_gpu PRIVATE ${SINEN_SOURCE_DIR}/libs/renderdoc)
+  target_link_libraries(sinen_gpu PRIVATE ${CMAKE_DL_LIBS})
   target_include_directories(
     sinen_gpu
     PUBLIC ${Vulkan_INCLUDE_DIR} ${SINEN_SOURCE_DIR}/libs/volk

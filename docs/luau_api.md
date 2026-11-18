@@ -1,5 +1,7 @@
 # [Luau API](https://github.com/astomih/sinen/blob/main/api/sinen/init.luau)
 
+See [RenderDoc](renderdoc.md) for optional GPU frame capture through `sn.RenderDoc`.
+
 ## 2D Coordinates
 
 2D drawing uses a top-left origin.

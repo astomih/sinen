@@ -3,6 +3,7 @@
 #include <core/allocator/global_allocator.hpp>
 #include <core/profiler.hpp>
 #include <gpu/gpu.hpp>
+#include <gpu/renderdoc.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/graphics.hpp>
@@ -484,7 +485,51 @@ static int lGraphicsGetBackendName(lua_State *L) {
   lua_pushstring(L, name.c_str());
   return 1;
 }
+static int lRenderDocIsAvailable(lua_State *L) {
+  lua_pushboolean(L, RenderDoc::isAvailable());
+  return 1;
+}
+static int lRenderDocTriggerCapture(lua_State *L) {
+  const int frames = luaL_optinteger(L, 1, 1);
+  if (frames <= 0) {
+    luaL_error(L, "capture frame count must be positive");
+    return 0;
+  }
+  lua_pushboolean(L, RenderDoc::triggerCapture(static_cast<UInt32>(frames)));
+  return 1;
+}
+static int lRenderDocIsFrameCapturing(lua_State *L) {
+  lua_pushboolean(L, RenderDoc::isFrameCapturing());
+  return 1;
+}
+static int lRenderDocSetCaptureFilePathTemplate(lua_State *L) {
+  lua_pushboolean(L, RenderDoc::setCaptureFilePathTemplate(luaL_checkstring(L, 1)));
+  return 1;
+}
+static int lRenderDocGetNumCaptures(lua_State *L) {
+  lua_pushnumber(L, RenderDoc::getNumCaptures());
+  return 1;
+}
+static int lRenderDocGetCaptureFilePath(lua_State *L) {
+  const int index = luaL_checkinteger(L, 1);
+  if (index < 0) {
+    luaL_error(L, "capture index must be non-negative");
+    return 0;
+  }
+  const auto path = RenderDoc::getCaptureFilePath(static_cast<UInt32>(index));
+  lua_pushlstring(L, path.data(), path.size());
+  return 1;
+}
 void registerGraphics(lua_State *L) {
+  pushSnNamed(L, "RenderDoc");
+  Binding::registerFunction(L, "isAvailable", lRenderDocIsAvailable);
+  Binding::registerFunction(L, "triggerCapture", lRenderDocTriggerCapture);
+  Binding::registerFunction(L, "isFrameCapturing", lRenderDocIsFrameCapturing);
+  Binding::registerFunction(L, "setCaptureFilePathTemplate",
+                            lRenderDocSetCaptureFilePathTemplate);
+  Binding::registerFunction(L, "getNumCaptures", lRenderDocGetNumCaptures);
+  Binding::registerFunction(L, "getCaptureFilePath", lRenderDocGetCaptureFilePath);
+  lua_pop(L, 1);
   registerMaterial(L);
   registerRenderPasses(L);
   pushSnNamed(L, "Graphics");

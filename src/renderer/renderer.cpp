@@ -1,6 +1,7 @@
 #include <renderer/renderer.hpp>
 
 #include <core/logger/log.hpp>
+#include <core/profiler.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/graphics.hpp>
 
@@ -130,6 +131,7 @@ void PBRRenderer::clearEnvironment() { environment = {}; }
 
 void PBRRenderer::drawModel(Render3DPass &pass, const Model &model,
                             const Transform &transform) {
+  ZoneScopedN("PBRRenderer::drawModel");
   if (!model.vertexBuffer || !model.indexBuffer) {
     return;
   }

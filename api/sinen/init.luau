@@ -813,6 +813,16 @@ export type NPRRenderer = {
 	drawModel: (self: NPRRenderer, pass: Render3DPass, model: Model, transform: Transform) -> nil,
 }
 
+export type RenderDoc = {
+	isAvailable: () -> boolean,
+	triggerCapture: (numFrames: number?) -> boolean,
+	isFrameCapturing: () -> boolean,
+	setCaptureFilePathTemplate: (path: string) -> boolean,
+	getNumCaptures: () -> number,
+	-- Zero-based index; empty string if unavailable or invalid.
+	getCaptureFilePath: (index: number) -> string,
+}
+
 export type Graphics = {
 	-- 2D drawing uses Processing/raylib-style screen coordinates:
 	-- (0, 0) is the top-left of the window, x grows right, y grows down.
@@ -1138,6 +1148,7 @@ return {
 	BuiltinShader = {} :: BuiltinShader,
 	BuiltinPipelines = {} :: BuiltinPipelines,
 	Graphics = {} :: Graphics,
+	RenderDoc = {} :: RenderDoc,
 	DirectionalLight = {} :: DirectionalLight,
 	PointLight = {} :: PointLight,
 	SpotLight = {} :: SpotLight,

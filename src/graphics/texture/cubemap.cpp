@@ -1,4 +1,5 @@
 #include <core/thread/future_poll.hpp>
+#include <core/profiler.hpp>
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
@@ -860,6 +861,7 @@ bool Texture::loadIrradianceCubemap(StringView path, uint32_t faceSize,
   const String srcPath = path.data();
   state->future = globalThreadPool().submit([state, srcPath, faceSize,
                                              sampleCount] {
+    ZoneScopedN("IBL irradiance worker");
     FloatPixels equirect;
     int w = 0, h = 0, c = 0;
     if (!loadEXRFloat(srcPath, equirect, w, h, c)) {
@@ -926,6 +928,7 @@ bool Texture::loadPrefilteredCubemap(StringView path, uint32_t faceSize,
   const String srcPath = path.data();
   state->future = globalThreadPool().submit(
       [state, srcPath, faceSize, mipLevels, sampleCount] {
+        ZoneScopedN("IBL prefilter worker");
         FloatPixels equirect;
         int w = 0, h = 0, c = 0;
         if (!loadEXRFloat(srcPath, equirect, w, h, c)) {
@@ -991,6 +994,7 @@ bool Texture::loadBRDFLUT(uint32_t size, uint32_t sampleCount) {
   this->async = state;
 
   state->future = globalThreadPool().submit([state, size, sampleCount] {
+    ZoneScopedN("IBL BRDF LUT worker");
     computeBRDFLUT(size, sampleCount, state->pixels);
     state->size = size;
     state->ok = true;

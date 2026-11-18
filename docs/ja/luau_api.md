@@ -1,5 +1,8 @@
 # [Luau API](https://github.com/astomih/sinen/blob/main/api/sinen/init.luau)
 
+`sn.RenderDoc` によるGPUフレームキャプチャの設定と使用方法は
+[RenderDoc](../renderdoc.md)を参照してください。
+
 ## 2D 座標
 
 2D 描画は左上原点です。

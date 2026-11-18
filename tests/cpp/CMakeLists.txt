@@ -58,6 +58,19 @@ if(TARGET sinen_platform)
 endif()
 
 if(TARGET sinen_gpu)
+  if(WIN32 OR (CMAKE_SYSTEM_NAME STREQUAL "Linux"))
+    add_library(sinen_test_renderdoc SHARED renderdoc_fixture.cpp)
+    target_include_directories(sinen_test_renderdoc PRIVATE
+                               ${SINEN_SOURCE_DIR}/libs/renderdoc)
+    set_property(TARGET sinen_test_renderdoc PROPERTY CXX_STANDARD 23)
+    add_executable(sinen_renderdoc_tests renderdoc_tests.cpp)
+    target_link_libraries(sinen_renderdoc_tests PRIVATE sinen_gpu GTest::gtest_main)
+    target_compile_definitions(sinen_renderdoc_tests PRIVATE
+      SINEN_TEST_RENDERDOC_PATH="$<TARGET_FILE:sinen_test_renderdoc>")
+    set_property(TARGET sinen_renderdoc_tests PROPERTY CXX_STANDARD 23)
+    add_dependencies(sinen_renderdoc_tests sinen_test_renderdoc)
+    add_test(NAME sinen_renderdoc_tests COMMAND sinen_renderdoc_tests)
+  endif()
   add_executable(sinen_shader_bundle_tests shader_bundle_tests.cpp)
   target_link_libraries(sinen_shader_bundle_tests
                         PRIVATE sinen_gpu GTest::gtest_main)

@@ -88,21 +88,15 @@ static int lFontRegion(lua_State *L) {
   udNewOwned<Rect>(L, font->region(StringView(text), fontSize, pivot, vec));
   return 1;
 }
-void registerFont(lua_State *L) {
+void registerFont(luau::table &sn) {
 
-  pushClassMetatable<Ptr<Font>>(L, Font::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).function("resize", lFontResize);
-  luau::table(L, -1).raw_function("region", lFontRegion);
-  lua_pop(L, 1);
+  auto font = engineClass<Ptr<Font>>(sn, Font::metaTableName());
 
-  pushSnNamed(L, "Font");
-  luau::table(L, -1).raw_function("new", lFontNew);
-  luau::table(L, -1).value("Bitmap",
-                           static_cast<lua_Integer>(FontMethod::Bitmap));
-  luau::table(L, -1).value("MSDF", static_cast<lua_Integer>(FontMethod::MSDF));
-  lua_pop(L, 1);
+  font.method<lFontResize>("resize");
+  font.raw_method<lFontRegion>("region");
+
+  font.raw_static_function<lFontNew>("new");
+  font.static_value("Bitmap", FontMethod::Bitmap);
+  font.static_value("MSDF", FontMethod::MSDF);
 }
-
 } // namespace sinen

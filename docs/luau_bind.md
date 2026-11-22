@@ -1,6 +1,45 @@
 # C++ / Luau bindings
 
-`script/luau_bind.hpp` is Sinen's original header-only C++17 binding library for the vendored Luau VM. Its declarative registration API takes inspiration from [sol2](https://sol2.readthedocs.io/en/latest/api/usertype.html) and [luaaa](https://github.com/gengyong/luaaa); neither library is a dependency and no implementation code is imported.
+`script/luau_bind.hpp` is Sinen's original header-only C++23 binding library for the vendored Luau VM. 
+
+## Register without raw VM handles
+
+`state` owns a VM; `state_view` borrows an existing VM at the integration boundary. Normal registration functions receive a `table&` and do not use `lua_State*`, stack indices, or push/pop operations.
+
+```cpp
+#include <script/luau_bind.hpp>
+#include <Luau/Compiler.h>
+
+sinen::luau::state lua;
+lua.open_libraries();
+lua["sum"] = [](int a, int b) { return a + b; };
+auto config = lua.get_or_create_table("config");
+config["scale"] = 2.0f;
+lua.execute(Luau::compile("result = sum(2, 3)"));
+int result = lua["result"]; // 5
+```
+
+`execute` accepts compiled bytecode, so ordinary binding users and native plugins need no compiler dependency. Executables using `Luau::compile` also link `Luau.Compiler`. `get_table` reads an existing table; `get_or_create_table` creates a missing table and rejects an existing non-table value. `table["key"]` supports values, functions, tables, and copying another proxy; use `.get<T>()` for an explicit read.
+
+## Compile-time registration with C++20/23
+
+When a function/member is known at compile time, pass it as a template argument:
+
+```cpp
+module.function<&sum>("sum");
+module.class_<Counter>("Counter")
+    .constructor<int>()
+    .method<&Counter::add>("add")
+    .field<&Counter::value>("value")
+    .property<&Counter::get, &Counter::set>("amount");
+module.function<[](int n) static { return n * 2; }>("double");
+```
+
+This path stores no callback capture userdata and does not allocate a C++ callable object on the heap. It retains the same argument validation and exception translation. Runtime function pointers, capturing lambdas, and `std::function` still use the existing value-taking overloads. Use those overloads when the callback has state that must persist between calls.
+
+`reference_field<&Transform::position>("position")` replaces a borrowing getter plus assigning setter and preserves nested writes such as `transform.position.x = 1`. Ordinary `field` still returns a copy; borrowed members must outlive their referring userdata. A const member is read-only. Concepts constrain callable signatures and constructors; enum conversions use C++23 `std::to_underlying`.
+
+## Native plugins
 
 ```cpp
 #include <script/luau_bind.hpp>
@@ -15,17 +54,17 @@ SINEN_LUA_MODULE_EXPORT uint32_t sinen_lua_module_get_api_version() {
   return SINEN_LUA_MODULE_API_VERSION;
 }
 
+void registerCounter(sinen::luau::table &module) {
+  module.function("sum", [](int a, int b) { return a + b; });
+  module.class_<Counter>("Counter")
+      .constructor<int>()
+      .method<&Counter::add>("add")
+      .field<&Counter::value>("value")
+      .readonly<&Counter::value>("readOnly");
+}
+
 SINEN_LUA_MODULE_EXPORT int sinen_lua_module_open(lua_State *L) {
-  return sinen::luau::open(L, [&] {
-    auto module = sinen::luau::table::create(L);
-    module.function("sum", [](int a, int b) { return a + b; });
-    module.class_<Counter>("Counter")
-        .constructor<int>()
-        .method("add", &Counter::add)
-        .field("value", &Counter::value)
-        .readonly("readOnly", &Counter::value);
-    module.publish_plugin("counter");
-  });
+  return sinen::luau::open_plugin(L, "counter", registerCounter);
 }
 ```
 
@@ -45,7 +84,16 @@ print(c:add(3), native.sum(2, 3)) -- 13, 5
 
 | API | Purpose |
 | --- | --- |
+| `state` / `state_view(existingState)` | Owning / borrowed VM handle |
+| `vm["name"] = valueOrFunction` | Global registration and lookup |
+| `.get_table(name)` / `.get_or_create_table(name)` | Read / create nested tables |
+| `.get<T>(name)` / `[name].get<T>()` | Typed value read |
+| `open_plugin(L, name, registerFunction)` | Native ABI adapter passing `table&` |
 | `table::create(L)` / `table(L, index)` | New table / reference to an existing table |
+| `.function<Function>(name)` / `.method<Function>(name)` | Compile-time callback without capture storage |
+| `.field<Member>(name)` / `.readonly<Member>(name)` | Compile-time member binding |
+| `.reference_field<Member>(name)` | Borrowed class-valued field with nested writes |
+| `.property<Getter, Setter>(name)` | Compile-time accessors |
 | `.function(name, callable)` | Free function, capturing lambda, or `std::function` |
 | `.raw_function(name, lua_CFunction)` | Existing `int(lua_State*)` callback |
 | `.value(name, value)` / `.set_table(name, table)` | Value / nested table |
@@ -55,6 +103,9 @@ print(c:add(3), native.sum(2, 3)) -- 13, 5
 | `.method(name, callable)` | Member pointer, or callable with `T&` / `const T&` first |
 | `.static_function(name, callable)` | `Class.function(...)` |
 | `.metamethod(name, callable)` | Typed operators such as `__add` and `__tostring` |
+| `.raw_method` / `.raw_static_function` / `.raw_metamethod` | Explicit C API escape hatches |
+| `.static_value(name, value)` | Class constants |
+| `.metatable_name(name)` | Registry alias for legacy C API interoperation |
 | `.metatable()` | Low-level table handle for custom C API metamethods |
 | `.field(name, &T::member)` / `.readonly(name, &T::member)` | Writable / read-only field |
 | `.property(name, getter[, setter])` | Accessor property; setter returns `void` |
@@ -73,7 +124,7 @@ Specialize `sinen::luau::stack<T>` with `matches(L, index)`, `get(L, index)`, an
 
 ## Lifetime and errors
 
-`table` and `class_builder` hold registry references and must be destroyed before `lua_close`. Registered functions and classes remain valid after these C++ handles die. Plugin binaries must remain loaded until the VM closes; Sinen's existing loader guarantees this ordering. Registration preserves stack height; `.push()` explicitly adds one table.
+`table`, `class_builder`, and index proxies hold registry references and must be destroyed before their owning `state` (or before `lua_close` for a borrowed VM). Declare the `state` before these handles. A `state_view` never closes the VM. Registered functions and classes remain valid after these C++ handles die. Plugin binaries must remain loaded until the VM closes; Sinen's existing loader guarantees this ordering. Registration preserves stack height; `.push()` explicitly adds one table.
 
 C++ exceptions become Luau errors that scripts can catch with `pcall`. Wrap registration with `sinen::luau::open`. Raw C API callbacks manage their own stack and return counts; their C++ exceptions are also translated into Luau errors. Enable C++ exceptions in both Luau and plugins, with `LUA_USE_LONGJMP=0`. Destructors must not throw. Automatic inheritance, Luau-to-C++ function callbacks, and yielding across C++ calls are outside this API's scope.
 

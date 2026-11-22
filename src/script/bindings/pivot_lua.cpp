@@ -2,22 +2,16 @@
 #include <math/geometry/pivot.hpp>
 
 namespace sinen {
-void registerPivot(lua_State *L) {
-  pushSnNamed(L, "Pivot");
-  luau::table(L, -1).value("TopLeft", static_cast<lua_Integer>(Pivot::TopLeft));
-  luau::table(L, -1).value("TopCenter",
-                           static_cast<lua_Integer>(Pivot::TopCenter));
-  luau::table(L, -1).value("TopRight",
-                           static_cast<lua_Integer>(Pivot::TopRight));
-  luau::table(L, -1).value("Left", static_cast<lua_Integer>(Pivot::Left));
-  luau::table(L, -1).value("Center", static_cast<lua_Integer>(Pivot::Center));
-  luau::table(L, -1).value("Right", static_cast<lua_Integer>(Pivot::Right));
-  luau::table(L, -1).value("BottomLeft",
-                           static_cast<lua_Integer>(Pivot::BottomLeft));
-  luau::table(L, -1).value("BottomCenter",
-                           static_cast<lua_Integer>(Pivot::BottomCenter));
-  luau::table(L, -1).value("BottomRight",
-                           static_cast<lua_Integer>(Pivot::BottomRight));
-  lua_pop(L, 1);
+void registerPivot(luau::table &sn) {
+  auto pivot = sn.get_or_create_table("Pivot");
+  pivot.value("TopLeft", Pivot::TopLeft);
+  pivot.value("TopCenter", Pivot::TopCenter);
+  pivot.value("TopRight", Pivot::TopRight);
+  pivot.value("Left", Pivot::Left);
+  pivot.value("Center", Pivot::Center);
+  pivot.value("Right", Pivot::Right);
+  pivot.value("BottomLeft", Pivot::BottomLeft);
+  pivot.value("BottomCenter", Pivot::BottomCenter);
+  pivot.value("BottomRight", Pivot::BottomRight);
 }
 } // namespace sinen

@@ -89,28 +89,24 @@ static int lSoundGetDirection(lua_State *L) {
   udNewOwned<Vec3>(L, udPtr<Sound>(L, 1)->getDirection());
   return 1;
 }
-void registerSound(lua_State *L) {
-  pushClassMetatable<Ptr<Sound>>(L, Sound::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("play", lSoundPlay);
-  luau::table(L, -1).raw_function("restart", lSoundRestart);
-  luau::table(L, -1).raw_function("stop", lSoundStop);
-  luau::table(L, -1).raw_function("setLooping", lSoundSetLooping);
-  luau::table(L, -1).function("setVolume", lSoundSetVolume);
-  luau::table(L, -1).function("setPitch", lSoundSetPitch);
-  luau::table(L, -1).function("setPosition", lSoundSetPosition);
-  luau::table(L, -1).function("setDirection", lSoundSetDirection);
-  luau::table(L, -1).raw_function("isPlaying", lSoundIsPlaying);
-  luau::table(L, -1).raw_function("isLooping", lSoundIsLooping);
-  luau::table(L, -1).raw_function("getVolume", lSoundGetVolume);
-  luau::table(L, -1).raw_function("getPitch", lSoundGetPitch);
-  luau::table(L, -1).raw_function("getPosition", lSoundGetPosition);
-  luau::table(L, -1).raw_function("getDirection", lSoundGetDirection);
-  lua_pop(L, 1);
+void registerSound(luau::table &sn) {
+  auto sound = engineClass<Ptr<Sound>>(sn, Sound::metaTableName());
 
-  pushSnNamed(L, "Sound");
-  luau::table(L, -1).raw_function("new", lSoundNew);
-  lua_pop(L, 1);
+  sound.raw_method<lSoundPlay>("play");
+  sound.raw_method<lSoundRestart>("restart");
+  sound.raw_method<lSoundStop>("stop");
+  sound.raw_method<lSoundSetLooping>("setLooping");
+  sound.method<lSoundSetVolume>("setVolume");
+  sound.method<lSoundSetPitch>("setPitch");
+  sound.method<lSoundSetPosition>("setPosition");
+  sound.method<lSoundSetDirection>("setDirection");
+  sound.raw_method<lSoundIsPlaying>("isPlaying");
+  sound.raw_method<lSoundIsLooping>("isLooping");
+  sound.raw_method<lSoundGetVolume>("getVolume");
+  sound.raw_method<lSoundGetPitch>("getPitch");
+  sound.raw_method<lSoundGetPosition>("getPosition");
+  sound.raw_method<lSoundGetDirection>("getDirection");
+
+  sound.raw_static_function<lSoundNew>("new");
 }
 } // namespace sinen

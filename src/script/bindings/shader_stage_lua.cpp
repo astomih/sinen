@@ -2,25 +2,16 @@
 #include <gpu/shader/shader_stage.hpp>
 
 namespace sinen {
-void registerShaderStage(lua_State *L) {
-  pushSnNamed(L, "ShaderStage");
-  luau::table(L, -1).value("Vertex",
-                           static_cast<lua_Integer>(ShaderStage::Vertex));
-  luau::table(L, -1).value("Fragment",
-                           static_cast<lua_Integer>(ShaderStage::Fragment));
-  luau::table(L, -1).value("Compute",
-                           static_cast<lua_Integer>(ShaderStage::Compute));
-  luau::table(L, -1).value(
-      "RayGeneration", static_cast<lua_Integer>(ShaderStage::RayGeneration));
-  luau::table(L, -1).value("AnyHit",
-                           static_cast<lua_Integer>(ShaderStage::AnyHit));
-  luau::table(L, -1).value("ClosestHit",
-                           static_cast<lua_Integer>(ShaderStage::ClosestHit));
-  luau::table(L, -1).value("Miss", static_cast<lua_Integer>(ShaderStage::Miss));
-  luau::table(L, -1).value("Intersection",
-                           static_cast<lua_Integer>(ShaderStage::Intersection));
-  luau::table(L, -1).value("Callable",
-                           static_cast<lua_Integer>(ShaderStage::Callable));
-  lua_pop(L, 1);
+void registerShaderStage(luau::table &sn) {
+  auto shaderStage = sn.get_or_create_table("ShaderStage");
+  shaderStage.value("Vertex", ShaderStage::Vertex);
+  shaderStage.value("Fragment", ShaderStage::Fragment);
+  shaderStage.value("Compute", ShaderStage::Compute);
+  shaderStage.value("RayGeneration", ShaderStage::RayGeneration);
+  shaderStage.value("AnyHit", ShaderStage::AnyHit);
+  shaderStage.value("ClosestHit", ShaderStage::ClosestHit);
+  shaderStage.value("Miss", ShaderStage::Miss);
+  shaderStage.value("Intersection", ShaderStage::Intersection);
+  shaderStage.value("Callable", ShaderStage::Callable);
 }
 } // namespace sinen

@@ -146,28 +146,23 @@ static int lMeshBuilderIndexCount(lua_State *L) {
   return 1;
 }
 
-void registerMeshBuilder(lua_State *L) {
-  pushClassMetatable<MeshBuilder>(L, MeshBuilder::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("clear", lMeshBuilderClear);
-  luau::table(L, -1).raw_function("vertex", lMeshBuilderVertex);
-  luau::table(L, -1).raw_function("triangle", lMeshBuilderTriangle);
-  luau::table(L, -1).raw_function("quad", lMeshBuilderQuad);
-  luau::table(L, -1).raw_function("addPlane", lMeshBuilderAddPlane);
-  luau::table(L, -1).raw_function("addBox", lMeshBuilderAddBox);
-  luau::table(L, -1).raw_function("addSphere", lMeshBuilderAddSphere);
-  luau::table(L, -1).raw_function("addCylinder", lMeshBuilderAddCylinder);
-  luau::table(L, -1).raw_function("addCone", lMeshBuilderAddCone);
-  luau::table(L, -1).raw_function("recalculateNormals",
-                                  lMeshBuilderRecalculateNormals);
-  luau::table(L, -1).function("toModel", lMeshBuilderToModel);
-  luau::table(L, -1).raw_function("vertexCount", lMeshBuilderVertexCount);
-  luau::table(L, -1).raw_function("indexCount", lMeshBuilderIndexCount);
-  lua_pop(L, 1);
+void registerMeshBuilder(luau::table &sn) {
+  auto meshBuilder = engineClass<MeshBuilder>(sn, MeshBuilder::metaTableName());
 
-  pushSnNamed(L, "MeshBuilder");
-  luau::table(L, -1).function("new", lMeshBuilderNew);
-  lua_pop(L, 1);
+  meshBuilder.raw_method<lMeshBuilderClear>("clear");
+  meshBuilder.raw_method<lMeshBuilderVertex>("vertex");
+  meshBuilder.raw_method<lMeshBuilderTriangle>("triangle");
+  meshBuilder.raw_method<lMeshBuilderQuad>("quad");
+  meshBuilder.raw_method<lMeshBuilderAddPlane>("addPlane");
+  meshBuilder.raw_method<lMeshBuilderAddBox>("addBox");
+  meshBuilder.raw_method<lMeshBuilderAddSphere>("addSphere");
+  meshBuilder.raw_method<lMeshBuilderAddCylinder>("addCylinder");
+  meshBuilder.raw_method<lMeshBuilderAddCone>("addCone");
+  meshBuilder.raw_method<lMeshBuilderRecalculateNormals>("recalculateNormals");
+  meshBuilder.method<lMeshBuilderToModel>("toModel");
+  meshBuilder.raw_method<lMeshBuilderVertexCount>("vertexCount");
+  meshBuilder.raw_method<lMeshBuilderIndexCount>("indexCount");
+
+  meshBuilder.static_function<lMeshBuilderNew>("new");
 }
 } // namespace sinen

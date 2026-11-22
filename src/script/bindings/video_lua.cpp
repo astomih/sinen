@@ -144,35 +144,29 @@ static auto lVideoReaderLastError(Ptr<VideoReader> &reader) {
   return error;
 }
 
-void registerVideo(lua_State *L) {
-  pushClassMetatable<Ptr<VideoWriter>>(L, VideoWriter::metaTableName());
-  pushSnNamed(L, "VideoWriter");
-  luau::table(L, -1).function("new", lVideoWriterNew);
-  lua_pop(L, 1);
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("open", lVideoWriterOpen);
-  luau::table(L, -1).raw_function("addFrame", lVideoWriterAddFrame);
-  luau::table(L, -1).raw_function("addEncodedFrame",
-                                  lVideoWriterAddEncodedFrame);
-  luau::table(L, -1).function("close", lVideoWriterClose);
-  luau::table(L, -1).function("frameCount", lVideoWriterFrameCount);
-  luau::table(L, -1).function("lastError", lVideoWriterLastError);
-  lua_pop(L, 1);
+void registerVideo(luau::table &sn) {
+  auto videoWriter =
+      engineClass<Ptr<VideoWriter>>(sn, VideoWriter::metaTableName());
 
-  pushClassMetatable<Ptr<VideoReader>>(L, VideoReader::metaTableName());
-  pushSnNamed(L, "VideoReader");
-  luau::table(L, -1).function("new", lVideoReaderNew);
-  lua_pop(L, 1);
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).function("open", lVideoReaderOpen);
-  luau::table(L, -1).function("close", lVideoReaderClose);
-  luau::table(L, -1).raw_function("info", lVideoReaderInfo);
-  luau::table(L, -1).raw_function("readEncodedFrame",
-                                  lVideoReaderReadEncodedFrame);
-  luau::table(L, -1).raw_function("readFrame", lVideoReaderReadFrame);
-  luau::table(L, -1).function("lastError", lVideoReaderLastError);
-  lua_pop(L, 1);
+  videoWriter.static_function<lVideoWriterNew>("new");
+
+  videoWriter.raw_method<lVideoWriterOpen>("open");
+  videoWriter.raw_method<lVideoWriterAddFrame>("addFrame");
+  videoWriter.raw_method<lVideoWriterAddEncodedFrame>("addEncodedFrame");
+  videoWriter.method<lVideoWriterClose>("close");
+  videoWriter.method<lVideoWriterFrameCount>("frameCount");
+  videoWriter.method<lVideoWriterLastError>("lastError");
+
+  auto videoReader =
+      engineClass<Ptr<VideoReader>>(sn, VideoReader::metaTableName());
+
+  videoReader.static_function<lVideoReaderNew>("new");
+
+  videoReader.method<lVideoReaderOpen>("open");
+  videoReader.method<lVideoReaderClose>("close");
+  videoReader.raw_method<lVideoReaderInfo>("info");
+  videoReader.raw_method<lVideoReaderReadEncodedFrame>("readEncodedFrame");
+  videoReader.raw_method<lVideoReaderReadFrame>("readFrame");
+  videoReader.method<lVideoReaderLastError>("lastError");
 }
 } // namespace sinen

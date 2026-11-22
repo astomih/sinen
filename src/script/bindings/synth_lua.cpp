@@ -33,23 +33,17 @@ static auto lSynthSetADSR(Ptr<Synth> &s, float a, float d, float su, float r) {
   return;
 }
 
-void registerSynth(lua_State *L) {
-  pushClassMetatable<Ptr<Synth>>(L, Synth::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
+void registerSynth(luau::table &sn) {
+  auto synth = engineClass<Ptr<Synth>>(sn, Synth::metaTableName());
 
-  luau::table(L, -1).raw_function("play", lSynthPlay);
-  luau::table(L, -1).raw_function("stop", lSynthStop);
-  luau::table(L, -1).function("setPattern", lSynthSetPattern);
-  luau::table(L, -1).function("setBpm", lSynthSetBpm);
-  luau::table(L, -1).function("setStepBeats", lSynthSetStepBeats);
-  luau::table(L, -1).function("setMasterGain", lSynthSetMasterGain);
-  luau::table(L, -1).function("setADSR", lSynthSetADSR);
+  synth.raw_method<lSynthPlay>("play");
+  synth.raw_method<lSynthStop>("stop");
+  synth.method<lSynthSetPattern>("setPattern");
+  synth.method<lSynthSetBpm>("setBpm");
+  synth.method<lSynthSetStepBeats>("setStepBeats");
+  synth.method<lSynthSetMasterGain>("setMasterGain");
+  synth.method<lSynthSetADSR>("setADSR");
 
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Synth");
-  luau::table(L, -1).function("new", lSynthNew);
-  lua_pop(L, 1);
+  synth.static_function<lSynthNew>("new");
 }
 } // namespace sinen

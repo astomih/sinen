@@ -9,10 +9,9 @@ static auto lPeriodicSin01(float period, float t) {
 static auto lPeriodicCos01(float period, float t) {
   return Periodic::cosWave(period, t);
 }
-void registerPeriodic(lua_State *L) {
-  pushSnNamed(L, "Periodic");
-  luau::table(L, -1).function("sin0_1", lPeriodicSin01);
-  luau::table(L, -1).function("cos0_1", lPeriodicCos01);
-  lua_pop(L, 1);
+void registerPeriodic(luau::table &sn) {
+  auto periodic = sn.get_or_create_table("Periodic");
+  periodic.function<lPeriodicSin01>("sin0_1");
+  periodic.function<lPeriodicCos01>("cos0_1");
 }
 } // namespace sinen

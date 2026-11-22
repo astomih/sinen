@@ -40,25 +40,24 @@ static int lMouseSetRelative(lua_State *L) {
   return 0;
 }
 static auto lMouseIsRelative() { return Mouse::isRelative(); }
-void registerMouse(lua_State *L) {
-  pushSnNamed(L, "Mouse");
-  luau::table(L, -1).raw_function("setRelative", lMouseSetRelative);
-  luau::table(L, -1).function("isRelative", lMouseIsRelative);
-  luau::table(L, -1).function("getPositionOnScene", lMouseGetPositionOnScene);
-  luau::table(L, -1).function("getPosition", lMouseGetPosition);
-  luau::table(L, -1).function("getDelta", lMouseGetDelta);
-  luau::table(L, -1).raw_function("isPressed", lMouseIsPressed);
-  luau::table(L, -1).raw_function("isReleased", lMouseIsReleased);
-  luau::table(L, -1).raw_function("isDown", lMouseIsDown);
-  luau::table(L, -1).function("setPosition", lMouseSetPosition);
-  luau::table(L, -1).function("setPositionOnScene", lMouseSetPositionOnScene);
-  luau::table(L, -1).function("getScrollWheel", lMouseGetScrollWheel);
-  luau::table(L, -1).raw_function("hideCursor", lMouseHideCursor);
-  luau::table(L, -1).value("LEFT", static_cast<int>(Mouse::LEFT));
-  luau::table(L, -1).value("RIGHT", static_cast<int>(Mouse::RIGHT));
-  luau::table(L, -1).value("MIDDLE", static_cast<int>(Mouse::MIDDLE));
-  luau::table(L, -1).value("X1", static_cast<int>(Mouse::X1));
-  luau::table(L, -1).value("X2", static_cast<int>(Mouse::X2));
-  lua_pop(L, 1);
+void registerMouse(luau::table &sn) {
+  auto mouse = sn.get_or_create_table("Mouse");
+  mouse.raw_function<lMouseSetRelative>("setRelative");
+  mouse.function<lMouseIsRelative>("isRelative");
+  mouse.function<lMouseGetPositionOnScene>("getPositionOnScene");
+  mouse.function<lMouseGetPosition>("getPosition");
+  mouse.function<lMouseGetDelta>("getDelta");
+  mouse.raw_function<lMouseIsPressed>("isPressed");
+  mouse.raw_function<lMouseIsReleased>("isReleased");
+  mouse.raw_function<lMouseIsDown>("isDown");
+  mouse.function<lMouseSetPosition>("setPosition");
+  mouse.function<lMouseSetPositionOnScene>("setPositionOnScene");
+  mouse.function<lMouseGetScrollWheel>("getScrollWheel");
+  mouse.raw_function<lMouseHideCursor>("hideCursor");
+  mouse.value("LEFT", static_cast<int>(Mouse::LEFT));
+  mouse.value("RIGHT", static_cast<int>(Mouse::RIGHT));
+  mouse.value("MIDDLE", static_cast<int>(Mouse::MIDDLE));
+  mouse.value("X1", static_cast<int>(Mouse::X1));
+  mouse.value("X2", static_cast<int>(Mouse::X2));
 }
 } // namespace sinen

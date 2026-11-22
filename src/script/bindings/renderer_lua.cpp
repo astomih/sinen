@@ -112,30 +112,27 @@ int getConeAngles(lua_State *L) {
 }
 
 template <class T>
-void registerLight(lua_State *L, const char *name, lua_CFunction constructor) {
-  pushClassMetatable<T>(L, T::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("setIntensity", setIntensity<T>);
-  luau::table(L, -1).raw_function("getIntensity", getIntensity<T>);
-  luau::table(L, -1).raw_function("setColor", setColor<T>);
-  luau::table(L, -1).raw_function("getColor", getColor<T>);
+void registerLight(luau::table &sn, const char *name,
+                   lua_CFunction constructor) {
+  auto binding = sn.class_<T>(name);
+  binding.metatable_name(T::metaTableName());
+  binding.template raw_method<setIntensity<T>>("setIntensity");
+  binding.template raw_method<getIntensity<T>>("getIntensity");
+  binding.template raw_method<setColor<T>>("setColor");
+  binding.template raw_method<getColor<T>>("getColor");
   if constexpr (!std::is_same_v<T, DirectionalLight>) {
-    luau::table(L, -1).raw_function("setPosition", setPosition<T>);
-    luau::table(L, -1).raw_function("getPosition", getPosition<T>);
+    binding.template raw_method<setPosition<T>>("setPosition");
+    binding.template raw_method<getPosition<T>>("getPosition");
   }
   if constexpr (!std::is_same_v<T, PointLight>) {
-    luau::table(L, -1).raw_function("setDirection", setDirection<T>);
-    luau::table(L, -1).raw_function("getDirection", getDirection<T>);
+    binding.template raw_method<setDirection<T>>("setDirection");
+    binding.template raw_method<getDirection<T>>("getDirection");
   }
   if constexpr (std::is_same_v<T, SpotLight>) {
-    luau::table(L, -1).raw_function("setConeAngles", setConeAngles);
-    luau::table(L, -1).raw_function("getConeAngles", getConeAngles);
+    binding.template raw_method<setConeAngles>("setConeAngles");
+    binding.template raw_method<getConeAngles>("getConeAngles");
   }
-  lua_pop(L, 1);
-  pushSnNamed(L, name);
-  luau::table(L, -1).raw_function("new", constructor);
-  lua_pop(L, 1);
+  binding.raw_static_function("new", constructor);
 }
 
 int setPointLight(lua_State *L) {
@@ -279,11 +276,6 @@ int setBands(lua_State *L) {
   return 0;
 }
 
-template <class T> int newRenderer(lua_State *L) {
-  udNewOwned<T>(L, T{});
-  return 1;
-}
-
 template <class T> int drawModel(lua_State *L) {
   auto &pass = udPtr<Render3DPass>(L, 2);
   const auto &model = udPtr<Model>(L, 3);
@@ -292,70 +284,54 @@ template <class T> int drawModel(lua_State *L) {
   return 0;
 }
 
-template <class T> void registerRendererMetatable(lua_State *L) {
-  pushClassMetatable<T>(L, T::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("setLight", setLight<T>);
-  luau::table(L, -1).raw_function("drawModel", drawModel<T>);
+template <class T>
+luau::class_builder<T> registerRendererClass(luau::table &sn) {
+  auto binding = engineClass<T>(sn, T::metaTableName());
+  binding.template raw_method<setLight<T>>("setLight");
+  binding.template raw_method<drawModel<T>>("drawModel");
+  binding.template constructor<>();
+  return binding;
 }
-
 } // namespace
 
-void registerRenderer(lua_State *L) {
-  registerLight<DirectionalLight>(L, "DirectionalLight", newDirectionalLight);
-  registerLight<PointLight>(L, "PointLight", newPointLight);
-  registerLight<SpotLight>(L, "SpotLight", newSpotLight);
+void registerRenderer(luau::table &sn) {
+  registerLight<DirectionalLight>(sn, "DirectionalLight", newDirectionalLight);
+  registerLight<PointLight>(sn, "PointLight", newPointLight);
+  registerLight<SpotLight>(sn, "SpotLight", newSpotLight);
 
-  registerRendererMetatable<PBRRenderer>(L);
-  luau::table(L, -1).raw_function("setPointLight", setPointLight);
-  luau::table(L, -1).raw_function(
-      "setFillLight", setLight<PBRRenderer, &PBRRenderer::setFillLight>);
-  luau::table(L, -1).raw_function("clearFillLight", clearFillLight);
-  luau::table(L, -1).raw_function("setExposure", setExposure);
-  luau::table(L, -1).raw_function("setAlphaCutoff", setAlphaCutoff);
-  luau::table(L, -1).raw_function("setEnvironment", setEnvironment);
-  luau::table(L, -1).raw_function("clearEnvironment", clearEnvironment);
-  luau::table(L, -1).raw_function("setGlobalIllumination", setGI);
-  luau::table(L, -1).raw_function("clearGlobalIllumination", clearRendererGI);
-  lua_pop(L, 1);
+  auto pbr = registerRendererClass<PBRRenderer>(sn);
+  pbr.raw_method<setPointLight>("setPointLight");
+  pbr.raw_method<setLight<PBRRenderer, &PBRRenderer::setFillLight>>(
+      "setFillLight");
+  pbr.raw_method<clearFillLight>("clearFillLight");
+  pbr.raw_method<setExposure>("setExposure");
+  pbr.raw_method<setAlphaCutoff>("setAlphaCutoff");
+  pbr.raw_method<setEnvironment>("setEnvironment");
+  pbr.raw_method<clearEnvironment>("clearEnvironment");
+  pbr.raw_method<setGI>("setGlobalIllumination");
+  pbr.raw_method<clearRendererGI>("clearGlobalIllumination");
 
-  registerRendererMetatable<NPRRenderer>(L);
-  luau::table(L, -1).raw_function("setLightDirection", setLightDirection);
-  luau::table(L, -1).raw_function("setShadowColor", setShadowColor);
-  luau::table(L, -1).raw_function("setBands", setBands);
-  lua_pop(L, 1);
+  auto npr = registerRendererClass<NPRRenderer>(sn);
+  npr.raw_method<setLightDirection>("setLightDirection");
+  npr.raw_method<setShadowColor>("setShadowColor");
+  npr.raw_method<setBands>("setBands");
 
-  pushSnNamed(L, "PBRRenderer");
-  luau::table(L, -1).raw_function("new", newRenderer<PBRRenderer>);
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "NPRRenderer");
-  luau::table(L, -1).raw_function("new", newRenderer<NPRRenderer>);
-  lua_pop(L, 1);
-
-  pushClassMetatable<GlobalIllumination>(L,
-                                         GlobalIllumination::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("addModel", addGIModel);
-  luau::table(L, -1).raw_function("setLight", setLight<GlobalIllumination>);
-  luau::table(L, -1).raw_function("clearLight", clearGILight);
-  luau::table(L, -1).raw_function("setSkyColor", setGISky);
-  luau::table(L, -1).raw_function("bake", bakeGI);
-  luau::table(L, -1).raw_function("initializeRealtime", initializeRealtimeGI);
-  luau::table(L, -1).raw_function("beginFrame", beginGIFrame);
-  luau::table(L, -1).raw_function("update", updateGI);
-  luau::table(L, -1).raw_function("isRealtime", isRealtimeGI);
-  luau::table(L, -1).raw_function("clear", clearGI);
-  luau::table(L, -1).raw_function("isBaked", isGIBaked);
-  luau::table(L, -1).raw_function("sampleIrradiance", sampleGI);
-  lua_pop(L, 1);
-  pushSnNamed(L, "GlobalIllumination");
-  luau::table(L, -1).raw_function("new", newRenderer<GlobalIllumination>);
-  lua_pop(L, 1);
+  auto gi =
+      engineClass<GlobalIllumination>(sn, GlobalIllumination::metaTableName());
+  gi.constructor<>();
+  gi.raw_method<addGIModel>("addModel");
+  gi.raw_method<setLight<GlobalIllumination>>("setLight");
+  gi.raw_method<clearGILight>("clearLight");
+  gi.raw_method<setGISky>("setSkyColor");
+  gi.raw_method<bakeGI>("bake");
+  gi.raw_method<initializeRealtimeGI>("initializeRealtime");
+  gi.raw_method<beginGIFrame>("beginFrame");
+  gi.raw_method<updateGI>("update");
+  gi.raw_method<isRealtimeGI>("isRealtime");
+  gi.raw_method<clearGI>("clear");
+  gi.raw_method<isGIBaked>("isBaked");
+  gi.raw_method<sampleGI>("sampleIrradiance");
 }
-
 } // namespace sinen
 
 #endif

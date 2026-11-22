@@ -58,16 +58,14 @@ static auto lFilesystemGetUserDirectory() {
   auto path = Filesystem::getUserDirectory();
   return path;
 }
-void registerFilesystem(lua_State *L) {
-  pushSnNamed(L, "Filesystem");
-  luau::table(L, -1).raw_function("enumerateDirectory",
-                                  lFilesystemEnumerateDirectory);
-  luau::table(L, -1).raw_function("read", lFilesystemRead);
-  luau::table(L, -1).raw_function("readText", lFilesystemReadText);
-  luau::table(L, -1).function("exists", lFilesystemExists);
-  luau::table(L, -1).function("write", lFilesystemWrite);
-  luau::table(L, -1).raw_function("writeText", lFilesystemWriteText);
-  luau::table(L, -1).function("getUserDirectory", lFilesystemGetUserDirectory);
-  lua_pop(L, 1);
+void registerFilesystem(luau::table &sn) {
+  auto filesystem = sn.get_or_create_table("Filesystem");
+  filesystem.raw_function<lFilesystemEnumerateDirectory>("enumerateDirectory");
+  filesystem.raw_function<lFilesystemRead>("read");
+  filesystem.raw_function<lFilesystemReadText>("readText");
+  filesystem.function<lFilesystemExists>("exists");
+  filesystem.function<lFilesystemWrite>("write");
+  filesystem.raw_function<lFilesystemWriteText>("writeText");
+  filesystem.function<lFilesystemGetUserDirectory>("getUserDirectory");
 }
 } // namespace sinen

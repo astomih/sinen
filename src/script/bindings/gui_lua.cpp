@@ -61,16 +61,15 @@ static int lGuiScrollVertical(lua_State *L) {
   return 1;
 }
 
-void registerGui(lua_State *L) {
-  pushSnNamed(L, "Gui");
-  luau::table(L, -1).function("setFont", lGuiSetFont);
-  luau::table(L, -1).raw_function("setFontSize", lGuiSetFontSize);
-  luau::table(L, -1).function("setThemeColor", lGuiSetThemeColor);
-  luau::table(L, -1).raw_function("label", lGuiLabel);
-  luau::table(L, -1).function("button", lGuiButton);
-  luau::table(L, -1).raw_function("checkbox", lGuiCheckbox);
-  luau::table(L, -1).function("sliderFloat", lGuiSliderFloat);
-  luau::table(L, -1).raw_function("scrollVertical", lGuiScrollVertical);
-  lua_pop(L, 1);
+void registerGui(luau::table &sn) {
+  auto gui = sn.get_or_create_table("Gui");
+  gui.function<lGuiSetFont>("setFont");
+  gui.raw_function<lGuiSetFontSize>("setFontSize");
+  gui.function<lGuiSetThemeColor>("setThemeColor");
+  gui.raw_function<lGuiLabel>("label");
+  gui.function<lGuiButton>("button");
+  gui.raw_function<lGuiCheckbox>("checkbox");
+  gui.function<lGuiSliderFloat>("sliderFloat");
+  gui.raw_function<lGuiScrollVertical>("scrollVertical");
 }
 } // namespace sinen

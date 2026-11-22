@@ -163,27 +163,23 @@ static auto lTextureTostring(Ptr<Texture> &tex) {
   String s = tex->tableString();
   return s;
 }
-void registerTexture(lua_State *L) {
-  pushClassMetatable<Ptr<Texture>>(L, Texture::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("updatePixels", lTextureUpdatePixels);
-  luau::table(L, -1).function("toPngBuffer", lTextureToPngBuffer);
-  luau::table(L, -1).raw_function("toExrBuffer", lTextureToExrBuffer);
-  luau::table(L, -1).function("fill", lTextureFill);
-  luau::table(L, -1).function("copy", lTextureCopy);
-  luau::table(L, -1).function("size", lTextureSize);
-  luau::table(L, -1).function("__tostring", lTextureTostring);
-  lua_pop(L, 1);
+void registerTexture(luau::table &sn) {
+  auto texture = engineClass<Ptr<Texture>>(sn, Texture::metaTableName());
 
-  pushSnNamed(L, "Texture");
-  luau::table(L, -1).raw_function("new", lTextureNew);
-  luau::table(L, -1).raw_function("newCubemap", lTextureNewCubemap);
-  luau::table(L, -1).raw_function("newIrradianceCubemap",
-                                  lTextureNewIrradianceCubemap);
-  luau::table(L, -1).raw_function("newPrefilteredCubemap",
-                                  lTextureNewPrefilteredCubemap);
-  luau::table(L, -1).raw_function("newBRDFLUT", lTextureNewBRDFLUT);
-  lua_pop(L, 1);
+  texture.raw_method<lTextureUpdatePixels>("updatePixels");
+  texture.method<lTextureToPngBuffer>("toPngBuffer");
+  texture.raw_method<lTextureToExrBuffer>("toExrBuffer");
+  texture.method<lTextureFill>("fill");
+  texture.method<lTextureCopy>("copy");
+  texture.method<lTextureSize>("size");
+  texture.metamethod<lTextureTostring>("__tostring");
+
+  texture.raw_static_function<lTextureNew>("new");
+  texture.raw_static_function<lTextureNewCubemap>("newCubemap");
+  texture.raw_static_function<lTextureNewIrradianceCubemap>(
+      "newIrradianceCubemap");
+  texture.raw_static_function<lTextureNewPrefilteredCubemap>(
+      "newPrefilteredCubemap");
+  texture.raw_static_function<lTextureNewBRDFLUT>("newBRDFLUT");
 }
 } // namespace sinen

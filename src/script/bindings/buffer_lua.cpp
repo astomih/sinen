@@ -133,17 +133,13 @@ static auto lBufferToHeader(Buffer &buffer, const char *symbolName) {
 
 static auto lBufferSize(Buffer &buffer) { return buffer.size(); }
 
-void registerBuffer(lua_State *L) {
-  pushClassMetatable<Buffer>(L, Buffer::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).function("size", lBufferSize);
-  luau::table(L, -1).function("toHeader", lBufferToHeader);
-  lua_pop(L, 1);
+void registerBuffer(luau::table &sn) {
+  auto buffer = engineClass<Buffer>(sn, Buffer::metaTableName());
 
-  pushSnNamed(L, "Buffer");
-  luau::table(L, -1).raw_function("new", lBufferNew);
-  luau::table(L, -1).raw_function("fromBytes", lBufferFromBytes);
-  lua_pop(L, 1);
+  buffer.method<lBufferSize>("size");
+  buffer.method<lBufferToHeader>("toHeader");
+
+  buffer.raw_static_function<lBufferNew>("new");
+  buffer.raw_static_function<lBufferFromBytes>("fromBytes");
 }
 } // namespace sinen

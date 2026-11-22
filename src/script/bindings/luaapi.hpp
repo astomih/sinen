@@ -34,9 +34,6 @@ template <class T> static T *udValueOrNull(lua_State *L, int idx) {
 template <class T> static void udNewOwned(lua_State *L, T value) {
   luau::stack<T>::push(L, std::move(value));
 }
-template <class T> static void udNewRef(lua_State *L, T *ref) {
-  luau::stack<std::reference_wrapper<T>>::push(L, std::ref(*ref));
-}
 template <class T> static Ptr<T> &udPtr(lua_State *L, int idx) {
   return udValue<Ptr<T>>(L, idx);
 }
@@ -53,38 +50,17 @@ static void *luaLTestudata2(lua_State *L, int idx, const char *name) {
   return matches ? lua_touserdata(L, idx) : nullptr;
 }
 
-static void pushSn(lua_State *L) { lua_getglobal(L, "sn"); }
-static void ensureSn(lua_State *L) {
-  lua_getglobal(L, "sn");
-  if (!lua_istable(L, -1)) {
-    lua_pop(L, 1);
-    lua_newtable(L);
-    lua_pushvalue(L, -1);
-    lua_setglobal(L, "sn");
-  }
-}
-void pushSnNamed(lua_State *L, const char *name);
-
-// Named metatables remain available to the few raw handlers that inspect
-// dynamic argument types. Allocation, type identity and destruction belong
-// exclusively to luau_bind.
+// Preserve named metatable aliases used by raw handlers while registering
+// ordinary classes entirely through table/class_builder handles.
 template <class T>
-static luau::class_builder<T> engineClass(lua_State *L, const char *metaName) {
-  ensureSn(L);
-  luau::table sn(L, -1);
-  lua_pop(L, 1);
+static luau::class_builder<T> engineClass(luau::table &sn,
+                                          const char *metaName) {
   const char *name = metaName;
   if (std::string_view(name).substr(0, 3) == "sn.")
     name += 3;
   auto binding = sn.class_<T>(name);
-  binding.metatable().push();
-  lua_setfield(L, LUA_REGISTRYINDEX, metaName);
+  binding.metatable_name(metaName);
   return binding;
-}
-
-template <class T>
-static void pushClassMetatable(lua_State *L, const char *metaName) {
-  engineClass<T>(L, metaName).metatable().push();
 }
 
 static int luaPCallLogged(lua_State *L, int nargs, int nresults) {

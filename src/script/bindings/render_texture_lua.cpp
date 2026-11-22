@@ -9,15 +9,12 @@ static auto lRenderTextureCreate(Ptr<RenderTexture> &rt, int w, int h) {
   rt->create(w, h);
   return;
 }
-void registerRenderTexture(lua_State *L) {
-  pushClassMetatable<Ptr<RenderTexture>>(L, RenderTexture::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).function("create", lRenderTextureCreate);
-  lua_pop(L, 1);
+void registerRenderTexture(luau::table &sn) {
+  auto renderTexture =
+      engineClass<Ptr<RenderTexture>>(sn, RenderTexture::metaTableName());
 
-  pushSnNamed(L, "RenderTexture");
-  luau::table(L, -1).function("new", lRenderTextureNew);
-  lua_pop(L, 1);
+  renderTexture.method<lRenderTextureCreate>("create");
+
+  renderTexture.static_function<lRenderTextureNew>("new");
 }
 } // namespace sinen

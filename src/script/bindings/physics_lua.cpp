@@ -198,52 +198,39 @@ static auto lWorld3DUpdate(Ptr<World3D> w, float time, int collisionSteps) {
   w->update(time, collisionSteps);
   return;
 }
-void registerPhysics(lua_State *L) {
-  pushClassMetatable<Ptr<World2D>>(L, World2D::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("newBoxCollider", lWorld2DNewBoxCollider);
-  luau::table(L, -1).raw_function("newCircleCollider",
-                                  lWorld2DNewCircleCollider);
-  luau::table(L, -1).raw_function("newCapsuleCollider",
-                                  lWorld2DNewCapsuleCollider);
-  luau::table(L, -1).raw_function("addCollider", lWorld2DAddCollider);
-  luau::table(L, -1).function("removeCollider", lWorld2DRemoveCollider);
-  luau::table(L, -1).function("destroyCollider", lWorld2DDestroyCollider);
-  luau::table(L, -1).function("setGravity", lWorld2DSetGravity);
-  luau::table(L, -1).function("getGravity", lWorld2DGetGravity);
-  luau::table(L, -1).function("bodyCount", lWorld2DBodyCount);
-  luau::table(L, -1).function("optimizeBroadPhase", lWorld2DOptimizeBroadPhase);
-  luau::table(L, -1).function("update", lWorld2DUpdate);
-  lua_pop(L, 1);
+void registerPhysics(luau::table &sn) {
+  auto world2D = engineClass<Ptr<World2D>>(sn, World2D::metaTableName());
 
-  pushClassMetatable<Ptr<World3D>>(L, World3D::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("newBoxCollider", lWorld3DNewBoxCollider);
-  luau::table(L, -1).raw_function("newSphereCollider",
-                                  lWorld3DNewSphereCollider);
-  luau::table(L, -1).raw_function("newCylinderCollider",
-                                  lWorld3DNewCylinderCollider);
-  luau::table(L, -1).raw_function("newCapsuleCollider",
-                                  lWorld3DNewCapsuleCollider);
-  luau::table(L, -1).raw_function("addCollider", lWorld3DAddCollider);
-  luau::table(L, -1).raw_function("raycastClosest", lWorld3DRaycastClosest);
-  luau::table(L, -1).function("removeCollider", lWorld3DRemoveCollider);
-  luau::table(L, -1).function("destroyCollider", lWorld3DDestroyCollider);
-  luau::table(L, -1).function("setGravity", lWorld3DSetGravity);
-  luau::table(L, -1).function("getGravity", lWorld3DGetGravity);
-  luau::table(L, -1).function("bodyCount", lWorld3DBodyCount);
-  luau::table(L, -1).function("optimizeBroadPhase", lWorld3DOptimizeBroadPhase);
-  luau::table(L, -1).function("update", lWorld3DUpdate);
-  lua_pop(L, 1);
+  world2D.raw_method<lWorld2DNewBoxCollider>("newBoxCollider");
+  world2D.raw_method<lWorld2DNewCircleCollider>("newCircleCollider");
+  world2D.raw_method<lWorld2DNewCapsuleCollider>("newCapsuleCollider");
+  world2D.raw_method<lWorld2DAddCollider>("addCollider");
+  world2D.method<lWorld2DRemoveCollider>("removeCollider");
+  world2D.method<lWorld2DDestroyCollider>("destroyCollider");
+  world2D.method<lWorld2DSetGravity>("setGravity");
+  world2D.method<lWorld2DGetGravity>("getGravity");
+  world2D.method<lWorld2DBodyCount>("bodyCount");
+  world2D.method<lWorld2DOptimizeBroadPhase>("optimizeBroadPhase");
+  world2D.method<lWorld2DUpdate>("update");
 
-  pushSnNamed(L, "World2D");
-  luau::table(L, -1).function("new", lWorld2DNew);
-  lua_pop(L, 1);
+  auto world3D = engineClass<Ptr<World3D>>(sn, World3D::metaTableName());
 
-  pushSnNamed(L, "World3D");
-  luau::table(L, -1).function("new", lWorld3DNew);
-  lua_pop(L, 1);
+  world3D.raw_method<lWorld3DNewBoxCollider>("newBoxCollider");
+  world3D.raw_method<lWorld3DNewSphereCollider>("newSphereCollider");
+  world3D.raw_method<lWorld3DNewCylinderCollider>("newCylinderCollider");
+  world3D.raw_method<lWorld3DNewCapsuleCollider>("newCapsuleCollider");
+  world3D.raw_method<lWorld3DAddCollider>("addCollider");
+  world3D.raw_method<lWorld3DRaycastClosest>("raycastClosest");
+  world3D.method<lWorld3DRemoveCollider>("removeCollider");
+  world3D.method<lWorld3DDestroyCollider>("destroyCollider");
+  world3D.method<lWorld3DSetGravity>("setGravity");
+  world3D.method<lWorld3DGetGravity>("getGravity");
+  world3D.method<lWorld3DBodyCount>("bodyCount");
+  world3D.method<lWorld3DOptimizeBroadPhase>("optimizeBroadPhase");
+  world3D.method<lWorld3DUpdate>("update");
+
+  world2D.static_function<lWorld2DNew>("new");
+
+  world3D.static_function<lWorld3DNew>("new");
 }
 } // namespace sinen

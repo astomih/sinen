@@ -39,18 +39,15 @@ static auto lComputeBufferSize(Ptr<ComputeBuffer> &buffer) {
   return buffer->size();
 }
 
-void registerComputeBuffer(lua_State *L) {
-  pushClassMetatable<Ptr<ComputeBuffer>>(L, ComputeBuffer::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("create", lComputeBufferCreate);
-  luau::table(L, -1).function("upload", lComputeBufferUpload);
-  luau::table(L, -1).function("download", lComputeBufferDownload);
-  luau::table(L, -1).function("size", lComputeBufferSize);
-  lua_pop(L, 1);
+void registerComputeBuffer(luau::table &sn) {
+  auto computeBuffer =
+      engineClass<Ptr<ComputeBuffer>>(sn, ComputeBuffer::metaTableName());
 
-  pushSnNamed(L, "ComputeBuffer");
-  luau::table(L, -1).raw_function("new", lComputeBufferNew);
-  lua_pop(L, 1);
+  computeBuffer.raw_method<lComputeBufferCreate>("create");
+  computeBuffer.method<lComputeBufferUpload>("upload");
+  computeBuffer.method<lComputeBufferDownload>("download");
+  computeBuffer.method<lComputeBufferSize>("size");
+
+  computeBuffer.raw_static_function<lComputeBufferNew>("new");
 }
 } // namespace sinen

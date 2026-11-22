@@ -29,14 +29,12 @@ static auto lLogCritical(const char *s) {
   Log::critical("{}", s);
   return;
 }
-void registerLog(lua_State *L) {
-  pushSnNamed(L, "Log");
-  luau::table(L, -1).function("verbose", lLogVerbose);
-  luau::table(L, -1).raw_function("info", lLogInfo);
-  luau::table(L, -1).function("error", lLogError);
-  luau::table(L, -1).function("warn", lLogWarn);
-  luau::table(L, -1).function("critical", lLogCritical);
-  lua_pop(L, 1);
+void registerLog(luau::table &sn) {
+  auto log = sn.get_or_create_table("Log");
+  log.function<lLogVerbose>("verbose");
+  log.raw_function<lLogInfo>("info");
+  log.function<lLogError>("error");
+  log.function<lLogWarn>("warn");
+  log.function<lLogCritical>("critical");
 }
-
 } // namespace sinen

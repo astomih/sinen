@@ -9,6 +9,7 @@
 #include "sinen_lua_module.h"
 
 #include <cmath>
+#include <concepts>
 #include <functional>
 #include <limits>
 #include <memory>
@@ -37,6 +38,7 @@ public:
 // matches must preserve the stack; push must add exactly one value.
 template <class T, class Enable = void> struct stack;
 template <class T> class class_builder;
+class table_proxy;
 
 namespace detail {
 class stack_guard {
@@ -167,8 +169,9 @@ template <> struct stack<bool> {
 };
 
 template <class T>
-struct stack<
-    T, std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<T, bool>>> {
+  requires((std::integral<T> || std::floating_point<T>) &&
+           !std::same_as<T, bool>)
+struct stack<T> {
   static bool matches(lua_State *L, int index) {
     if (lua_type(L, index) != LUA_TNUMBER)
       return false;
@@ -202,7 +205,9 @@ struct stack<
   }
 };
 
-template <class T> struct stack<T, std::enable_if_t<std::is_enum_v<T>>> {
+template <class T>
+  requires std::is_enum_v<T>
+struct stack<T> {
   using base = stack<std::underlying_type_t<T>>;
   static bool matches(lua_State *L, int index) {
     return base::matches(L, index);
@@ -211,7 +216,7 @@ template <class T> struct stack<T, std::enable_if_t<std::is_enum_v<T>>> {
     return static_cast<T>(base::get(L, index));
   }
   static void push(lua_State *L, T value) {
-    base::push(L, static_cast<std::underlying_type_t<T>>(value));
+    base::push(L, std::to_underlying(value));
   }
 };
 
@@ -344,7 +349,7 @@ template <class T> struct stack<std::vector<T>> {
 };
 
 namespace detail {
-template <class T> using plain = std::remove_cv_t<std::remove_reference_t<T>>;
+template <class T> using plain = std::remove_cvref_t<T>;
 
 template <class T> bool argument_matches(lua_State *L, int index) {
   if (!stack<plain<T>>::matches(L, index))
@@ -378,7 +383,7 @@ template <class R, class... A> struct signature_base {
   using result = R;
   using args = std::tuple<A...>;
 };
-template <class F> struct signature;
+template <class F, class = void> struct signature {};
 template <class R, class... A>
 struct signature<R (*)(A...)> : signature_base<R, A...> {};
 template <class R, class... A>
@@ -402,10 +407,25 @@ template <class Tuple> struct drop_self;
 template <class C, class... A> struct drop_self<std::tuple<C, A...>> {
   using type = std::tuple<A...>;
 };
-template <class F> struct signature {
-  using call = signature<decltype(&F::operator())>;
+template <class F>
+  requires requires {
+    typename signature<decltype(&F::operator())>::result;
+    typename signature<decltype(&F::operator())>::args;
+  }
+struct signature<F, std::void_t<decltype(&F::operator())>> {
+  using pointer = decltype(&F::operator());
+  using call = signature<pointer>;
   using result = typename call::result;
-  using args = typename drop_self<typename call::args>::type;
+  using args = typename std::conditional_t<
+      std::is_member_function_pointer_v<pointer>,
+      drop_self<typename call::args>,
+      std::type_identity<typename call::args>>::type;
+};
+
+template <class F>
+concept callable = requires {
+  typename signature<std::decay_t<F>>::result;
+  typename signature<std::decay_t<F>>::args;
 };
 
 template <class T> struct is_tuple : std::false_type {};
@@ -512,6 +532,18 @@ inline int raw_function_call(lua_State *L) {
   });
 }
 
+// Encode the function in the trampoline type, without capture userdata.
+template <auto Function> int static_function_call(lua_State *L) {
+  return protect(L, [&] {
+    auto function = Function;
+    return invoke_callable(L, function);
+  });
+}
+
+template <lua_CFunction Function> int static_raw_function_call(lua_State *L) {
+  return protect(L, [&] { return Function(L); });
+}
+
 template <class F>
 void push_function(lua_State *L, F &&function, const char *name) {
   push_closure<F, function_call<std::decay_t<F>>>(L, std::forward<F>(function),
@@ -522,12 +554,19 @@ void push_function(lua_State *L, F &&function, const char *name) {
 template <class... F> struct overload_set {
   std::tuple<F...> functions;
 };
-template <class... F> auto overload(F &&...functions) {
-  static_assert(sizeof...(F) > 0, "overload requires at least one function");
+template <detail::callable... F>
+  requires(sizeof...(F) > 0)
+auto overload(F &&...functions) {
   return overload_set<std::decay_t<F>...>{{std::forward<F>(functions)...}};
 }
 
 namespace detail {
+template <class T> inline constexpr bool is_overload = false;
+template <class... F>
+inline constexpr bool is_overload<overload_set<F...>> = true;
+template <class F>
+concept binding_function = callable<F> || is_overload<std::remove_cvref_t<F>>;
+
 template <size_t I = 0, class... F>
 int invoke_overload(lua_State *L, overload_set<F...> &set) {
   if constexpr (I == sizeof...(F)) {
@@ -591,10 +630,50 @@ public:
   }
   lua_State *state() const { return L; }
 
-  template <class F> table &function(const char *name, F &&function) {
+  table create_table() const { return table::create(L); }
+  table get_table(const char *name) const {
+    detail::stack_guard guard(L);
+    push();
+    lua_getfield(L, -1, name);
+    return table(L, -1);
+  }
+  table get_or_create_table(const char *name) {
+    detail::stack_guard guard(L);
+    push();
+    lua_getfield(L, -1, name);
+    if (lua_isnil(L, -1)) {
+      lua_pop(L, 1);
+      lua_newtable(L);
+      lua_pushvalue(L, -1);
+      lua_setfield(L, -3, name);
+    }
+    return table(L, -1);
+  }
+  template <class T> T get(const char *name) const {
+    detail::stack_guard guard(L);
+    push();
+    lua_getfield(L, -1, name);
+    if constexpr (std::is_same_v<T, table>)
+      return table(L, -1);
+    else
+      return detail::read_argument<T>(L, -1);
+  }
+  table_proxy operator[](const char *name) const;
+
+  template <detail::binding_function F>
+  table &function(const char *name, F &&function) {
     detail::stack_guard guard(L);
     push();
     detail::push_function(L, std::forward<F>(function), name);
+    lua_setfield(L, -2, name);
+    return *this;
+  }
+  template <auto Function>
+    requires detail::callable<decltype(Function)>
+  table &function(const char *name) {
+    detail::stack_guard guard(L);
+    push();
+    lua_pushcfunction(L, detail::static_function_call<Function>, name);
     lua_setfield(L, -2, name);
     return *this;
   }
@@ -605,6 +684,14 @@ public:
     push();
     detail::push_closure<lua_CFunction, detail::raw_function_call>(
         L, std::move(function), name);
+    lua_setfield(L, -2, name);
+    return *this;
+  }
+  template <lua_CFunction Function> table &raw_function(const char *name) {
+    static_assert(Function != nullptr, "raw callback must not be null");
+    detail::stack_guard guard(L);
+    push();
+    lua_pushcfunction(L, detail::static_raw_function_call<Function>, name);
     lua_setfield(L, -2, name);
     return *this;
   }
@@ -649,6 +736,108 @@ public:
 private:
   lua_State *L;
   int reference = LUA_NOREF;
+};
+
+// Holds a table reference, so a proxy obtained from a temporary table is safe.
+class table_proxy {
+public:
+  table_proxy(table parent, const char *name)
+      : parent(std::move(parent)), name(name) {}
+  table_proxy(const table_proxy &) = default;
+  template <class T> table_proxy &operator=(T &&value) {
+    using U = std::decay_t<T>;
+    if constexpr (std::is_same_v<U, table_proxy>) {
+      return assign(value);
+    } else if constexpr (std::is_same_v<U, table>) {
+      parent.set_table(name.c_str(), value);
+    } else if constexpr (detail::binding_function<U>) {
+      parent.function(name.c_str(), std::forward<T>(value));
+    } else {
+      parent.value(name.c_str(), std::forward<T>(value));
+    }
+    return *this;
+  }
+  table_proxy &operator=(const table_proxy &other) { return assign(other); }
+  template <class T> T get() const { return parent.get<T>(name.c_str()); }
+  template <class T> operator T() const { return get<T>(); }
+
+private:
+  table_proxy &assign(const table_proxy &other) {
+    auto *L = parent.state();
+    detail::require(L == other.parent.state(),
+                    "binding tables belong to different lua_State handles");
+    detail::stack_guard guard(L);
+    parent.push();
+    other.parent.push();
+    lua_getfield(L, -1, other.name.c_str());
+    lua_remove(L, -2);
+    lua_setfield(L, -2, name.c_str());
+    return *this;
+  }
+  table parent;
+  std::string name;
+};
+
+inline table_proxy table::operator[](const char *name) const {
+  return table_proxy(*this, name);
+}
+
+// A non-owning VM facade. Raw handles are needed only at integration
+// boundaries.
+class state_view {
+public:
+  explicit state_view(lua_State *state) : L(state) {
+    detail::require(L != nullptr, "cannot bind a null Luau state");
+  }
+  lua_State *lua_state() const { return L; }
+  void open_libraries() const { luaL_openlibs(L); }
+  void collect_garbage() const { lua_gc(L, LUA_GCCOLLECT, 0); }
+  table globals() const { return table(L, LUA_GLOBALSINDEX); }
+  table create_table() const { return table::create(L); }
+  table get_table(const char *name) const { return globals().get_table(name); }
+  table get_or_create_table(const char *name) const {
+    return globals().get_or_create_table(name);
+  }
+  table_proxy operator[](const char *name) const { return globals()[name]; }
+  template <class T> class_builder<T> class_(const char *name) const {
+    return globals().class_<T>(name);
+  }
+  template <class T> T get(const char *name) const {
+    return globals().get<T>(name);
+  }
+  template <detail::binding_function F>
+  state_view &function(const char *name, F &&function) {
+    globals().function(name, std::forward<F>(function));
+    return *this;
+  }
+  template <auto Function>
+    requires detail::callable<decltype(Function)>
+  state_view &function(const char *name) {
+    globals().function<Function>(name);
+    return *this;
+  }
+  // Accept compiled bytecode to keep the binding header independent of the
+  // compiler library. For example: vm.execute(Luau::compile(source)).
+  void execute(std::string_view bytecode, const char *chunk = "chunk") const {
+    detail::stack_guard guard(L);
+    if (luau_load(L, chunk, bytecode.data(), bytecode.size(), 0) != LUA_OK ||
+        lua_pcall(L, 0, 0, 0) != LUA_OK) {
+      const char *message = lua_tostring(L, -1);
+      throw binding_error(message ? message : "Luau execution failed");
+    }
+  }
+
+protected:
+  lua_State *L;
+};
+
+// Owns a VM. Declare it before tables/builders/proxies so they die first.
+class state : public state_view {
+public:
+  state() : state_view(luaL_newstate()) {}
+  ~state() { lua_close(L); }
+  state(const state &) = delete;
+  state &operator=(const state &) = delete;
 };
 
 namespace detail {
@@ -711,8 +900,8 @@ template <class T> class class_builder {
 
 public:
   class_builder(const table &parent, const char *name)
-      : L(parent.state()), methods(table::create(L)), getters(table::create(L)),
-        setters(table::create(L)), metaTable(table::create(L)),
+      : L(parent.state()), metaTable(table::create(L)), methods(metaTable),
+        getters(table::create(L)), setters(table::create(L)),
         constructors(table::create(L)) {
     detail::stack_guard guard(L);
     lua_rawgetp(L, LUA_REGISTRYINDEX, &detail::type_key<T>);
@@ -737,13 +926,57 @@ public:
   // Low-level access for custom metamethods and existing C API bindings.
   // Prefer field/property/method for ordinary class members.
   table metatable() const { return metaTable; }
-  template <class F> class_builder &metamethod(const char *name, F &&function) {
+  class_builder &metatable_name(const char *name) {
+    detail::stack_guard guard(L);
+    metaTable.push();
+    lua_setfield(L, LUA_REGISTRYINDEX, name);
+    return *this;
+  }
+  template <detail::binding_function F>
+  class_builder &metamethod(const char *name, F &&function) {
     metaTable.function(name, std::forward<F>(function));
     return *this;
   }
-  template <class... A> class_builder &constructor() {
-    static_assert(std::is_constructible_v<T, A...>,
-                  "C++ constructor is not callable");
+  template <auto Function>
+    requires detail::callable<decltype(Function)>
+  class_builder &metamethod(const char *name) {
+    metaTable.function<Function>(name);
+    return *this;
+  }
+  class_builder &raw_metamethod(const char *name, lua_CFunction function) {
+    metaTable.raw_function(name, function);
+    return *this;
+  }
+  template <lua_CFunction Function>
+  class_builder &raw_metamethod(const char *name) {
+    metaTable.raw_function<Function>(name);
+    return *this;
+  }
+  class_builder &raw_method(const char *name, lua_CFunction function) {
+    methods.raw_function(name, function);
+    return *this;
+  }
+  template <lua_CFunction Function>
+  class_builder &raw_method(const char *name) {
+    methods.raw_function<Function>(name);
+    return *this;
+  }
+  class_builder &raw_static_function(const char *name, lua_CFunction function) {
+    constructors.raw_function(name, function);
+    return *this;
+  }
+  template <lua_CFunction Function>
+  class_builder &raw_static_function(const char *name) {
+    constructors.raw_function<Function>(name);
+    return *this;
+  }
+  template <class V> class_builder &static_value(const char *name, V &&value) {
+    constructors.value(name, std::forward<V>(value));
+    return *this;
+  }
+  template <class... A>
+    requires std::constructible_from<T, A...>
+  class_builder &constructor() {
     detail::stack_guard guard(L);
     constructors.push();
     lua_pushcfunction(L, (detail::constructor_call<false, T, A...>), "C++.new");
@@ -756,13 +989,69 @@ public:
     return *this;
   }
   // Functions/lambdas may take T& or const T& as their first argument.
-  template <class F> class_builder &method(const char *name, F &&function) {
+  template <detail::binding_function F>
+  class_builder &method(const char *name, F &&function) {
     methods.function(name, std::forward<F>(function));
     return *this;
   }
-  template <class F>
+  template <auto Function>
+    requires detail::callable<decltype(Function)>
+  class_builder &method(const char *name) {
+    methods.function<Function>(name);
+    return *this;
+  }
+  template <detail::binding_function F>
   class_builder &static_function(const char *name, F &&function) {
     constructors.function(name, std::forward<F>(function));
+    return *this;
+  }
+  template <auto Function>
+    requires detail::callable<decltype(Function)>
+  class_builder &static_function(const char *name) {
+    constructors.function<Function>(name);
+    return *this;
+  }
+  template <auto Member>
+    requires(std::is_member_object_pointer_v<decltype(Member)> &&
+             requires(T &self) { self.*Member; })
+  class_builder &field(const char *name) {
+    using V = std::remove_reference_t<decltype(std::declval<T &>().*Member)>;
+    getters.function<[](const T &self) -> const V & { return self.*Member; }>(
+        name);
+    if constexpr (!std::is_const_v<V>)
+      setters
+          .function<[](T &self, V value) { self.*Member = std::move(value); }>(
+              name);
+    else
+      setters.value(name, nullptr);
+    return *this;
+  }
+  template <auto Member>
+    requires(std::is_member_object_pointer_v<decltype(Member)> &&
+             requires(T &self) { self.*Member; })
+  class_builder &readonly(const char *name) {
+    using V = std::remove_reference_t<decltype(std::declval<T &>().*Member)>;
+    getters.function<[](const T &self) -> const V & { return self.*Member; }>(
+        name);
+    setters.value(name, nullptr);
+    return *this;
+  }
+  // Borrow a class-valued member, preserving nested writes such as
+  // v.position.x.
+  template <auto Member>
+    requires(std::is_member_object_pointer_v<decltype(Member)> &&
+             requires(T &self) { self.*Member; } &&
+             std::is_class_v<
+                 std::remove_cvref_t<decltype(std::declval<T &>().*Member)>>)
+  class_builder &reference_field(const char *name) {
+    using V = std::remove_reference_t<decltype(std::declval<T &>().*Member)>;
+    getters.function<[](T &self) { return std::ref(self.*Member); }>(name);
+    if constexpr (!std::is_const_v<V>)
+      setters
+          .function<[](T &self, V value) { self.*Member = std::move(value); }>(
+              name);
+    else
+      setters.value(name, nullptr);
     return *this;
   }
   template <class V> class_builder &field(const char *name, V T::*member) {
@@ -783,13 +1072,36 @@ public:
     setters.value(name, nullptr);
     return *this;
   }
-  template <class G> class_builder &property(const char *name, G &&getter) {
+  template <detail::callable G>
+  class_builder &property(const char *name, G &&getter) {
     validate_property<G, 1>();
     getters.function(name, std::forward<G>(getter));
     setters.value(name, nullptr);
     return *this;
   }
-  template <class G, class S>
+  template <auto Getter>
+    requires detail::callable<decltype(Getter)>
+  class_builder &property(const char *name) {
+    validate_property<std::decay_t<decltype(Getter)>, 1>();
+    getters.function<Getter>(name);
+    setters.value(name, nullptr);
+    return *this;
+  }
+  template <auto Getter, auto Setter>
+    requires(detail::callable<decltype(Getter)> &&
+             detail::callable<decltype(Setter)>)
+  class_builder &property(const char *name) {
+    validate_property<std::decay_t<decltype(Getter)>, 1>();
+    validate_property<std::decay_t<decltype(Setter)>, 2>();
+    static_assert(
+        std::is_void_v<
+            typename detail::signature<std::decay_t<decltype(Setter)>>::result>,
+        "property setter must return void");
+    getters.function<Getter>(name);
+    setters.function<Setter>(name);
+    return *this;
+  }
+  template <detail::callable G, detail::callable S>
   class_builder &property(const char *name, G &&getter, S &&setter) {
     validate_property<G, 1>();
     validate_property<S, 2>();
@@ -818,7 +1130,7 @@ private:
     copy.set_table(name, constructors);
   }
   lua_State *L;
-  table methods, getters, setters, metaTable, constructors;
+  table metaTable, methods, getters, setters, constructors;
 };
 
 template <class T> class_builder<T> table::class_(const char *name) {
@@ -831,6 +1143,17 @@ template <class F> int open(lua_State *L, F &&register_bindings) {
     detail::stack_guard guard(L);
     std::invoke(std::forward<F>(register_bindings));
     return 0;
+  });
+}
+
+// Keep the native module ABI at the boundary; user registration receives only
+// the module table and publication happens after successful registration.
+template <class F>
+int open_plugin(lua_State *L, std::string_view name, F &&register_bindings) {
+  return open(L, [&] {
+    auto module = state_view(L).create_table();
+    std::invoke(std::forward<F>(register_bindings), module);
+    module.publish_plugin(name);
   });
 }
 

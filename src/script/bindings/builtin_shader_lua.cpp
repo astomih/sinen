@@ -24,16 +24,15 @@ static auto lBuiltinShaderGetCubemapVs() {
 static auto lBuiltinShaderGetCubemapFs() {
   return makePtr<Shader>(BuiltinShader::getCubemapFS());
 }
-void registerBuiltinShader(lua_State *L) {
-  pushSnNamed(L, "BuiltinShader");
-  luau::table(L, -1).function("getDefaultVS", lBuiltinShaderGetDefaultVs);
-  luau::table(L, -1).function("getDefaultFS", lBuiltinShaderGetDefaultFs);
-  luau::table(L, -1).function("getFontFS", lBuiltinShaderGetFontFs);
-  luau::table(L, -1).function("getDefaultInstancedVS",
-                              lBuiltinShaderGetDefaultInstancedVs);
-  luau::table(L, -1).function("getRectFS", lBuiltinShaderGetRectFs);
-  luau::table(L, -1).function("getCubemapVS", lBuiltinShaderGetCubemapVs);
-  luau::table(L, -1).function("getCubemapFS", lBuiltinShaderGetCubemapFs);
-  lua_pop(L, 1);
+void registerBuiltinShader(luau::table &sn) {
+  auto builtinShader = sn.get_or_create_table("BuiltinShader");
+  builtinShader.function<lBuiltinShaderGetDefaultVs>("getDefaultVS");
+  builtinShader.function<lBuiltinShaderGetDefaultFs>("getDefaultFS");
+  builtinShader.function<lBuiltinShaderGetFontFs>("getFontFS");
+  builtinShader.function<lBuiltinShaderGetDefaultInstancedVs>(
+      "getDefaultInstancedVS");
+  builtinShader.function<lBuiltinShaderGetRectFs>("getRectFS");
+  builtinShader.function<lBuiltinShaderGetCubemapVs>("getCubemapVS");
+  builtinShader.function<lBuiltinShaderGetCubemapFs>("getCubemapFS");
 }
 } // namespace sinen

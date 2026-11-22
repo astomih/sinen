@@ -32,18 +32,14 @@ static auto lMat4Transpose(const Mat4 &m) { return Mat4::transpose(m); }
 
 static auto lMat4Identity() { return Mat4::identity(); }
 
-void registerMat4(lua_State *L) {
-  pushClassMetatable<Mat4>(L, Mat4::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).function("__mul", lMat4Mul);
-  luau::table(L, -1).function("copy", lMat4Copy);
-  luau::table(L, -1).function("transpose", lMat4Transpose);
-  lua_pop(L, 1);
+void registerMat4(luau::table &sn) {
+  auto mat4 = engineClass<Mat4>(sn, Mat4::metaTableName());
 
-  pushSnNamed(L, "Mat4");
-  luau::table(L, -1).raw_function("new", lMat4New);
-  luau::table(L, -1).function("identity", lMat4Identity);
-  lua_pop(L, 1);
+  mat4.metamethod<lMat4Mul>("__mul");
+  mat4.method<lMat4Copy>("copy");
+  mat4.method<lMat4Transpose>("transpose");
+
+  mat4.raw_static_function<lMat4New>("new");
+  mat4.static_function<lMat4Identity>("identity");
 }
 } // namespace sinen

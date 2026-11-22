@@ -7,7 +7,10 @@ struct lua_State;
 
 namespace sinen {
 
-void registerExternalFile(lua_State *L);
+namespace luau {
+class table;
+}
+void registerExternalFile(luau::table &sn);
 void resetExternalFileCallbacks(lua_State *L);
 void pumpExternalFileCallbacks(lua_State *L, int fileDroppedRef);
 void enqueueDroppedExternalFile(StringView path);

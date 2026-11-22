@@ -91,32 +91,28 @@ static int lColliderDestroy(lua_State *L) {
   udValue<Collider>(L, 1).destroy();
   return 0;
 }
-void registerCollider(lua_State *L) {
-  pushClassMetatable<Collider>(L, Collider::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("isValid", lColliderIsValid);
-  luau::table(L, -1).raw_function("isAdded", lColliderIsAdded);
-  luau::table(L, -1).raw_function("getPosition", lColliderGetPosition);
-  luau::table(L, -1).raw_function("getRotation", lColliderGetRotation);
-  luau::table(L, -1).raw_function("getVelocity", lColliderGetVelocity);
-  luau::table(L, -1).raw_function("getAngularVelocity",
-                                  lColliderGetAngularVelocity);
-  luau::table(L, -1).raw_function("setPosition", lColliderSetPosition);
-  luau::table(L, -1).raw_function("setRotation", lColliderSetRotation);
-  luau::table(L, -1).raw_function("setPositionAndRotation",
-                                  lColliderSetPositionAndRotation);
-  luau::table(L, -1).function("setLinearVelocity", lColliderSetLinearVelocity);
-  luau::table(L, -1).function("setAngularVelocity",
-                              lColliderSetAngularVelocity);
-  luau::table(L, -1).raw_function("addForce", lColliderAddForce);
-  luau::table(L, -1).function("addImpulse", lColliderAddImpulse);
-  luau::table(L, -1).function("setFriction", lColliderSetFriction);
-  luau::table(L, -1).function("setRestitution", lColliderSetRestitution);
-  luau::table(L, -1).raw_function("activate", lColliderActivate);
-  luau::table(L, -1).raw_function("deactivate", lColliderDeactivate);
-  luau::table(L, -1).raw_function("remove", lColliderRemove);
-  luau::table(L, -1).raw_function("destroy", lColliderDestroy);
-  lua_pop(L, 1);
+void registerCollider(luau::table &sn) {
+  auto collider = engineClass<Collider>(sn, Collider::metaTableName());
+
+  collider.raw_method<lColliderIsValid>("isValid");
+  collider.raw_method<lColliderIsAdded>("isAdded");
+  collider.raw_method<lColliderGetPosition>("getPosition");
+  collider.raw_method<lColliderGetRotation>("getRotation");
+  collider.raw_method<lColliderGetVelocity>("getVelocity");
+  collider.raw_method<lColliderGetAngularVelocity>("getAngularVelocity");
+  collider.raw_method<lColliderSetPosition>("setPosition");
+  collider.raw_method<lColliderSetRotation>("setRotation");
+  collider.raw_method<lColliderSetPositionAndRotation>(
+      "setPositionAndRotation");
+  collider.method<lColliderSetLinearVelocity>("setLinearVelocity");
+  collider.method<lColliderSetAngularVelocity>("setAngularVelocity");
+  collider.raw_method<lColliderAddForce>("addForce");
+  collider.method<lColliderAddImpulse>("addImpulse");
+  collider.method<lColliderSetFriction>("setFriction");
+  collider.method<lColliderSetRestitution>("setRestitution");
+  collider.raw_method<lColliderActivate>("activate");
+  collider.raw_method<lColliderDeactivate>("deactivate");
+  collider.raw_method<lColliderRemove>("remove");
+  collider.raw_method<lColliderDestroy>("destroy");
 }
 } // namespace sinen

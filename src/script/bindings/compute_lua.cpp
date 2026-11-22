@@ -56,18 +56,14 @@ static int lComputeDispatch(lua_State *L) {
   return 0;
 }
 
-void registerCompute(lua_State *L) {
-  pushSnNamed(L, "Compute");
-  luau::table(L, -1).function("setComputePipeline", lComputeSetComputePipeline);
-  luau::table(L, -1).function("resetComputePipeline",
-                              lComputeResetComputePipeline);
-  luau::table(L, -1).raw_function("setUniformBuffer", lComputeSetUniformBuffer);
-  luau::table(L, -1).raw_function("setStorageBuffer", lComputeSetStorageBuffer);
-  luau::table(L, -1).raw_function("resetStorageBuffer",
-                                  lComputeResetStorageBuffer);
-  luau::table(L, -1).function("resetAllStorageBuffers",
-                              lComputeResetAllStorageBuffers);
-  luau::table(L, -1).raw_function("dispatch", lComputeDispatch);
-  lua_pop(L, 1);
+void registerCompute(luau::table &sn) {
+  auto compute = sn.get_or_create_table("Compute");
+  compute.function<lComputeSetComputePipeline>("setComputePipeline");
+  compute.function<lComputeResetComputePipeline>("resetComputePipeline");
+  compute.raw_function<lComputeSetUniformBuffer>("setUniformBuffer");
+  compute.raw_function<lComputeSetStorageBuffer>("setStorageBuffer");
+  compute.raw_function<lComputeResetStorageBuffer>("resetStorageBuffer");
+  compute.function<lComputeResetAllStorageBuffers>("resetAllStorageBuffers");
+  compute.raw_function<lComputeDispatch>("dispatch");
 }
 } // namespace sinen

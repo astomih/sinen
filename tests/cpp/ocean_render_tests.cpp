@@ -22,8 +22,8 @@
 
 using namespace sinen;
 namespace sinen {
-void registerGraphics(lua_State *);
-void registerTransform(lua_State *);
+void registerGraphics(luau::table &);
+void registerTransform(luau::table &);
 } // namespace sinen
 namespace {
 class OceanRender : public testing::TestWithParam<GPUBackendAPI> {
@@ -41,10 +41,9 @@ protected:
       messages->ClearStoredMessages();
     state = luaL_newstate();
     luaL_openlibs(state);
-    ensureSn(state);
-    lua_pop(state, 1);
-    registerGraphics(state);
-    registerTransform(state);
+    auto sn = luau::state_view(state).get_or_create_table("sn");
+    registerGraphics(sn);
+    registerTransform(sn);
     ASSERT_TRUE(nativeModuleManager().loadPlugin(state, "shader_compiler"));
     void *symbol = nativeModuleManager().lastPluginSymbol(
         SINEN_SHADER_COMPILER_PLUGIN_API_SYMBOL);

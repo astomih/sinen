@@ -144,7 +144,7 @@ if(SINEN_MODULE_SCRIPT)
   target_include_directories(sinen_luau_bind INTERFACE
     ${SINEN_SOURCE_DIR}/include ${SINEN_SOURCE_DIR}/include/sinen
     ${SINEN_SOURCE_DIR}/libs/luau/VM/include)
-  target_compile_features(sinen_luau_bind INTERFACE cxx_std_17)
+  target_compile_features(sinen_luau_bind INTERFACE cxx_std_23)
   set_target_properties(Luau.Analysis Luau.CLI.lib Luau.CodeGen Luau.Config
                         Luau.Require PROPERTIES EXCLUDE_FROM_ALL 1)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/cppdap)

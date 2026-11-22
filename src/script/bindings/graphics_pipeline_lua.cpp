@@ -48,28 +48,23 @@ static int lPipelineBuild(lua_State *L) {
   udPtr<GraphicsPipeline>(L, 1)->build();
   return 0;
 }
-void registerPipeline(lua_State *L) {
-  pushClassMetatable<Ptr<GraphicsPipeline>>(L,
-                                            GraphicsPipeline::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).function("setVertexShader", lPipelineSetVertexShader);
-  luau::table(L, -1).function("setFragmentShader", lPipelineSetFragmentShader);
-  luau::table(L, -1).raw_function("setEnableDepthTest",
-                                  lPipelineSetEnableDepthTest);
-  luau::table(L, -1).raw_function("setEnableDepthWrite",
-                                  lPipelineSetEnableDepthWrite);
-  luau::table(L, -1).raw_function("setEnableInstanced",
-                                  lPipelineSetEnableInstanced);
-  luau::table(L, -1).raw_function("setEnableAnimation",
-                                  lPipelineSetEnableAnimation);
-  luau::table(L, -1).raw_function("setEnableTangent",
-                                  lPipelineSetEnableTangent);
-  luau::table(L, -1).raw_function("build", lPipelineBuild);
-  lua_pop(L, 1);
+void registerPipeline(luau::table &sn) {
+  auto graphicsPipeline =
+      engineClass<Ptr<GraphicsPipeline>>(sn, GraphicsPipeline::metaTableName());
 
-  pushSnNamed(L, "GraphicsPipeline");
-  luau::table(L, -1).function("new", lPipelineNew);
-  lua_pop(L, 1);
+  graphicsPipeline.method<lPipelineSetVertexShader>("setVertexShader");
+  graphicsPipeline.method<lPipelineSetFragmentShader>("setFragmentShader");
+  graphicsPipeline.raw_method<lPipelineSetEnableDepthTest>(
+      "setEnableDepthTest");
+  graphicsPipeline.raw_method<lPipelineSetEnableDepthWrite>(
+      "setEnableDepthWrite");
+  graphicsPipeline.raw_method<lPipelineSetEnableInstanced>(
+      "setEnableInstanced");
+  graphicsPipeline.raw_method<lPipelineSetEnableAnimation>(
+      "setEnableAnimation");
+  graphicsPipeline.raw_method<lPipelineSetEnableTangent>("setEnableTangent");
+  graphicsPipeline.raw_method<lPipelineBuild>("build");
+
+  graphicsPipeline.static_function<lPipelineNew>("new");
 }
 } // namespace sinen

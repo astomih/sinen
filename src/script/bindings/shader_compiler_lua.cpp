@@ -102,14 +102,13 @@ int lShaderCompilerCompileSource(lua_State *state) {
                        StringView(modulePath, modulePathSize),
                        StringView(source, sourceSize), stage, format);
 }
-
 } // namespace
 
 void registerShaderCompilerPluginBinding(lua_State *state) {
-  luau::table::create(state)
-      .raw_function("compile", lShaderCompilerCompile)
-      .raw_function("compileSource", lShaderCompilerCompileSource)
+  luau::state_view(state)
+      .create_table()
+      .raw_function<lShaderCompilerCompile>("compile")
+      .raw_function<lShaderCompilerCompileSource>("compileSource")
       .publish_plugin("shader_compiler");
 }
-
 } // namespace sinen

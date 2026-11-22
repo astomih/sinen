@@ -27,18 +27,15 @@ static int lComputePipelineSetThreadGroupSize(lua_State *L) {
   return 0;
 }
 
-void registerComputePipeline(lua_State *L) {
-  pushClassMetatable<Ptr<ComputePipeline>>(L, ComputePipeline::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).function("setShader", lComputePipelineSetShader);
-  luau::table(L, -1).raw_function("build", lComputePipelineBuild);
-  luau::table(L, -1).raw_function("setThreadGroupSize",
-                                  lComputePipelineSetThreadGroupSize);
-  lua_pop(L, 1);
+void registerComputePipeline(luau::table &sn) {
+  auto computePipeline =
+      engineClass<Ptr<ComputePipeline>>(sn, ComputePipeline::metaTableName());
 
-  pushSnNamed(L, "ComputePipeline");
-  luau::table(L, -1).function("new", lComputePipelineNew);
-  lua_pop(L, 1);
+  computePipeline.method<lComputePipelineSetShader>("setShader");
+  computePipeline.raw_method<lComputePipelineBuild>("build");
+  computePipeline.raw_method<lComputePipelineSetThreadGroupSize>(
+      "setThreadGroupSize");
+
+  computePipeline.static_function<lComputePipelineNew>("new");
 }
 } // namespace sinen

@@ -199,24 +199,18 @@ static int lMaterialResetAllTexture(lua_State *L) {
   return 0;
 }
 
-static void registerMaterial(lua_State *L) {
-  pushClassMetatable<Ptr<Material>>(L, Material::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("setUniformBuffer",
-                                  lMaterialSetUniformBuffer);
-  luau::table(L, -1).raw_function("resetUniformBuffer",
-                                  lMaterialResetUniformBuffer);
-  luau::table(L, -1).raw_function("resetAllUniformBuffers",
-                                  lMaterialResetAllUniformBuffers);
-  luau::table(L, -1).raw_function("setTexture", lMaterialSetTexture);
-  luau::table(L, -1).raw_function("resetTexture", lMaterialResetTexture);
-  luau::table(L, -1).raw_function("resetAllTexture", lMaterialResetAllTexture);
-  lua_pop(L, 1);
+static void registerMaterial(luau::table &sn) {
+  auto material = engineClass<Ptr<Material>>(sn, Material::metaTableName());
 
-  pushSnNamed(L, "Material");
-  luau::table(L, -1).function("new", lMaterialNew);
-  lua_pop(L, 1);
+  material.raw_method<lMaterialSetUniformBuffer>("setUniformBuffer");
+  material.raw_method<lMaterialResetUniformBuffer>("resetUniformBuffer");
+  material.raw_method<lMaterialResetAllUniformBuffers>(
+      "resetAllUniformBuffers");
+  material.raw_method<lMaterialSetTexture>("setTexture");
+  material.raw_method<lMaterialResetTexture>("resetTexture");
+  material.raw_method<lMaterialResetAllTexture>("resetAllTexture");
+
+  material.static_function<lMaterialNew>("new");
 }
 
 template <class T> static int lRenderPassIsFinished(lua_State *L) {
@@ -401,42 +395,39 @@ static int lRender3DPassDrawModelInstanced(lua_State *L) {
   return 0;
 }
 
-template <class T> static void registerRenderPassCommon(lua_State *L) {
-  luau::table(L, -1).raw_function("isFinished", lRenderPassIsFinished<T>);
-  luau::table(L, -1).raw_function("setGraphicsPipeline",
-                                  lRenderPassSetGraphicsPipeline<T>);
-  luau::table(L, -1).raw_function("resetGraphicsPipeline",
-                                  lRenderPassResetGraphicsPipeline<T>);
-  luau::table(L, -1).raw_function("setUniformBuffer",
-                                  lRenderPassSetUniformBuffer<T>);
-  luau::table(L, -1).raw_function("setTexture", lRenderPassSetTexture<T>);
-  luau::table(L, -1).raw_function("resetTexture", lRenderPassResetTexture<T>);
-  luau::table(L, -1).raw_function("resetAllTexture",
-                                  lRenderPassResetAllTexture<T>);
+template <class T>
+static void registerRenderPassCommon(luau::class_builder<Ptr<T>> &binding) {
+  binding.template raw_method<lRenderPassIsFinished<T>>("isFinished");
+  binding.template raw_method<lRenderPassSetGraphicsPipeline<T>>(
+      "setGraphicsPipeline");
+  binding.template raw_method<lRenderPassResetGraphicsPipeline<T>>(
+      "resetGraphicsPipeline");
+  binding.template raw_method<lRenderPassSetUniformBuffer<T>>(
+      "setUniformBuffer");
+  binding.template raw_method<lRenderPassSetTexture<T>>("setTexture");
+  binding.template raw_method<lRenderPassResetTexture<T>>("resetTexture");
+  binding.template raw_method<lRenderPassResetAllTexture<T>>("resetAllTexture");
 }
 
-static void registerRenderPasses(lua_State *L) {
-  pushClassMetatable<Ptr<Render2DPass>>(L, Render2DPass::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  registerRenderPassCommon<Render2DPass>(L);
-  luau::table(L, -1).raw_function("windowToCurrent",
-                                  lRender2DPassWindowToCurrent);
-  luau::table(L, -1).raw_function("drawRect", lRender2DPassDrawRect);
-  luau::table(L, -1).raw_function("drawImage", lRender2DPassDrawImage);
-  luau::table(L, -1).raw_function("drawText", lRender2DPassDrawText);
-  lua_pop(L, 1);
+static void registerRenderPasses(luau::table &sn) {
+  auto render2DPass =
+      engineClass<Ptr<Render2DPass>>(sn, Render2DPass::metaTableName());
 
-  pushClassMetatable<Ptr<Render3DPass>>(L, Render3DPass::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  registerRenderPassCommon<Render3DPass>(L);
-  luau::table(L, -1).raw_function("drawCubemap", lRender3DPassDrawCubemap);
-  luau::table(L, -1).raw_function("drawModel", lRender3DPassDrawModel);
-  luau::table(L, -1).raw_function("drawMesh", lRender3DPassDrawMesh);
-  luau::table(L, -1).raw_function("drawModelInstanced",
-                                  lRender3DPassDrawModelInstanced);
-  lua_pop(L, 1);
+  registerRenderPassCommon<Render2DPass>(render2DPass);
+  render2DPass.raw_method<lRender2DPassWindowToCurrent>("windowToCurrent");
+  render2DPass.raw_method<lRender2DPassDrawRect>("drawRect");
+  render2DPass.raw_method<lRender2DPassDrawImage>("drawImage");
+  render2DPass.raw_method<lRender2DPassDrawText>("drawText");
+
+  auto render3DPass =
+      engineClass<Ptr<Render3DPass>>(sn, Render3DPass::metaTableName());
+
+  registerRenderPassCommon<Render3DPass>(render3DPass);
+  render3DPass.raw_method<lRender3DPassDrawCubemap>("drawCubemap");
+  render3DPass.raw_method<lRender3DPassDrawModel>("drawModel");
+  render3DPass.raw_method<lRender3DPassDrawMesh>("drawMesh");
+  render3DPass.raw_method<lRender3DPassDrawModelInstanced>(
+      "drawModelInstanced");
 }
 static auto lGraphicsGetClearColor() { return Graphics::getClearColor(); }
 static auto lGraphicsSetClearColor(Color &c) {
@@ -546,53 +537,44 @@ static int lRenderDocGetCaptureFilePath(lua_State *L) {
   lua_pushlstring(L, path.data(), path.size());
   return 1;
 }
-void registerGraphics(lua_State *L) {
-  pushSnNamed(L, "RenderDoc");
-  luau::table(L, -1).function("isAvailable", lRenderDocIsAvailable);
-  luau::table(L, -1).raw_function("triggerCapture", lRenderDocTriggerCapture);
-  luau::table(L, -1).function("isFrameCapturing", lRenderDocIsFrameCapturing);
-  luau::table(L, -1).raw_function("setCaptureFilePathTemplate",
-                                  lRenderDocSetCaptureFilePathTemplate);
-  luau::table(L, -1).function("getNumCaptures", lRenderDocGetNumCaptures);
-  luau::table(L, -1).raw_function("getCaptureFilePath",
-                                  lRenderDocGetCaptureFilePath);
-  lua_pop(L, 1);
-  registerMaterial(L);
-  registerRenderPasses(L);
-  pushSnNamed(L, "Graphics");
-  luau::table(L, -1).raw_function("drawRect", lGraphicsDrawRect);
-  luau::table(L, -1).function("drawText", lGraphicsDrawText);
-  luau::table(L, -1).raw_function("drawImage", lGraphicsDrawImage);
-  luau::table(L, -1).function("drawCubemap", lGraphicsDrawCubemap);
-  luau::table(L, -1).function("drawModel", lGraphicsDrawModel);
-  luau::table(L, -1).raw_function("drawModelInstanced",
-                                  lGraphicsDrawModelInstanced);
-  luau::table(L, -1).raw_function("begin2D", lGraphicsBegin2D);
-  luau::table(L, -1).function("begin3D", lGraphicsBegin3D);
-  luau::table(L, -1).function("finish", lGraphicsFinish);
-  luau::table(L, -1).raw_function("begin2DPass", lGraphicsBegin2DPass);
-  luau::table(L, -1).raw_function("begin3DPass", lGraphicsBegin3DPass);
-  luau::table(L, -1).raw_function("endPass", lGraphicsEndPass);
-  luau::table(L, -1).function("getClearColor", lGraphicsGetClearColor);
-  luau::table(L, -1).function("setClearColor", lGraphicsSetClearColor);
-  luau::table(L, -1).raw_function("setMSAASampleCount",
-                                  lGraphicsSetMSAASampleCount);
-  luau::table(L, -1).function("getMSAASampleCount",
-                              lGraphicsGetMSAASampleCount);
-  luau::table(L, -1).function("setGraphicsPipeline",
-                              lGraphicsSetGraphicsPipeline);
-  luau::table(L, -1).function("resetGraphicsPipeline",
-                              lGraphicsResetGraphicsPipeline);
-  luau::table(L, -1).raw_function("setTexture", lGraphicsSetTexture);
-  luau::table(L, -1).raw_function("resetTexture", lGraphicsResetTexture);
-  luau::table(L, -1).function("resetAllTexture", lGraphicsResetAllTexture);
-  luau::table(L, -1).raw_function("setUniformBuffer",
-                                  lGraphicsSetUniformBuffer);
-  luau::table(L, -1).function("beginRenderTarget", lGraphicsBeginRenderTarget);
-  luau::table(L, -1).function("endRenderTarget", lGraphicsEndRenderTarget);
-  luau::table(L, -1).function("readbackTexture", lGraphicsReadbackTexture);
-  luau::table(L, -1).raw_function("getBackendName", lGraphicsGetBackendName);
-  lua_pop(L, 1);
-}
+void registerGraphics(luau::table &sn) {
+  auto renderDoc = sn.get_or_create_table("RenderDoc");
+  renderDoc.function<lRenderDocIsAvailable>("isAvailable");
+  renderDoc.raw_function<lRenderDocTriggerCapture>("triggerCapture");
+  renderDoc.function<lRenderDocIsFrameCapturing>("isFrameCapturing");
+  renderDoc.raw_function<lRenderDocSetCaptureFilePathTemplate>(
+      "setCaptureFilePathTemplate");
+  renderDoc.function<lRenderDocGetNumCaptures>("getNumCaptures");
+  renderDoc.raw_function<lRenderDocGetCaptureFilePath>("getCaptureFilePath");
 
+  registerMaterial(sn);
+  registerRenderPasses(sn);
+  auto graphics = sn.get_or_create_table("Graphics");
+  graphics.raw_function<lGraphicsDrawRect>("drawRect");
+  graphics.function<lGraphicsDrawText>("drawText");
+  graphics.raw_function<lGraphicsDrawImage>("drawImage");
+  graphics.function<lGraphicsDrawCubemap>("drawCubemap");
+  graphics.function<lGraphicsDrawModel>("drawModel");
+  graphics.raw_function<lGraphicsDrawModelInstanced>("drawModelInstanced");
+  graphics.raw_function<lGraphicsBegin2D>("begin2D");
+  graphics.function<lGraphicsBegin3D>("begin3D");
+  graphics.function<lGraphicsFinish>("finish");
+  graphics.raw_function<lGraphicsBegin2DPass>("begin2DPass");
+  graphics.raw_function<lGraphicsBegin3DPass>("begin3DPass");
+  graphics.raw_function<lGraphicsEndPass>("endPass");
+  graphics.function<lGraphicsGetClearColor>("getClearColor");
+  graphics.function<lGraphicsSetClearColor>("setClearColor");
+  graphics.raw_function<lGraphicsSetMSAASampleCount>("setMSAASampleCount");
+  graphics.function<lGraphicsGetMSAASampleCount>("getMSAASampleCount");
+  graphics.function<lGraphicsSetGraphicsPipeline>("setGraphicsPipeline");
+  graphics.function<lGraphicsResetGraphicsPipeline>("resetGraphicsPipeline");
+  graphics.raw_function<lGraphicsSetTexture>("setTexture");
+  graphics.raw_function<lGraphicsResetTexture>("resetTexture");
+  graphics.function<lGraphicsResetAllTexture>("resetAllTexture");
+  graphics.raw_function<lGraphicsSetUniformBuffer>("setUniformBuffer");
+  graphics.function<lGraphicsBeginRenderTarget>("beginRenderTarget");
+  graphics.function<lGraphicsEndRenderTarget>("endRenderTarget");
+  graphics.function<lGraphicsReadbackTexture>("readbackTexture");
+  graphics.raw_function<lGraphicsGetBackendName>("getBackendName");
+}
 } // namespace sinen

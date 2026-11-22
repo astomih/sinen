@@ -1,4 +1,5 @@
 #include "script/bindings/luaapi.hpp"
+#include <graphics/font/font.hpp>
 #include <graphics/video/video.hpp>
 #include <gtest/gtest.h>
 #include <script/script.hpp>
@@ -116,4 +117,30 @@ TEST_F(EngineBindings, CollectionReleasesSharedResources) {
   lua_gc(L, LUA_GCCOLLECT, 0);
   lua_gc(L, LUA_GCCOLLECT, 0);
   EXPECT_TRUE(resource.expired());
+}
+
+TEST_F(EngineBindings, TextStyleOverloadsAndPropertiesUseTypedBindings) {
+  sinen::luau::state_view vm(sinen::getGlobalLua());
+  vm["font"] = sinen::Font::create();
+  ASSERT_TRUE(run(R"(
+local sn = require("@sinen")
+assert(sn.TextStyle.new(font).fontSize == 32)
+assert(sn.TextStyle.new(font, 16).fontSize == 16)
+assert(sn.TextStyle.new(font, 16, 24).fontSize == 24)
+assert(sn.TextStyle.new(font, nil, 18).fontSize == 18)
+local style = sn.TextStyle.new(font, sn.Color.new(0.5), 20)
+assert(style.color.r == 0.5 and style.fontSize == 20)
+style.font = font
+assert(style.font ~= nil)
+style.fontSize = 14
+style.color = sn.Color.new(0.25)
+assert(style.fontSize == 14 and style.color.r == 0.25)
+local copy = style.color
+copy.r = 1
+assert(style.color.r == 0.25)
+local transform = sn.TextTransform.new(sn.Vec2.new(2, 3))
+assert(transform.angle == 0 and transform.position.x == 2)
+transform.position = sn.Vec2.new(4)
+assert(transform.position.y == 4)
+)"));
 }

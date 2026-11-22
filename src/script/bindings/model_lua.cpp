@@ -129,46 +129,33 @@ static int lModelSetTexture(lua_State *L) {
   m->setTexture(k, t);
   return 0;
 }
-void registerModel(lua_State *L) {
-  pushClassMetatable<Ptr<Model>>(L, Model::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).function("getAABB", lModelGetAabb);
-  luau::table(L, -1).raw_function("isReady", lModelIsReady);
-  luau::table(L, -1).function("getPartCount", lModelGetPartCount);
-  luau::table(L, -1).raw_function("getMaterialCount", lModelGetMaterialCount);
-  luau::table(L, -1).raw_function("getTriangleCount", lModelGetTriangleCount);
-  luau::table(L, -1).function("getBoneUniformBuffer",
-                              lModelGetBoneUniformBuffer);
-  luau::table(L, -1).function("play", lModelPlay);
-  luau::table(L, -1).function("update", lModelUpdate);
-  luau::table(L, -1).raw_function("hasTexture", lModelHasTexture);
-  luau::table(L, -1).raw_function("getTexture", lModelGetTexture);
-  luau::table(L, -1).raw_function("setTexture", lModelSetTexture);
-  lua_pop(L, 1);
+void registerModel(luau::table &sn) {
+  auto model = engineClass<Ptr<Model>>(sn, Model::metaTableName());
 
-  pushSnNamed(L, "Model");
-  luau::table(L, -1).raw_function("new", lModelNew);
-  luau::table(L, -1).function("newSprite", lModelNewSprite);
-  luau::table(L, -1).function("newBox", lModelNewBox);
-  lua_pop(L, 1);
+  model.method<lModelGetAabb>("getAABB");
+  model.raw_method<lModelIsReady>("isReady");
+  model.method<lModelGetPartCount>("getPartCount");
+  model.raw_method<lModelGetMaterialCount>("getMaterialCount");
+  model.raw_method<lModelGetTriangleCount>("getTriangleCount");
+  model.method<lModelGetBoneUniformBuffer>("getBoneUniformBuffer");
+  model.method<lModelPlay>("play");
+  model.method<lModelUpdate>("update");
+  model.raw_method<lModelHasTexture>("hasTexture");
+  model.raw_method<lModelGetTexture>("getTexture");
+  model.raw_method<lModelSetTexture>("setTexture");
+
+  model.raw_static_function<lModelNew>("new");
+  model.static_function<lModelNewSprite>("newSprite");
+  model.static_function<lModelNewBox>("newBox");
 }
 
-void registerTextureKey(lua_State *L) {
-  pushSnNamed(L, "TextureKey");
-  luau::table(L, -1).value("BaseColor",
-                           static_cast<lua_Integer>(TextureKey::BaseColor));
-  luau::table(L, -1).value("Normal",
-                           static_cast<lua_Integer>(TextureKey::Normal));
-  luau::table(L, -1).value(
-      "DiffuseRoughness",
-      static_cast<lua_Integer>(TextureKey::DiffuseRoughness));
-  luau::table(L, -1).value("Metalness",
-                           static_cast<lua_Integer>(TextureKey::Metalness));
-  luau::table(L, -1).value("Emissive",
-                           static_cast<lua_Integer>(TextureKey::Emissive));
-  luau::table(L, -1).value("LightMap",
-                           static_cast<lua_Integer>(TextureKey::LightMap));
-  lua_pop(L, 1);
+void registerTextureKey(luau::table &sn) {
+  auto textureKey = sn.get_or_create_table("TextureKey");
+  textureKey.value("BaseColor", TextureKey::BaseColor);
+  textureKey.value("Normal", TextureKey::Normal);
+  textureKey.value("DiffuseRoughness", TextureKey::DiffuseRoughness);
+  textureKey.value("Metalness", TextureKey::Metalness);
+  textureKey.value("Emissive", TextureKey::Emissive);
+  textureKey.value("LightMap", TextureKey::LightMap);
 }
 } // namespace sinen

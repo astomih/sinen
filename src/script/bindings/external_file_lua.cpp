@@ -140,24 +140,20 @@ static int lFileDialogOpen(lua_State *L) {
 }
 } // namespace
 
-void registerExternalFile(lua_State *L) {
-  pushClassMetatable<ExternalFile>(L, ExternalFile::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luau::table(L, -1).raw_function("read", lExternalFileRead);
-  luau::table(L, -1).function("name", lExternalFileName);
-  luau::table(L, -1).function("extension", lExternalFileExtension);
-  luau::table(L, -1).function("__tostring", lExternalFileTostring);
-  lua_pop(L, 1);
+void registerExternalFile(luau::table &sn) {
+  auto externalFile =
+      engineClass<ExternalFile>(sn, ExternalFile::metaTableName());
+
+  externalFile.raw_method<lExternalFileRead>("read");
+  externalFile.method<lExternalFileName>("name");
+  externalFile.method<lExternalFileExtension>("extension");
+  externalFile.metamethod<lExternalFileTostring>("__tostring");
 
   // Expose the type namespace without a constructor. ExternalFile values can
   // only originate from a dialog selection or a drop event.
-  pushSnNamed(L, "ExternalFile");
-  lua_pop(L, 1);
 
-  pushSnNamed(L, "FileDialog");
-  luau::table(L, -1).raw_function("open", lFileDialogOpen);
-  lua_pop(L, 1);
+  auto fileDialog = sn.get_or_create_table("FileDialog");
+  fileDialog.raw_function<lFileDialogOpen>("open");
 }
 
 void resetExternalFileCallbacks(lua_State *L) {
@@ -236,5 +232,4 @@ void enqueueDroppedExternalFile(StringView path) {
   std::lock_guard<std::mutex> lock(gExternalFileMutex);
   gDroppedPaths.emplace_back(path);
 }
-
 } // namespace sinen

@@ -34,6 +34,34 @@ struct alignas(64) Tracked {
 
 enum class Mode : unsigned { Fast = 2 };
 
+template <class F>
+concept RegistersFunction = requires(bind::table &module, F &&function) {
+  module.function("function", std::forward<F>(function));
+};
+static_assert(RegistersFunction<decltype([](int value) { return value; })>);
+static_assert(!RegistersFunction<int>);
+static_assert(!RegistersFunction<decltype([](auto value) { return value; })>);
+
+struct RvalueOnly {
+  int operator()(int) &&;
+};
+static_assert(!RegistersFunction<RvalueOnly>);
+
+struct CounterHolder {
+  Counter counter{1};
+  const Counter constant{2};
+  const int fixed = 3;
+};
+
+int staticRawPair(lua_State *L) {
+  lua_pushinteger(L, 2);
+  lua_pushinteger(L, 3);
+  return 2;
+}
+int staticRawFailure(lua_State *) {
+  throw std::runtime_error("static raw failure");
+}
+
 class LuauBindLibrary : public testing::Test {
 protected:
   void SetUp() override {
@@ -105,6 +133,67 @@ TEST_F(LuauBindLibrary, FunctionsCapturingLambdasAndStackBalance) {
   )"));
   EXPECT_EQ(lua_gettop(L), 1);
   EXPECT_EQ(lua_tointeger(L, 1), 123);
+}
+
+TEST_F(LuauBindLibrary, CompileTimeBindingsNeedNoCaptureUserdata) {
+  auto module = bind::table::create(L);
+  constexpr auto triple = [](int value) static { return value * 3; };
+  module.function<triple>("triple")
+      .raw_function<staticRawPair>("pair")
+      .raw_function<staticRawFailure>("fail")
+      .function("captured", [value = 10]() mutable { return ++value; })
+      .publish("test");
+  module.class_<Counter>("Counter")
+      .constructor<int>()
+      .method<&Counter::add>("add")
+      .field<&Counter::value>("value")
+      .readonly<&Counter::value>("readOnly")
+      .property<&Counter::get, &Counter::set>("amount")
+      .property<&Counter::get>("getOnly")
+      .static_function<[] { return Counter(0); }>("zero")
+      .metamethod<[](const Counter &value) {
+        return std::to_string(value.value);
+      }>("__tostring");
+  module.class_<CounterHolder>("Holder")
+      .constructor<>()
+      .reference_field<&CounterHolder::counter>("counter")
+      .reference_field<&CounterHolder::constant>("constant")
+      .field<&CounterHolder::fixed>("fixed");
+  module.push();
+  for (const char *name : {"triple", "pair", "fail"}) {
+    lua_getfield(L, -1, name);
+    EXPECT_EQ(lua_getupvalue(L, -1, 1), nullptr) << name;
+    lua_pop(L, 1);
+  }
+  lua_getfield(L, -1, "captured");
+  EXPECT_NE(lua_getupvalue(L, -1, 1), nullptr);
+  lua_pop(L, 3); // capture, function, module
+  EXPECT_EQ(lua_gettop(L), 0);
+  ASSERT_TRUE(run(R"(
+assert(test.triple(4) == 12)
+local a, b = test.pair()
+assert(a == 2 and b == 3)
+local ok, message = pcall(test.fail)
+assert(not ok and string.find(message, "static raw failure", 1, true))
+assert(test.captured() == 11 and test.captured() == 12)
+assert(not pcall(function() test.triple('bad') end))
+local c = test.Counter.new(1)
+c.value = 3
+assert(c:add(2) == 5 and c.readOnly == 5)
+c.amount = 8
+assert(c.getOnly == 8 and tostring(c) == '8')
+assert(test.Counter.zero().value == 0)
+assert(not pcall(function() c.getOnly = 4 end))
+local holder = test.Holder.new()
+holder.counter.value = 9
+assert(holder.counter.value == 9)
+holder.counter = c
+assert(holder.counter.value == 8)
+assert(holder.constant.value == 2 and holder.fixed == 3)
+assert(not pcall(function() holder.constant:add(1) end))
+assert(not pcall(function() holder.constant = c end))
+assert(not pcall(function() holder.fixed = 4 end))
+)"));
 }
 
 TEST_F(LuauBindLibrary, ConstructorsMethodsFieldsAndProperties) {
@@ -392,6 +481,90 @@ assert(not ok and string.find(message, "raw callback failed", 1, true))
 local a, b = test.pair()
 assert(a == 2 and b == 3)
 )"));
+  EXPECT_EQ(lua_gettop(L), 0);
+}
+
+TEST(LuauState, RegistersAndExecutesWithoutRawHandles) {
+  bind::state vm;
+  vm.open_libraries();
+  vm["answer"] = 42;
+  vm["sum"] = [](int a, int b) { return a + b; };
+  vm["convert"] = bind::overload([](int n) { return n * 2; },
+                                 [](std::string s) { return s + s; });
+  auto module = vm.get_or_create_table("test");
+  module.class_<Counter>("Counter")
+      .constructor<int>()
+      .method("add", &Counter::add)
+      .field("value", &Counter::value)
+      .static_value("initial", 5);
+  module["label"] = "counter";
+  auto config = module.get_or_create_table("config");
+  config["enabled"] = true;
+  vm["config"] = config;
+  vm["copied"] = vm["answer"];
+  auto proxy = vm.get_table("test")["label"];
+  proxy = "updated";
+  vm.execute(Luau::compile(R"(
+assert(sum(answer, copied) == 84)
+assert(convert(3) == 6 and convert("x") == "xx")
+assert(test.label == "updated" and config.enabled)
+local counter = test.Counter.new(test.Counter.initial)
+counter.value = counter:add(3)
+result = counter.value
+)"));
+  int result = vm["result"];
+  EXPECT_EQ(result, 8);
+  EXPECT_EQ(module.get<std::string>("label"), "updated");
+  EXPECT_TRUE(vm.get_table("config").get<bool>("enabled"));
+  vm.collect_garbage();
+}
+
+TEST(LuauState, ClosingOwnedVmDestroysObjects) {
+  EXPECT_EQ(Tracked::alive, 0);
+  {
+    bind::state vm;
+    vm.class_<Tracked>("Tracked").constructor<int>();
+    vm.execute(Luau::compile("object = Tracked.new(8)"));
+    EXPECT_EQ(Tracked::alive, 1);
+  }
+  EXPECT_EQ(Tracked::alive, 0);
+}
+
+TEST_F(LuauBindLibrary, StateViewsPreserveStackAndLeaveOwnershipWithCaller) {
+  lua_pushinteger(L, 99);
+  {
+    bind::state_view vm(L);
+    EXPECT_THROW(bind::state_view(nullptr), bind::binding_error);
+    auto module = vm.get_or_create_table("test");
+    module["value"] = 7;
+    auto same = vm.get_or_create_table("test");
+    EXPECT_EQ(same["value"].get<int>(), 7);
+    module["child"] = module.create_table();
+    EXPECT_NO_THROW(module.get_table("child"));
+    EXPECT_THROW(module.get_table("value"), bind::binding_error);
+    EXPECT_THROW(module.get_or_create_table("value"), bind::binding_error);
+    EXPECT_THROW(module.get<int>("missing"), bind::binding_error);
+    EXPECT_THROW(vm.execute(Luau::compile("error('execution failed')")),
+                 bind::binding_error);
+    EXPECT_THROW(vm.execute("invalid bytecode"), bind::binding_error);
+    vm.execute(Luau::compile("assert(test.value == 7)"));
+    EXPECT_EQ(lua_gettop(L), 1);
+    EXPECT_EQ(lua_tointeger(L, 1), 99);
+  }
+  ASSERT_TRUE(run("assert(test.value == 7)"));
+  EXPECT_EQ(lua_gettop(L), 1);
+}
+
+TEST_F(LuauBindLibrary,
+       ProxyAssignmentRejectsForeignStatesWithoutChangingValues) {
+  bind::state_view vm(L);
+  bind::state foreign;
+  vm["value"] = 7;
+  foreign["value"] = 11;
+  EXPECT_THROW(vm["value"] = foreign["value"], bind::binding_error);
+  EXPECT_THROW(vm["value"] = foreign.create_table(), bind::binding_error);
+  EXPECT_EQ(vm["value"].get<int>(), 7);
+  EXPECT_EQ(foreign["value"].get<int>(), 11);
   EXPECT_EQ(lua_gettop(L), 0);
 }
 } // namespace

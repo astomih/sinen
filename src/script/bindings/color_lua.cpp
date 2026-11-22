@@ -2,8 +2,8 @@
 #include <math/color/color.hpp>
 
 namespace sinen {
-void registerColor(lua_State *L) {
-  engineClass<Color>(L, Color::metaTableName())
+void registerColor(luau::table &sn) {
+  engineClass<Color>(sn, Color::metaTableName())
       .static_function(
           "new",
           luau::overload(
@@ -13,10 +13,10 @@ void registerColor(lua_State *L) {
               [](float r, float g, float b, std::optional<float> a) {
                 return Color(r, g, b, a.value_or(1.0f));
               }))
-      .field("r", &Color::r)
-      .field("g", &Color::g)
-      .field("b", &Color::b)
-      .field("a", &Color::a)
+      .field<&Color::r>("r")
+      .field<&Color::g>("g")
+      .field<&Color::b>("b")
+      .field<&Color::a>("a")
       .metamethod("__tostring",
                   [](const Color &color) { return color.tableString(); });
 }

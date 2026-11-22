@@ -6,9 +6,8 @@ static auto lEventQuit() {
   Event::quit();
   return;
 }
-void registerEvent(lua_State *L) {
-  pushSnNamed(L, "Event");
-  luau::table(L, -1).function("quit", lEventQuit);
-  lua_pop(L, 1);
+void registerEvent(luau::table &sn) {
+  auto event = sn.get_or_create_table("Event");
+  event.function<lEventQuit>("quit");
 }
 } // namespace sinen

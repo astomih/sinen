@@ -12,14 +12,48 @@ RENDERER_SAMPLER(Sampler2D, occlusionMap, 4, 8, 9)
 RENDERER_SAMPLER(Sampler2D, brdfLUT, 5, 10, 11)
 RENDERER_SAMPLER(SamplerCube, irradianceMap, 6, 12, 13)
 RENDERER_SAMPLER(SamplerCube, prefilteredMap, 7, 14, 15)
+RENDERER_SAMPLER(Sampler2D, giAtlas, 8, 16, 17)
+#else
+RENDERER_SAMPLER(Sampler2D, giAtlas, 5, 10, 11)
 #endif
 
 UNIFORM_FRAG(Lighting, 0) {
   float4 cameraPositionAndMaxMip;
-  // Normal map enabled, SDR exposure, fill light enabled.
+  // Normal map enabled, SDR exposure, fill light enabled, GI enabled.
   float4 settings;
   DirectLight directLight;
   DirectLight fillLight;
+  float4 giMinimumAndIntensity;
+  float4 giInverseExtent;
+  float4 giProbeCounts;
+}
+
+float3 probeLobe(float3 cell, float lobe) {
+  float2 size = float2(giProbeCounts.x * 6.0, giProbeCounts.y * giProbeCounts.z);
+  float2 texel = float2(cell.x * 6.0 + lobe, cell.z * giProbeCounts.y + cell.y);
+  return giAtlas.SampleLevel((texel + 0.5) / size, 0.0).rgb;
+}
+
+float3 probeIrradiance(float3 position, float3 normal) {
+  float3 grid = saturate((position - giMinimumAndIntensity.xyz) * giInverseExtent.xyz) *
+                (giProbeCounts.xyz - 1.0);
+  float3 base = min(floor(grid), giProbeCounts.xyz - 2.0);
+  float3 f = grid - base;
+  float3 value = float3(0.0);
+  for (int z = 0; z < 2; ++z) {
+    for (int y = 0; y < 2; ++y) {
+      for (int x = 0; x < 2; ++x) {
+        float3 cell = base + float3(x, y, z);
+        float weight = (x == 1 ? f.x : 1.0 - f.x) *
+                       (y == 1 ? f.y : 1.0 - f.y) *
+                       (z == 1 ? f.z : 1.0 - f.z);
+        value += weight * (probeLobe(cell, normal.x >= 0.0 ? 0.0 : 1.0) * normal.x * normal.x +
+                           probeLobe(cell, normal.y >= 0.0 ? 2.0 : 3.0) * normal.y * normal.y +
+                           probeLobe(cell, normal.z >= 0.0 ? 4.0 : 5.0) * normal.z * normal.z);
+      }
+    }
+  }
+  return value * giMinimumAndIntensity.w;
 }
 
 float3 schlickFresnel(float cosine, float3 reflectance) {
@@ -114,7 +148,9 @@ float4 FSMain(Surface input) : SV_Target {
 
 #ifdef SINEN_RENDERER_IBL
   float3 envFresnel = schlickFresnel(saturate(nDotV), reflectance);
-  float3 irradiance = irradianceMap.Sample(normal).rgb;
+  // A local volume replaces the environment's diffuse term, retaining IBL specular.
+  float3 irradiance = settings.w != 0.0 ? probeIrradiance(input.worldPosition, normal)
+                                        : irradianceMap.Sample(normal).rgb;
   float3 reflected = reflect(-view, normal);
   float3 prefiltered =
       prefilteredMap.SampleLevel(reflected, roughness * cameraPositionAndMaxMip.w).rgb;
@@ -122,7 +158,10 @@ float4 FSMain(Surface input) : SV_Target {
   float3 ambient = (1.0 - envFresnel) * (1.0 - metallic) * irradiance * albedo / PI +
                    prefiltered * (reflectance * brdf.x + brdf.y);
 #else
-  float3 ambient = albedo * 0.4;
+  float3 ambient = settings.w != 0.0
+      ? (1.0 - schlickFresnel(saturate(nDotV), reflectance)) * (1.0 - metallic) *
+        probeIrradiance(input.worldPosition, normal) * albedo / PI
+      : albedo * 0.4;
 #endif
   float3 result = direct + ambient * occlusion + emissive;
   if (settings.y > 0.0) {

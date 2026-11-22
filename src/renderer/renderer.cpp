@@ -129,6 +129,16 @@ void PBRRenderer::setEnvironment(const Environment &value) {
 
 void PBRRenderer::clearEnvironment() { environment = {}; }
 
+void PBRRenderer::setGlobalIllumination(const GlobalIllumination &volume,
+                                        float intensity) {
+  giTexture = volume.getTexture();
+  giMinimum = volume.getMinimum();
+  giExtent = volume.getMaximum() - giMinimum;
+  giCounts = volume.getProbeCounts();
+  giIntensity = std::isfinite(intensity) ? std::max(intensity, 0.0f) : 0.0f;
+}
+void PBRRenderer::clearGlobalIllumination() { giTexture.reset(); }
+
 void PBRRenderer::drawModel(Render3DPass &pass, const Model &model,
                             const Transform &transform) {
   ZoneScopedN("PBRRenderer::drawModel");
@@ -165,6 +175,7 @@ void PBRRenderer::drawModel(Render3DPass &pass, const Model &model,
   bindTexture(material, 4, model, TextureKey::LightMap, white);
 
   float maxMip = 0.0f;
+  material.setTexture(useIBL ? 8 : 5, giTexture ? giTexture : white);
   if (useIBL) {
     material.setTexture(5, environment.brdfLut);
     material.setTexture(6, environment.irradiance);
@@ -182,11 +193,20 @@ void PBRRenderer::drawModel(Render3DPass &pass, const Model &model,
     float settings[4];
     LightUniform light;
     LightUniform fillLight;
+    float giMinimumAndIntensity[4];
+    float giInverseExtent[4];
+    float giProbeCounts[4];
   } lighting = {
       {cameraPosition.x, cameraPosition.y, cameraPosition.z, maxMip},
-      {useNormalMap ? 1.0f : 0.0f, exposure, fillLight ? 1.0f : 0.0f},
+      {useNormalMap ? 1.0f : 0.0f, exposure, fillLight ? 1.0f : 0.0f,
+       giTexture ? 1.0f : 0.0f},
       makeLightUniform(light),
       fillLight ? makeLightUniform(*fillLight) : LightUniform{},
+      {giMinimum.x, giMinimum.y, giMinimum.z, giIntensity},
+      {giExtent.x > 0 ? 1.0f / giExtent.x : 0.0f,
+       giExtent.y > 0 ? 1.0f / giExtent.y : 0.0f,
+       giExtent.z > 0 ? 1.0f / giExtent.z : 0.0f, 0.0f},
+      {giCounts.x, giCounts.y, giCounts.z, 0.0f},
   };
   material.setUniformBuffer(0, uniformBuffer(lighting));
   material.setUniformBuffer(1, uniformBuffer(transform.getWorldMatrix()));

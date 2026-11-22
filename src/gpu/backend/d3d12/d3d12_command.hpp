@@ -104,6 +104,8 @@ private:
 
 class CopyPass : public gpu::CopyPass {
 public:
+  bool copyBufferToTexture(const BufferRegion &src, const TextureRegion &dst,
+                           UInt32 bytesPerRow) override;
   explicit CopyPass(CommandBuffer *commandBuffer)
       : commandBuffer(commandBuffer) {}
 

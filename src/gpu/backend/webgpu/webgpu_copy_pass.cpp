@@ -20,6 +20,31 @@ UInt32 textureOriginZ(const gpu::Texture::CreateInfo &createInfo, UInt32 layer,
 }
 } // namespace
 
+bool CopyPass::copyBufferToTexture(const BufferRegion &src,
+                                   const TextureRegion &dst,
+                                   UInt32 bytesPerRow) {
+  if (!validBufferTextureCopy(src, dst, bytesPerRow))
+    return false;
+  auto source = downCast<Buffer>(src.buffer);
+  auto target = downCast<Texture>(dst.texture);
+  if (!source || !target)
+    return false;
+  commandBuffer.keepAlive(src.buffer);
+  commandBuffer.keepAlive(dst.texture);
+  WGPUTexelCopyBufferInfo from{};
+  from.buffer = source->getNative();
+  from.layout = {src.offset, bytesPerRow, dst.height};
+  WGPUTexelCopyTextureInfo to{};
+  to.texture = target->getNative();
+  to.mipLevel = dst.mipLevel;
+  to.origin = {dst.x, dst.y, dst.layer};
+  to.aspect = WGPUTextureAspect_All;
+  WGPUExtent3D size{dst.width, dst.height, 1};
+  wgpuCommandEncoderCopyBufferToTexture(commandBuffer.getEncoder(), &from, &to,
+                                        &size);
+  return true;
+}
+
 void CopyPass::uploadTexture(const TextureTransferInfo &src,
                              const TextureRegion &dst, bool cycle) {
   (void)cycle;

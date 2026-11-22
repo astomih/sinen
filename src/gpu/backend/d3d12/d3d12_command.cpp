@@ -365,6 +365,39 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
                      D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
+bool CopyPass::copyBufferToTexture(const BufferRegion &src,
+                                   const TextureRegion &dst,
+                                   UInt32 bytesPerRow) {
+  if (!validBufferTextureCopy(src, dst, bytesPerRow))
+    return false;
+  auto source = downCast<Buffer>(src.buffer);
+  auto target = downCast<Texture>(dst.texture);
+  if (!source || !target)
+    return false;
+  auto device = commandBuffer->getDevice();
+  auto list = commandBuffer->getNative();
+  commandBuffer->keepAlive(source->getNative());
+  commandBuffer->keepAlive(target->getNative());
+  D3D12_TEXTURE_COPY_LOCATION from{};
+  from.pResource = source->getNative();
+  from.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+  from.PlacedFootprint.Offset = source->getOffset() + src.offset;
+  from.PlacedFootprint.Footprint = {target->getNative()->GetDesc().Format,
+                                    dst.width, dst.height, 1, bytesPerRow};
+  D3D12_TEXTURE_COPY_LOCATION to{};
+  to.pResource = target->getNative();
+  to.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+  to.SubresourceIndex =
+      dst.mipLevel + dst.layer * target->getCreateInfo().numLevels;
+  device->transition(list, source.get(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+  device->transition(list, target.get(), D3D12_RESOURCE_STATE_COPY_DEST);
+  list->CopyTextureRegion(&to, dst.x, dst.y, dst.z, &from, nullptr);
+  device->transition(list, source.get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+  device->transition(list, target.get(),
+                     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+  return true;
+}
+
 void CopyPass::downloadTexture(const TextureRegion &src,
                                const TextureTransferInfo &dst) {
   auto source = downCast<Texture>(src.texture);

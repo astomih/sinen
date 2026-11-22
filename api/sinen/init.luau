@@ -789,6 +789,27 @@ export type SpotLight = {
 
 export type Light = DirectionalLight | PointLight | SpotLight
 
+-- Diffuse GI: GPU real-time updates or CPU baking. Material inputs use linear colors.
+export type GlobalIllumination = {
+	new: () -> GlobalIllumination,
+	-- 64 GPU rays/probe/frame; 2..32 probes/axis, 1..4 diffuse hits.
+	initializeRealtime: (self: GlobalIllumination, minimum: Vec3, maximum: Vec3, countX: number?, countY: number?, countZ: number?, bounces: number?) -> boolean,
+	-- Replace geometry for the next update, retaining temporal history.
+	beginFrame: (self: GlobalIllumination) -> nil,
+	-- Submit GPU work without CPU readback. Call before drawing; history is 0..0.99.
+	update: (self: GlobalIllumination, historyWeight: number?) -> boolean,
+	isRealtime: (self: GlobalIllumination) -> boolean,
+	addModel: (self: GlobalIllumination, model: Model, transform: Transform, albedo: Color?, emission: Color?) -> nil,
+	setLight: (self: GlobalIllumination, light: Light) -> nil,
+	clearLight: (self: GlobalIllumination) -> nil,
+	setSkyColor: (self: GlobalIllumination, color: Color) -> nil,
+	-- Synchronous bake; 2..32 probes per axis, 32..65536 rays, 1..8 diffuse hits.
+	bake: (self: GlobalIllumination, minimum: Vec3, maximum: Vec3, countX: number?, countY: number?, countZ: number?, rays: number?, bounces: number?) -> boolean,
+	isBaked: (self: GlobalIllumination) -> boolean,
+	sampleIrradiance: (self: GlobalIllumination, position: Vec3, normal: Vec3) -> Vec3,
+	clear: (self: GlobalIllumination) -> nil,
+}
+
 export type PBRRenderer = {
 	new: () -> PBRRenderer,
 	-- Copy the supplied light into the renderer.
@@ -800,6 +821,9 @@ export type PBRRenderer = {
 	setExposure: (self: PBRRenderer, exposure: number) -> nil,
 	setEnvironment: (self: PBRRenderer, brdfLut: Texture, irradiance: Texture, prefiltered: Texture) -> nil,
 	clearEnvironment: (self: PBRRenderer) -> nil,
+	-- Attach a volume; real-time updates stay live. Replaces ambient diffuse.
+	setGlobalIllumination: (self: PBRRenderer, volume: GlobalIllumination, intensity: number?) -> nil,
+	clearGlobalIllumination: (self: PBRRenderer) -> nil,
 	drawModel: (self: PBRRenderer, pass: Render3DPass, model: Model, transform: Transform) -> nil,
 }
 
@@ -1153,6 +1177,7 @@ return {
 	PointLight = {} :: PointLight,
 	SpotLight = {} :: SpotLight,
 	PBRRenderer = {} :: PBRRenderer,
+	GlobalIllumination = {} :: GlobalIllumination,
 	NPRRenderer = {} :: NPRRenderer,
 	Compute = {} :: Compute,
 	Gui = {} :: Gui,

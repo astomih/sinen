@@ -170,6 +170,91 @@ int clearEnvironment(lua_State *L) {
   return 0;
 }
 
+int addGIModel(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).addModel(
+      *udPtr<Model>(L, 2), udValue<Transform>(L, 3), optionalColor(L, 4),
+      lua_isnoneornil(L, 5) ? Color(0.0f) : udValue<Color>(L, 5));
+  return 0;
+}
+int bakeGI(lua_State *L) {
+  UInt32 values[5];
+  const int defaults[] = {8, 6, 8, 512, 3};
+  const int limits[] = {32, 32, 32, 65536, 8};
+  for (int i = 0; i < 5; ++i) {
+    const int value = luaL_optinteger(L, i + 4, defaults[i]);
+    luaL_argcheck(L,
+                  value >= (i < 3    ? 2
+                            : i == 3 ? 32
+                                     : 1) &&
+                      value <= limits[i],
+                  i + 4, "GI bake parameter out of range");
+    values[i] = static_cast<UInt32>(value);
+  }
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).bake(
+                         udValue<Vec3>(L, 2), udValue<Vec3>(L, 3), values[0],
+                         values[1], values[2], values[3], values[4]));
+  return 1;
+}
+int setGISky(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).setSkyColor(udValue<Color>(L, 2));
+  return 0;
+}
+int clearGI(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).clear();
+  return 0;
+}
+int clearGILight(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).clearLight();
+  return 0;
+}
+int isGIBaked(lua_State *L) {
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).isBaked());
+  return 1;
+}
+int sampleGI(lua_State *L) {
+  udNewOwned<Vec3>(L, udValue<GlobalIllumination>(L, 1).sampleIrradiance(
+                          udValue<Vec3>(L, 2), udValue<Vec3>(L, 3)));
+  return 1;
+}
+int setGI(lua_State *L) {
+  udValue<PBRRenderer>(L, 1).setGlobalIllumination(
+      udValue<GlobalIllumination>(L, 2),
+      static_cast<float>(luaL_optnumber(L, 3, 1.0)));
+  return 0;
+}
+int clearRendererGI(lua_State *L) {
+  udValue<PBRRenderer>(L, 1).clearGlobalIllumination();
+  return 0;
+}
+
+int initializeRealtimeGI(lua_State *L) {
+  UInt32 counts[4];
+  const int defaults[] = {8, 6, 8, 2};
+  for (int i = 0; i < 4; ++i) {
+    const int value = luaL_optinteger(L, i + 4, defaults[i]);
+    luaL_argcheck(L, value >= (i < 3 ? 2 : 1) && value <= (i < 3 ? 32 : 4),
+                  i + 4, "real-time GI parameter out of range");
+    counts[i] = static_cast<UInt32>(value);
+  }
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).initializeRealtime(
+                         udValue<Vec3>(L, 2), udValue<Vec3>(L, 3), counts[0],
+                         counts[1], counts[2], counts[3]));
+  return 1;
+}
+int beginGIFrame(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).beginFrame();
+  return 0;
+}
+int updateGI(lua_State *L) {
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).update(
+                         static_cast<float>(luaL_optnumber(L, 2, 0.85))));
+  return 1;
+}
+int isRealtimeGI(lua_State *L) {
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).isRealtime());
+  return 1;
+}
+
 int setLightDirection(lua_State *L) {
   udValue<NPRRenderer>(L, 1).setLightDirection(udValue<Vec3>(L, 2));
   return 0;
@@ -223,6 +308,8 @@ void registerRenderer(lua_State *L) {
   Binding::registerFunction(L, "setExposure", setExposure);
   Binding::registerFunction(L, "setEnvironment", setEnvironment);
   Binding::registerFunction(L, "clearEnvironment", clearEnvironment);
+  Binding::registerFunction(L, "setGlobalIllumination", setGI);
+  Binding::registerFunction(L, "clearGlobalIllumination", clearRendererGI);
   lua_pop(L, 1);
 
   registerRendererMetatable<NPRRenderer>(L);
@@ -237,6 +324,26 @@ void registerRenderer(lua_State *L) {
 
   pushSnNamed(L, "NPRRenderer");
   Binding::registerFunction(L, "new", newRenderer<NPRRenderer>);
+  lua_pop(L, 1);
+
+  luaL_newmetatable(L, GlobalIllumination::metaTableName());
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
+  Binding::registerFunction(L, "addModel", addGIModel);
+  Binding::registerFunction(L, "setLight", setLight<GlobalIllumination>);
+  Binding::registerFunction(L, "clearLight", clearGILight);
+  Binding::registerFunction(L, "setSkyColor", setGISky);
+  Binding::registerFunction(L, "bake", bakeGI);
+  Binding::registerFunction(L, "initializeRealtime", initializeRealtimeGI);
+  Binding::registerFunction(L, "beginFrame", beginGIFrame);
+  Binding::registerFunction(L, "update", updateGI);
+  Binding::registerFunction(L, "isRealtime", isRealtimeGI);
+  Binding::registerFunction(L, "clear", clearGI);
+  Binding::registerFunction(L, "isBaked", isGIBaked);
+  Binding::registerFunction(L, "sampleIrradiance", sampleGI);
+  lua_pop(L, 1);
+  pushSnNamed(L, "GlobalIllumination");
+  Binding::registerFunction(L, "new", newRenderer<GlobalIllumination>);
   lua_pop(L, 1);
 }
 

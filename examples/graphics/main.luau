@@ -9,6 +9,7 @@ local examples = {
 	{ label = "Instancing", dir = "instancing" },
 	{ label = "PBR", dir = "pbr" },
 	{ label = "IBL", dir = "ibl" },
+	{ label = "Global Illumination", dir = "global_illumination" },
 	{ label = "NPR", dir = "npr" },
 	{ label = "Shadow Map", dir = "shadow_map" },
 	{ label = "Procedural Model", dir = "procedural_model" },

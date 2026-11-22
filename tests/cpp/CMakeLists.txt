@@ -13,6 +13,34 @@ set_property(TARGET sinen_license_report_tests PROPERTY CXX_STANDARD 23)
 
 add_test(NAME sinen_license_report_tests COMMAND sinen_license_report_tests)
 
+if(TARGET sinen_renderer)
+  add_executable(sinen_global_illumination_tests global_illumination_tests.cpp)
+  if(WIN32)
+    target_sources(sinen_global_illumination_tests PRIVATE realtime_gi_tests.cpp)
+    target_include_directories(sinen_global_illumination_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+  endif()
+  target_link_libraries(sinen_global_illumination_tests PRIVATE sinen_renderer GTest::gtest_main)
+  if(TARGET sinen_script)
+    target_link_libraries(sinen_global_illumination_tests PRIVATE sinen_script)
+  endif()
+  set_property(TARGET sinen_global_illumination_tests PROPERTY CXX_STANDARD 23)
+  add_test(NAME sinen_global_illumination_tests COMMAND sinen_global_illumination_tests)
+  if(WIN32 AND SINEN_ENABLE_WEBGPU)
+    # Dawn's D3D12 backend needs DXC at runtime. Reuse the shader compiler's
+    # downloaded package when available without installing it system-wide.
+    FetchContent_GetProperties(dxc SOURCE_DIR SINEN_GI_TEST_DXC_SOURCE)
+    if(SINEN_GI_TEST_DXC_SOURCE)
+      if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|ARM64")
+        set(SINEN_GI_TEST_DXC_ARCH arm64)
+      else()
+        set(SINEN_GI_TEST_DXC_ARCH x64)
+      endif()
+      set_tests_properties(sinen_global_illumination_tests PROPERTIES
+        ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${SINEN_GI_TEST_DXC_SOURCE}/bin/${SINEN_GI_TEST_DXC_ARCH}")
+    endif()
+  endif()
+endif()
+
 if(TARGET sinen_graphics)
   if(NOT EMSCRIPTEN)
     # Decode generated H.264 in native tests, keeping decoder code out of the engine.

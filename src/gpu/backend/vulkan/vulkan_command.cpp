@@ -300,6 +300,16 @@ Ptr<gpu::ComputePass> CommandBuffer::beginComputePass(
     const Array<StorageTextureBinding> &,
     const Array<StorageBufferBinding> &storageBuffers) {
   ensureRecording();
+  VkMemoryBarrier barrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER};
+  barrier.srcAccessMask =
+      VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+  barrier.dstAccessMask =
+      VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+  vkCmdPipelineBarrier(commandBuffer,
+                       VK_PIPELINE_STAGE_TRANSFER_BIT |
+                           VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                       VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrier, 0,
+                       nullptr, 0, nullptr);
   Array<StorageBufferBinding> buffers(storageBuffers,
                                       getCreateInfo().allocator);
   return makePtr<ComputePass>(getCreateInfo().allocator, device, *this,
@@ -435,6 +445,50 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
     commandBuffer.transitionTexture(*dstTex,
                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
+}
+
+bool CopyPass::copyBufferToTexture(const BufferRegion &src,
+                                   const TextureRegion &dst,
+                                   UInt32 bytesPerRow) {
+  if (!validBufferTextureCopy(src, dst, bytesPerRow))
+    return false;
+  auto source = downCast<Buffer>(src.buffer);
+  auto target = downCast<Texture>(dst.texture);
+  if (!source || !target)
+    return false;
+  commandBuffer.keepAlive(src.buffer);
+  commandBuffer.keepAlive(dst.texture);
+  auto cmd = commandBuffer.getNative();
+  VkMemoryBarrier before{VK_STRUCTURE_TYPE_MEMORY_BARRIER};
+  before.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+  before.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+  vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                       VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 1, &before, 0,
+                       nullptr, 0, nullptr);
+  commandBuffer.transitionTexture(*target,
+                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  VkBufferImageCopy copy{};
+  copy.bufferOffset = src.offset;
+  // This path currently supports the HDR atlas and RGBA8 images.
+  const UInt32 bpp =
+      target->getCreateInfo().format == TextureFormat::R32G32B32A32_FLOAT ? 16
+                                                                          : 4;
+  copy.bufferRowLength = bytesPerRow / bpp;
+  copy.bufferImageHeight = dst.height;
+  copy.imageSubresource = {target->getAspectMask(), dst.mipLevel, dst.layer, 1};
+  copy.imageOffset = {int32_t(dst.x), int32_t(dst.y), int32_t(dst.z)};
+  copy.imageExtent = {dst.width, dst.height, 1};
+  vkCmdCopyBufferToImage(cmd, source->getNative(), target->getImage(),
+                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
+  commandBuffer.transitionTexture(*target,
+                                  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  VkMemoryBarrier after{VK_STRUCTURE_TYPE_MEMORY_BARRIER};
+  after.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+  after.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+  vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                       VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &after, 0,
+                       nullptr, 0, nullptr);
+  return true;
 }
 
 void CopyPass::downloadTexture(const TextureRegion &src,

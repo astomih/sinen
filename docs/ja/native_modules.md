@@ -86,6 +86,13 @@ end
 
 `nativefs` は意図的に通常の `sn.Filesystem` のサンドボックスを迂回します。信頼できるスクリプトからだけロードしてください。
 
+## ocean
+
+スクリプトが有効な構成では `SINEN_PLUGIN_OCEAN` は標準で `ON` です。
+`sn.Script.loadPlugin("ocean")` でロードし、`require("@sinen/plugin/ocean")` で取得します。
+Phillips / JONSWAP の FFT 風浪と独立したうねり、水平変位、法線、白波マスク、再利用可能なメッシュバッファを生成します。
+詳細は [Ocean の API とサンプル](../../plugins/ocean/README.md) を参照してください。
+
 ## shader_compiler
 
 `SINEN_PLUGIN_SHADER_COMPILER=ON` で構成すると、Slang と ShaderCompiler 実装を含む `shader_compiler` プラグインをビルドします。ネイティブビルドではデフォルトで `ON` ですが、Emscriptenでは強制的に `OFF` になります。Slang はSinen本体にはリンクされません。

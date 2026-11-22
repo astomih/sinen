@@ -740,6 +740,7 @@ export type Render2DPass = {
 
 export type Render3DPass = {
 	isFinished: (self: Render3DPass) -> boolean,
+	drawMesh: (self: Render3DPass, vertices: buffer, indices: buffer, transform: Transform, material: Material?) -> nil,
 	drawModel: ((self: Render3DPass, model: Model, transform: Transform) -> nil)
 		& ((self: Render3DPass, model: Model, transform: Transform, material: Material) -> nil),
 	drawModelInstanced: ((self: Render3DPass, model: Model, transforms: { Transform }) -> nil) & (

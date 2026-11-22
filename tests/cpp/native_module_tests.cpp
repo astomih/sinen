@@ -109,6 +109,59 @@ TEST(NativeModuleTests, ReportsLoaderErrors) {
   modules.unload();
 }
 
+#ifdef SINEN_TEST_OCEAN_PATH
+TEST(NativeModuleTests, OceanPluginSimulatesAndWritesReusableMeshBuffers) {
+  auto &modules = sinen::nativeModuleManager();
+  const auto closeState = [&](lua_State *state) {
+    modules.close(state);
+    lua_close(state);
+    modules.unload();
+  };
+  const std::unique_ptr<lua_State, decltype(closeState)> owner(luaL_newstate(),
+                                                            closeState);
+  lua_State *state = owner.get();
+  ASSERT_NE(state, nullptr);
+  luaL_openlibs(state);
+  ASSERT_TRUE(modules.load(state, SINEN_TEST_OCEAN_PATH)) << modules.lastError();
+  lua_getfield(state, LUA_REGISTRYINDEX, SINEN_LUA_PLUGIN_REGISTRY_PREFIX "ocean");
+  lua_setglobal(state, "Ocean");
+  const auto script = Luau::compile(R"(
+    for _, spectrum in {'phillips', 'jonswap'} do
+      local o = Ocean.new({resolution = 16, wind = {spectrum = spectrum}, seed = 42})
+      local info = o:info()
+      local v, i = o:createMeshBuffers()
+      assert(info.resolution == 16 and info.vertexCount == 289)
+      assert(buffer.len(v) == 289 * 48 and buffer.len(i) == 16 * 16 * 6 * 4)
+      local before = buffer.readf32(v, 4)
+      o:update(1.25)
+      o:writeVertices(v)
+      assert(buffer.readf32(v, 4) ~= before)
+      local a, b = o:sample(-1, 5), o:sample(255, 261)
+      assert(math.abs(a.height - b.height) < 1e-6)
+      assert(a.foam >= 0 and a.foam <= 1)
+      assert(not pcall(function() o:writeVertices(buffer.create(12)) end))
+      assert(not pcall(function() o:update(0/0) end))
+      assert(not pcall(function() o:sample(math.huge, 0) end))
+      ocean_keepalive = o -- destroyed after the module's close callback
+    end
+    for _, settings in {
+      {resolution = 31}, {resolution = 8.5}, {seed = -1}, {patchSize = 0},
+      {wind = {spectrum = 'unknown'}}, {swell = {peakPeriod = 0}},
+      {depth = math.huge}, {choppiness = -1},
+    } do
+      assert(not pcall(function() Ocean.new(settings) end))
+    end
+    local calm = Ocean.new({resolution = 8, wind = {significantWaveHeight = 0},
+      swell = {significantWaveHeight = 0}})
+    local sample = calm:sample(5, 6)
+    assert(sample.height == 0 and sample.normalY == 1 and sample.foam == 0)
+  )");
+  ASSERT_EQ(luau_load(state, "ocean_plugin", script.data(), script.size(), 0), LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK) << lua_tostring(state, -1);
+  lua_gc(state, LUA_GCCOLLECT, 0);
+}
+#endif
+
 #ifdef SINEN_TEST_LUAU_TO_CPP_DIR
 TEST(NativeModuleTests, LuauToCppPluginConvertsSourceAndReportsErrors) {
   auto &modules = sinen::nativeModuleManager();

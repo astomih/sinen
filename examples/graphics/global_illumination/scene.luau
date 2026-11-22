@@ -55,8 +55,10 @@ function scene.setup()
 	add(panelModel, sn.Vec3.new(0, 2.97, 0.3), sn.Color.new(1, 0.91, 0.78))
 
 	gi:setLight(light)
-	assert(gi:initializeRealtime(sn.Vec3.new(-1.9, 0.08, -1.9), sn.Vec3.new(1.9, 2.92, 1.9), 9, 7, 9, 3),
-		"Real-time GI requires Direct3D 12, Vulkan, or WebGPU")
+	assert(
+		gi:initializeRealtime(sn.Vec3.new(-1.9, 0.08, -1.9), sn.Vec3.new(1.9, 2.92, 1.9), 9, 7, 9, 3),
+		"Real-time GI requires Direct3D 12, Vulkan, or WebGPU"
+	)
 	renderer:setLight(light)
 	renderer:setExposure(1.25)
 	renderer:setGlobalIllumination(gi)
@@ -81,7 +83,9 @@ function scene.update()
 	if sn.Keyboard.isPressed(sn.Scancode.S) then
 		scene.saveComparison()
 	end
-	if sn.Keyboard.isPressed(sn.Scancode.P) then animated = not animated end
+	if sn.Keyboard.isPressed(sn.Scancode.P) then
+		animated = not animated
+	end
 	if animated and capture == 0 then
 		elapsed += sn.Time.delta()
 		light:setPosition(sn.Vec3.new(math.sin(elapsed * 0.7) * 1.1, 2.65, 0.3))
@@ -109,7 +113,9 @@ function scene.draw()
 	renderer:setLight(light)
 	if capture < 0 then
 		capture += 1
-		if capture == 0 then capture = 1 end
+		if capture == 0 then
+			capture = 1
+		end
 	end
 	if capture > 0 then
 		local withGI = capture == 2
@@ -122,7 +128,9 @@ function scene.draw()
 		if capture == 3 then
 			capture = 0
 			renderer:setGlobalIllumination(gi, if enabled then 1 else 0)
-			if quitAfterCapture then sn.Event.quit() end
+			if quitAfterCapture then
+				sn.Event.quit()
+			end
 		end
 	end
 	drawRoom(nil)

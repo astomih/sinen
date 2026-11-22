@@ -86,6 +86,14 @@ end
 
 `nativefs` deliberately bypasses the normal `sn.Filesystem` sandbox. Load it only from trusted scripts.
 
+## ocean
+
+`SINEN_PLUGIN_OCEAN` defaults to `ON` when scripting is enabled. The `ocean`
+plugin provides seeded Phillips/JONSWAP FFT wind waves and independent swell,
+horizontal displacement, normals, compression foam, and reusable Luau mesh buffers.
+Load it with `sn.Script.loadPlugin("ocean")`, then use
+`require("@sinen/plugin/ocean")`. See the [Ocean API and example](../plugins/ocean/README.md).
+
 ## shader_compiler
 
 Configure with `SINEN_PLUGIN_SHADER_COMPILER=ON` to build the `shader_compiler` plugin containing Slang and the ShaderCompiler implementation. The option defaults to `ON` for native builds and is forced `OFF` under Emscripten. Slang is not linked into the Sinen application.

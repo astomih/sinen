@@ -1242,6 +1242,18 @@ void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {
   setTexture(0, cubemap);
   drawBaseCubemap(box);
 }
+void Graphics::drawMesh(const Mesh &mesh, const Transform &transform) {
+  if (!currentCommandBuffer || mesh.data()->vertices.empty() ||
+      mesh.data()->indices.empty()) {
+    return;
+  }
+  Model model;
+  if (!model.loadTransientFromVertexArray(mesh, currentCommandBuffer)) {
+    model.loadFromVertexArray(mesh, false);
+  }
+  drawModel(model, transform);
+}
+
 void Graphics::drawModel(const Model &model, const Transform &transform) {
   if (!model.getParts().empty()) {
     const auto bindings = currentTextureBindings;

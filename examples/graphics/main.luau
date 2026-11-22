@@ -14,6 +14,7 @@ local examples = {
 	{ label = "NPR", dir = "npr" },
 	{ label = "Shadow Map", dir = "shadow_map" },
 	{ label = "Procedural Model", dir = "procedural_model" },
+	{ label = "FFT Ocean", dir = "ocean" },
 	{ label = "Animation", dir = "animation" },
 }
 

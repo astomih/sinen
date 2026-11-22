@@ -1,5 +1,21 @@
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
 
+if(TARGET sinen_ocean)
+  add_executable(sinen_ocean_tests ocean_tests.cpp)
+  target_link_libraries(sinen_ocean_tests PRIVATE sinen_ocean GTest::gtest_main)
+  add_test(NAME sinen_ocean_tests COMMAND sinen_ocean_tests)
+  if(WIN32 AND TARGET sinen_graphics AND TARGET sinen_plugin_shader_compiler)
+    add_executable(sinen_ocean_render_tests ocean_render_tests.cpp)
+    target_include_directories(sinen_ocean_render_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+    target_link_libraries(sinen_ocean_render_tests PRIVATE sinen_script sinen_ocean GTest::gtest_main)
+    target_compile_definitions(sinen_ocean_render_tests PRIVATE
+      SINEN_TEST_OCEAN_SOURCE="${SINEN_SOURCE_DIR}/examples/graphics/ocean/ocean.slang")
+    add_dependencies(sinen_ocean_render_tests sinen_plugin_shader_compiler)
+    add_test(NAME sinen_ocean_render_tests COMMAND sinen_ocean_render_tests)
+    set_tests_properties(sinen_ocean_render_tests PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  endif()
+endif()
+
 add_executable(sinen_allocator_tests allocator_tests.cpp)
 target_link_libraries(sinen_allocator_tests PRIVATE sinen_core GTest::gtest_main)
 set_property(TARGET sinen_allocator_tests PROPERTY CXX_STANDARD 23)
@@ -180,6 +196,11 @@ if(TARGET sinen_script)
           SINEN_TEST_NATIVEFS_PATH="$<TARGET_FILE:sinen_plugin_nativefs>"
           SINEN_TEST_SOURCE_DIR="${SINEN_SOURCE_DIR}")
       add_dependencies(sinen_luau_binding_tests sinen_plugin_nativefs)
+    endif()
+    if(TARGET sinen_plugin_ocean)
+      target_compile_definitions(sinen_luau_binding_tests PRIVATE
+        SINEN_TEST_OCEAN_PATH="$<TARGET_FILE:sinen_plugin_ocean>")
+      add_dependencies(sinen_luau_binding_tests sinen_plugin_ocean)
     endif()
     if(TARGET sinen_plugin_shader_compiler)
       target_compile_definitions(

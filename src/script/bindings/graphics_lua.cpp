@@ -16,6 +16,9 @@
 #include <platform/window/window.hpp>
 
 #include <cctype>
+#include <cmath>
+#include <cstring>
+#include <limits>
 
 namespace sinen {
 static String normalizedBackendName(const char *name) {
@@ -339,6 +342,51 @@ static int lRender3DPassDrawModel(lua_State *L) {
   }
   return 0;
 }
+static int lRender3DPassDrawMesh(lua_State *L) {
+  auto &pass = udPtr<Render3DPass>(L, 1);
+  size_t vertexBytes = 0, indexBytes = 0;
+  const auto *vertices =
+      static_cast<const char *>(luaL_checkbuffer(L, 2, &vertexBytes));
+  const auto *indices = static_cast<const char *>(luaL_checkbuffer(L, 3, &indexBytes));
+  auto &transform = udValue<Transform>(L, 4);
+  // Wire layout: 12 float32 values (position, normal, UV, RGBA), uint32 indices.
+  static_assert(sizeof(Vertex) == 12 * sizeof(float));
+  static_assert(offsetof(Vertex, normal) == 3 * sizeof(float));
+  static_assert(offsetof(Vertex, uv) == 6 * sizeof(float));
+  static_assert(offsetof(Vertex, color) == 8 * sizeof(float));
+  if (vertexBytes == 0 || vertexBytes % sizeof(Vertex) != 0 ||
+      indexBytes == 0 || indexBytes % (3 * sizeof(UInt32)) != 0 ||
+      vertexBytes > std::numeric_limits<UInt32>::max() ||
+      indexBytes > std::numeric_limits<UInt32>::max()) {
+    return luaLError2(
+        L, "drawMesh expects float32 vertex records and uint32 triangles");
+  }
+  Mesh mesh;
+  auto data = mesh.data();
+  data->vertices.resize(vertexBytes / sizeof(Vertex));
+  data->indices.resize(indexBytes / sizeof(UInt32));
+  std::memcpy(data->vertices.data(), vertices, vertexBytes);
+  std::memcpy(data->indices.data(), indices, indexBytes);
+  for (const auto index : data->indices) {
+    if (index >= data->vertices.size()) {
+      return luaLError2(L, "drawMesh index is outside the vertex buffer");
+    }
+  }
+  for (size_t offset = 0; offset < vertexBytes; offset += sizeof(float)) {
+    float value;
+    std::memcpy(&value, vertices + offset, sizeof(value));
+    if (!std::isfinite(value)) {
+      return luaLError2(L, "drawMesh vertices must be finite");
+    }
+  }
+  if (!lua_isnoneornil(L, 5)) {
+    pass->drawMesh(mesh, transform, *udPtr<Material>(L, 5));
+  } else {
+    pass->drawMesh(mesh, transform);
+  }
+  return 0;
+}
+
 static int lRender3DPassDrawModelInstanced(lua_State *L) {
   auto &model = udPtr<Model>(L, 2);
   luaL_checktype(L, 3, LUA_TTABLE);
@@ -390,6 +438,7 @@ static void registerRenderPasses(lua_State *L) {
   registerRenderPassCommon<Render3DPass>(L);
   Binding::registerFunction(L, "drawCubemap", lRender3DPassDrawCubemap);
   Binding::registerFunction(L, "drawModel", lRender3DPassDrawModel);
+  Binding::registerFunction(L, "drawMesh", lRender3DPassDrawMesh);
   Binding::registerFunction(L, "drawModelInstanced",
                             lRender3DPassDrawModelInstanced);
   lua_pop(L, 1);

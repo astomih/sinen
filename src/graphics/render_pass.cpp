@@ -223,6 +223,19 @@ void Render3DPass::drawModel(const Model &model, const Transform &transform,
   }
 }
 
+void Render3DPass::drawMesh(const Mesh &mesh, const Transform &transform) {
+  if (activate()) {
+    Graphics::drawMesh(mesh, transform);
+  }
+}
+
+void Render3DPass::drawMesh(const Mesh &mesh, const Transform &transform,
+                          const Material &material) {
+  if (activate(material)) {
+    Graphics::drawMesh(mesh, transform);
+  }
+}
+
 void Render3DPass::drawModelInstanced(const Model &model,
                                       const Array<Transform> &transforms) {
   if (!model.getParts().empty()) {

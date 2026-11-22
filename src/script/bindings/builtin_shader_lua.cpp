@@ -3,44 +3,37 @@
 #include <graphics/graphics.hpp>
 
 namespace sinen {
-static int lBuiltinShaderGetDefaultVs(lua_State *L) {
-  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultVS()));
-  return 1;
+static auto lBuiltinShaderGetDefaultVs() {
+  return makePtr<Shader>(BuiltinShader::getDefaultVS());
 }
-static int lBuiltinShaderGetDefaultFs(lua_State *L) {
-  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultFS()));
-  return 1;
+static auto lBuiltinShaderGetDefaultFs() {
+  return makePtr<Shader>(BuiltinShader::getDefaultFS());
 }
-static int lBuiltinShaderGetFontFs(lua_State *L) {
-  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getFontFS()));
-  return 1;
+static auto lBuiltinShaderGetFontFs() {
+  return makePtr<Shader>(BuiltinShader::getFontFS());
 }
-static int lBuiltinShaderGetDefaultInstancedVs(lua_State *L) {
-  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultInstancedVS()));
-  return 1;
+static auto lBuiltinShaderGetDefaultInstancedVs() {
+  return makePtr<Shader>(BuiltinShader::getDefaultInstancedVS());
 }
-static int lBuiltinShaderGetRectFs(lua_State *L) {
-  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getRectFS()));
-  return 1;
+static auto lBuiltinShaderGetRectFs() {
+  return makePtr<Shader>(BuiltinShader::getRectFS());
 }
-static int lBuiltinShaderGetCubemapVs(lua_State *L) {
-  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getCubemapVS()));
-  return 1;
+static auto lBuiltinShaderGetCubemapVs() {
+  return makePtr<Shader>(BuiltinShader::getCubemapVS());
 }
-static int lBuiltinShaderGetCubemapFs(lua_State *L) {
-  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getCubemapFS()));
-  return 1;
+static auto lBuiltinShaderGetCubemapFs() {
+  return makePtr<Shader>(BuiltinShader::getCubemapFS());
 }
 void registerBuiltinShader(lua_State *L) {
   pushSnNamed(L, "BuiltinShader");
-  Binding::registerFunction(L, "getDefaultVS", lBuiltinShaderGetDefaultVs);
-  Binding::registerFunction(L, "getDefaultFS", lBuiltinShaderGetDefaultFs);
-  Binding::registerFunction(L, "getFontFS", lBuiltinShaderGetFontFs);
-  Binding::registerFunction(L, "getDefaultInstancedVS",
-                            lBuiltinShaderGetDefaultInstancedVs);
-  Binding::registerFunction(L, "getRectFS", lBuiltinShaderGetRectFs);
-  Binding::registerFunction(L, "getCubemapVS", lBuiltinShaderGetCubemapVs);
-  Binding::registerFunction(L, "getCubemapFS", lBuiltinShaderGetCubemapFs);
+  luau::table(L, -1).function("getDefaultVS", lBuiltinShaderGetDefaultVs);
+  luau::table(L, -1).function("getDefaultFS", lBuiltinShaderGetDefaultFs);
+  luau::table(L, -1).function("getFontFS", lBuiltinShaderGetFontFs);
+  luau::table(L, -1).function("getDefaultInstancedVS",
+                              lBuiltinShaderGetDefaultInstancedVs);
+  luau::table(L, -1).function("getRectFS", lBuiltinShaderGetRectFs);
+  luau::table(L, -1).function("getCubemapVS", lBuiltinShaderGetCubemapVs);
+  luau::table(L, -1).function("getCubemapFS", lBuiltinShaderGetCubemapFs);
   lua_pop(L, 1);
 }
 } // namespace sinen

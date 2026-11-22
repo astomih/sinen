@@ -75,11 +75,9 @@ static int lFontNew(lua_State *L) {
   udPushPtr<Font>(L, std::move(font));
   return 1;
 }
-static int lFontResize(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1);
-  int point = static_cast<int>(luaL_checkinteger(L, 2));
+static auto lFontResize(Ptr<Font> &font, int point) {
   font->resize(point);
-  return 0;
+  return;
 }
 static int lFontRegion(lua_State *L) {
   auto &font = udPtr<Font>(L, 1);
@@ -92,18 +90,18 @@ static int lFontRegion(lua_State *L) {
 }
 void registerFont(lua_State *L) {
 
-  luaL_newmetatable(L, Font::metaTableName());
+  pushClassMetatable<Ptr<Font>>(L, Font::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "resize", lFontResize);
-  Binding::registerFunction(L, "region", lFontRegion);
+  luau::table(L, -1).function("resize", lFontResize);
+  luau::table(L, -1).raw_function("region", lFontRegion);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Font");
-  Binding::registerFunction(L, "new", lFontNew);
-  Binding::registerInteger(L, "Bitmap",
-                         static_cast<lua_Integer>(FontMethod::Bitmap));
-  Binding::registerInteger(L, "MSDF", static_cast<lua_Integer>(FontMethod::MSDF));
+  luau::table(L, -1).raw_function("new", lFontNew);
+  luau::table(L, -1).value("Bitmap",
+                           static_cast<lua_Integer>(FontMethod::Bitmap));
+  luau::table(L, -1).value("MSDF", static_cast<lua_Integer>(FontMethod::MSDF));
   lua_pop(L, 1);
 }
 

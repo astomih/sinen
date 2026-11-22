@@ -16,7 +16,7 @@
 #include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
-#include "bindings/binding.hpp"
+#include "bindings/luaapi.hpp"
 #include "gpu/shader/shader_compiler_service.hpp"
 #include "native_module.hpp"
 #include "require.hpp"
@@ -43,7 +43,7 @@ namespace {
 String gFileName = "main.luau";
 String gBaseDirectory = "/";
 bool reload = true;
-std::unique_ptr<luau::debugger::Debugger> debugger;
+std::unique_ptr<::luau::debugger::Debugger> debugger;
 std::atomic<bool> debuggerConnected = false;
 bool debuggerAttached = false;
 } // namespace
@@ -103,9 +103,13 @@ void pushSnNamed(lua_State *L, const char *name) {
     lua_pushvalue(L, -1);
     lua_setglobal(L, "sn");
   }
-  lua_newtable(L);
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -3, name);
+  lua_getfield(L, -1, name);
+  if (!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    lua_newtable(L);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -3, name);
+  }
   lua_remove(L, -2);
 }
 static lua_State *gLua = nullptr;
@@ -343,8 +347,8 @@ bool Script::initialize(bool isScriptDebug) {
       Log::error("{}", msg.data());
     };
 
-    luau::debugger::log::install(logHandler, errorHandler);
-    debugger = std::make_unique<luau::debugger::Debugger>(false);
+    ::luau::debugger::log::install(logHandler, errorHandler);
+    debugger = std::make_unique<::luau::debugger::Debugger>(false);
     if (debugger->listen(58000)) {
       Log::info("Luau Debug server started on 58000");
       const UInt32 delayStep = 10; // ms
@@ -360,7 +364,7 @@ bool Script::initialize(bool isScriptDebug) {
       debugger.reset();
     }
   }
-  // bindings are implemented using Lua C API (see per-module *lua.cpp files)
+  // Engine classes and modules are registered through sinen::luau.
   gLua = lua_newstate(alloc, nullptr);
   if (!gLua) {
     debugger.reset();
@@ -874,10 +878,11 @@ static int lScriptLoadPlugin(lua_State *L) {
 }
 void registerScript(lua_State *L) {
   pushSnNamed(L, "Script");
-  Binding::registerFunction(L, "load", lScriptLoad);
-  Binding::registerFunction(L, "clearRequireCache", lScriptClearRequireCache);
-  Binding::registerFunction(L, "loadPlugin", lScriptLoadPlugin);
-  Binding::registerFunction(L, "loadNativeModule", lScriptLoadPlugin);
+  luau::table(L, -1).raw_function("load", lScriptLoad);
+  luau::table(L, -1).raw_function("clearRequireCache",
+                                  lScriptClearRequireCache);
+  luau::table(L, -1).raw_function("loadPlugin", lScriptLoadPlugin);
+  luau::table(L, -1).raw_function("loadNativeModule", lScriptLoadPlugin);
   lua_pop(L, 1);
 }
 } // namespace sinen

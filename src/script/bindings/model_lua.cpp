@@ -76,11 +76,9 @@ static int lModelIsReady(lua_State *L) {
   lua_pushboolean(L, udPtr<Model>(L, 1)->isReady());
   return 1;
 }
-static int lModelGetPartCount(lua_State *L) {
-  const auto &model = udPtr<Model>(L, 1);
-  lua_pushinteger(L, model->getParts().empty() ? (model->isReady() ? 1 : 0)
-                                               : model->getParts().size());
-  return 1;
+static auto lModelGetPartCount(const Ptr<Model> &model) {
+  return model->getParts().empty() ? (model->isReady() ? 1 : 0)
+                                   : model->getParts().size();
 }
 static int lModelGetMaterialCount(lua_State *L) {
   lua_pushinteger(L, udPtr<Model>(L, 1)->getMaterialCount());
@@ -90,39 +88,27 @@ static int lModelGetTriangleCount(lua_State *L) {
   lua_pushinteger(L, udPtr<Model>(L, 1)->getTriangleCount());
   return 1;
 }
-static int lModelGetAabb(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1);
-  udNewOwned<AABB>(L, m->getAABB());
-  return 1;
-}
-static int lModelNewSprite(lua_State *L) {
+static auto lModelGetAabb(Ptr<Model> &m) { return m->getAABB(); }
+static auto lModelNewSprite() {
   auto model = makePtr<Model>();
   model->loadSprite();
-  udPushPtr<Model>(L, std::move(model));
-  return 1;
+  return std::move(model);
 }
-static int lModelNewBox(lua_State *L) {
+static auto lModelNewBox() {
   auto model = makePtr<Model>();
   model->loadBox();
-  udPushPtr<Model>(L, std::move(model));
-  return 1;
+  return std::move(model);
 }
-static int lModelGetBoneUniformBuffer(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1);
-  udNewOwned<Buffer>(L, m->getBoneUniformBuffer());
-  return 1;
+static auto lModelGetBoneUniformBuffer(Ptr<Model> &m) {
+  return m->getBoneUniformBuffer();
 }
-static int lModelPlay(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1);
-  float start = static_cast<float>(luaL_checknumber(L, 2));
+static auto lModelPlay(Ptr<Model> &m, float start) {
   m->play(start);
-  return 0;
+  return;
 }
-static int lModelUpdate(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1);
-  float dt = static_cast<float>(luaL_checknumber(L, 2));
+static auto lModelUpdate(Ptr<Model> &m, float dt) {
   m->update(dt);
-  return 0;
+  return;
 }
 static int lModelHasTexture(lua_State *L) {
   auto &m = udPtr<Model>(L, 1);
@@ -144,44 +130,44 @@ static int lModelSetTexture(lua_State *L) {
   return 0;
 }
 void registerModel(lua_State *L) {
-  luaL_newmetatable(L, Model::metaTableName());
+  pushClassMetatable<Ptr<Model>>(L, Model::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "getAABB", lModelGetAabb);
-  Binding::registerFunction(L, "isReady", lModelIsReady);
-  Binding::registerFunction(L, "getPartCount", lModelGetPartCount);
-  Binding::registerFunction(L, "getMaterialCount", lModelGetMaterialCount);
-  Binding::registerFunction(L, "getTriangleCount", lModelGetTriangleCount);
-  Binding::registerFunction(L, "getBoneUniformBuffer",
-                            lModelGetBoneUniformBuffer);
-  Binding::registerFunction(L, "play", lModelPlay);
-  Binding::registerFunction(L, "update", lModelUpdate);
-  Binding::registerFunction(L, "hasTexture", lModelHasTexture);
-  Binding::registerFunction(L, "getTexture", lModelGetTexture);
-  Binding::registerFunction(L, "setTexture", lModelSetTexture);
+  luau::table(L, -1).function("getAABB", lModelGetAabb);
+  luau::table(L, -1).raw_function("isReady", lModelIsReady);
+  luau::table(L, -1).function("getPartCount", lModelGetPartCount);
+  luau::table(L, -1).raw_function("getMaterialCount", lModelGetMaterialCount);
+  luau::table(L, -1).raw_function("getTriangleCount", lModelGetTriangleCount);
+  luau::table(L, -1).function("getBoneUniformBuffer",
+                              lModelGetBoneUniformBuffer);
+  luau::table(L, -1).function("play", lModelPlay);
+  luau::table(L, -1).function("update", lModelUpdate);
+  luau::table(L, -1).raw_function("hasTexture", lModelHasTexture);
+  luau::table(L, -1).raw_function("getTexture", lModelGetTexture);
+  luau::table(L, -1).raw_function("setTexture", lModelSetTexture);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Model");
-  Binding::registerFunction(L, "new", lModelNew);
-  Binding::registerFunction(L, "newSprite", lModelNewSprite);
-  Binding::registerFunction(L, "newBox", lModelNewBox);
+  luau::table(L, -1).raw_function("new", lModelNew);
+  luau::table(L, -1).function("newSprite", lModelNewSprite);
+  luau::table(L, -1).function("newBox", lModelNewBox);
   lua_pop(L, 1);
 }
 
 void registerTextureKey(lua_State *L) {
   pushSnNamed(L, "TextureKey");
-  Binding::registerInteger(L, "BaseColor",
+  luau::table(L, -1).value("BaseColor",
                            static_cast<lua_Integer>(TextureKey::BaseColor));
-  Binding::registerInteger(L, "Normal",
+  luau::table(L, -1).value("Normal",
                            static_cast<lua_Integer>(TextureKey::Normal));
-  Binding::registerInteger(
-      L, "DiffuseRoughness",
+  luau::table(L, -1).value(
+      "DiffuseRoughness",
       static_cast<lua_Integer>(TextureKey::DiffuseRoughness));
-  Binding::registerInteger(L, "Metalness",
+  luau::table(L, -1).value("Metalness",
                            static_cast<lua_Integer>(TextureKey::Metalness));
-  Binding::registerInteger(L, "Emissive",
+  luau::table(L, -1).value("Emissive",
                            static_cast<lua_Integer>(TextureKey::Emissive));
-  Binding::registerInteger(L, "LightMap",
+  luau::table(L, -1).value("LightMap",
                            static_cast<lua_Integer>(TextureKey::LightMap));
   lua_pop(L, 1);
 }

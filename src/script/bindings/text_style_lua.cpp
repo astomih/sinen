@@ -119,24 +119,22 @@ static int lTextTransformNewindex(lua_State *L) {
 }
 
 void registerTextStyle(lua_State *L) {
-  luaL_newmetatable(L, TextStyle::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<TextStyle>);
-  Binding::registerFunction(L, "__index", lTextStyleIndex);
-  Binding::registerFunction(L, "__newindex", lTextStyleNewindex);
+  pushClassMetatable<TextStyle>(L, TextStyle::metaTableName());
+  luau::table(L, -1).raw_function("__index", lTextStyleIndex);
+  luau::table(L, -1).raw_function("__newindex", lTextStyleNewindex);
   lua_pop(L, 1);
 
   pushSnNamed(L, "TextStyle");
-  Binding::registerFunction(L, "new", lTextStyleNew);
+  luau::table(L, -1).raw_function("new", lTextStyleNew);
   lua_pop(L, 1);
 
-  luaL_newmetatable(L, TextTransform::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<TextTransform>);
-  Binding::registerFunction(L, "__index", lTextTransformIndex);
-  Binding::registerFunction(L, "__newindex", lTextTransformNewindex);
+  pushClassMetatable<TextTransform>(L, TextTransform::metaTableName());
+  luau::table(L, -1).raw_function("__index", lTextTransformIndex);
+  luau::table(L, -1).raw_function("__newindex", lTextTransformNewindex);
   lua_pop(L, 1);
 
   pushSnNamed(L, "TextTransform");
-  Binding::registerFunction(L, "new", lTextTransformNew);
+  luau::table(L, -1).raw_function("new", lTextTransformNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

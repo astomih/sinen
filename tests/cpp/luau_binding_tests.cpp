@@ -5,8 +5,8 @@
 
 #include <gtest/gtest.h>
 
-#include "script/bindings/binding.hpp"
 #include "script/require_alias.hpp"
+#include <script/luau_bind.hpp>
 
 #include <script/sinen_lua_module.h>
 
@@ -165,13 +165,14 @@ return test.sum(2, 3), counter:add(4), counter.value
   EXPECT_EQ(lua_tointeger(lua.state, -1), 12);
 }
 
-TEST(LuauBindingTests, SinenBindingRegistersFunctionsAndValues) {
+TEST(LuauBindingTests, BindingTableRegistersFunctionsAndValues) {
   LuaState lua;
   ASSERT_NE(lua.state, nullptr);
 
   lua_newtable(lua.state);
-  sinen::Binding::registerInteger(lua.state, "answer", 42);
-  sinen::Binding::registerFunction(lua.state, "multiply", multiply);
+  sinen::luau::table(lua.state, -1)
+      .value("answer", 42)
+      .raw_function("multiply", multiply);
   lua_setglobal(lua.state, "bound");
 
   constexpr const char *source = "return bound.multiply(bound.answer, 2)";

@@ -8,16 +8,14 @@
 #include <graphics/graphics.hpp>
 
 namespace sinen {
-static int lComputeSetComputePipeline(lua_State *L) {
-  auto &pipeline = udPtr<ComputePipeline>(L, 1);
+static auto lComputeSetComputePipeline(Ptr<ComputePipeline> &pipeline) {
   Compute::setComputePipeline(*pipeline);
-  return 0;
+  return;
 }
 
-static int lComputeResetComputePipeline(lua_State *L) {
-  (void)L;
+static auto lComputeResetComputePipeline() {
   Compute::resetComputePipeline();
-  return 0;
+  return;
 }
 
 static int lComputeSetUniformBuffer(lua_State *L) {
@@ -45,10 +43,9 @@ static int lComputeResetStorageBuffer(lua_State *L) {
   return 0;
 }
 
-static int lComputeResetAllStorageBuffers(lua_State *L) {
-  (void)L;
+static auto lComputeResetAllStorageBuffers() {
   Compute::resetAllStorageBuffers();
-  return 0;
+  return;
 }
 
 static int lComputeDispatch(lua_State *L) {
@@ -61,17 +58,16 @@ static int lComputeDispatch(lua_State *L) {
 
 void registerCompute(lua_State *L) {
   pushSnNamed(L, "Compute");
-  Binding::registerFunction(L, "setComputePipeline",
-                            lComputeSetComputePipeline);
-  Binding::registerFunction(L, "resetComputePipeline",
-                            lComputeResetComputePipeline);
-  Binding::registerFunction(L, "setUniformBuffer", lComputeSetUniformBuffer);
-  Binding::registerFunction(L, "setStorageBuffer", lComputeSetStorageBuffer);
-  Binding::registerFunction(L, "resetStorageBuffer",
-                            lComputeResetStorageBuffer);
-  Binding::registerFunction(L, "resetAllStorageBuffers",
-                            lComputeResetAllStorageBuffers);
-  Binding::registerFunction(L, "dispatch", lComputeDispatch);
+  luau::table(L, -1).function("setComputePipeline", lComputeSetComputePipeline);
+  luau::table(L, -1).function("resetComputePipeline",
+                              lComputeResetComputePipeline);
+  luau::table(L, -1).raw_function("setUniformBuffer", lComputeSetUniformBuffer);
+  luau::table(L, -1).raw_function("setStorageBuffer", lComputeSetStorageBuffer);
+  luau::table(L, -1).raw_function("resetStorageBuffer",
+                                  lComputeResetStorageBuffer);
+  luau::table(L, -1).function("resetAllStorageBuffers",
+                              lComputeResetAllStorageBuffers);
+  luau::table(L, -1).raw_function("dispatch", lComputeDispatch);
   lua_pop(L, 1);
 }
 } // namespace sinen

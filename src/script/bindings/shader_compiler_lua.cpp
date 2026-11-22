@@ -106,12 +106,10 @@ int lShaderCompilerCompileSource(lua_State *state) {
 } // namespace
 
 void registerShaderCompilerPluginBinding(lua_State *state) {
-  lua_newtable(state);
-  Binding::registerFunction(state, "compile", lShaderCompilerCompile);
-  Binding::registerFunction(state, "compileSource",
-                            lShaderCompilerCompileSource);
-  lua_setfield(state, LUA_REGISTRYINDEX,
-               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "shader_compiler");
+  luau::table::create(state)
+      .raw_function("compile", lShaderCompilerCompile)
+      .raw_function("compileSource", lShaderCompilerCompileSource)
+      .publish_plugin("shader_compiler");
 }
 
 } // namespace sinen

@@ -1,94 +1,23 @@
 #include "luaapi.hpp"
 #include <math/color/color.hpp>
-#include <math/color/palette.hpp>
 
 namespace sinen {
-static int lColorNew(lua_State *L) {
-  int n = lua_gettop(L);
-  if (n == 0) {
-    udNewOwned<Color>(L, Color(0.0f));
-    return 1;
-  }
-  if (n == 1) {
-    float v = static_cast<float>(luaL_checknumber(L, 1));
-    udNewOwned<Color>(L, Color(v));
-    return 1;
-  }
-  if (n == 2) {
-    float v = static_cast<float>(luaL_checknumber(L, 1));
-    float a = static_cast<float>(luaL_checknumber(L, 2));
-    udNewOwned<Color>(L, Color(v, a));
-    return 1;
-  }
-  float r = static_cast<float>(luaL_checknumber(L, 1));
-  float g = static_cast<float>(luaL_checknumber(L, 2));
-  float b = static_cast<float>(luaL_checknumber(L, 3));
-  float a = static_cast<float>(luaL_optnumber(L, 4, 1.0));
-  udNewOwned<Color>(L, Color(r, g, b, a));
-  return 1;
-}
-static int lColorIndex(lua_State *L) {
-  auto &c = udValue<Color>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  if (std::strcmp(k, "r") == 0) {
-    lua_pushnumber(L, c.r);
-    return 1;
-  }
-  if (std::strcmp(k, "g") == 0) {
-    lua_pushnumber(L, c.g);
-    return 1;
-  }
-  if (std::strcmp(k, "b") == 0) {
-    lua_pushnumber(L, c.b);
-    return 1;
-  }
-  if (std::strcmp(k, "a") == 0) {
-    lua_pushnumber(L, c.a);
-    return 1;
-  }
-  luaL_getmetatable(L, Color::metaTableName());
-  lua_pushvalue(L, 2);
-  lua_rawget(L, -2);
-  return 1;
-}
-static int lColorNewindex(lua_State *L) {
-  auto &c = udValue<Color>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  float value = static_cast<float>(luaL_checknumber(L, 3));
-  if (std::strcmp(k, "r") == 0) {
-    c.r = value;
-    return 0;
-  }
-  if (std::strcmp(k, "g") == 0) {
-    c.g = value;
-    return 0;
-  }
-  if (std::strcmp(k, "b") == 0) {
-    c.b = value;
-    return 0;
-  }
-  if (std::strcmp(k, "a") == 0) {
-    c.a = value;
-    return 0;
-  }
-  return luaLError2(L, "sn.Color: invalid field '%s'", k);
-}
-static int lColorTostring(lua_State *L) {
-  auto &c = udValue<Color>(L, 1);
-  String s = c.tableString();
-  lua_pushlstring(L, s.data(), s.size());
-  return 1;
-}
 void registerColor(lua_State *L) {
-  luaL_newmetatable(L, Color::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<Color>);
-  Binding::registerFunction(L, "__index", lColorIndex);
-  Binding::registerFunction(L, "__newindex", lColorNewindex);
-  Binding::registerFunction(L, "__tostring", lColorTostring);
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Color");
-  Binding::registerFunction(L, "new", lColorNew);
-  lua_pop(L, 1);
+  engineClass<Color>(L, Color::metaTableName())
+      .static_function(
+          "new",
+          luau::overload(
+              [] { return Color(0.0f); },
+              [](float value) { return Color(value); },
+              [](float value, float alpha) { return Color(value, alpha); },
+              [](float r, float g, float b, std::optional<float> a) {
+                return Color(r, g, b, a.value_or(1.0f));
+              }))
+      .field("r", &Color::r)
+      .field("g", &Color::g)
+      .field("b", &Color::b)
+      .field("a", &Color::a)
+      .metamethod("__tostring",
+                  [](const Color &color) { return color.tableString(); });
 }
 } // namespace sinen

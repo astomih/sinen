@@ -12,10 +12,7 @@
 #include <physics/world3d.hpp>
 
 namespace sinen {
-static int lWorld2DNew(lua_State *L) {
-  udPushPtr<World2D>(L, World2D::create());
-  return 1;
-}
+static auto lWorld2DNew() { return World2D::create(); }
 
 static int lWorld2DNewBoxCollider(lua_State *L) {
   auto w = udPtr<World2D>(L, 1);
@@ -54,57 +51,38 @@ static int lWorld2DAddCollider(lua_State *L) {
   return 0;
 }
 
-static int lWorld2DRemoveCollider(lua_State *L) {
-  auto w = udPtr<World2D>(L, 1);
-  auto &c = udValue<Collider>(L, 2);
+static auto lWorld2DRemoveCollider(Ptr<World2D> w, Collider &c) {
   w->removeCollider(c);
-  return 0;
+  return;
 }
 
-static int lWorld2DDestroyCollider(lua_State *L) {
-  auto w = udPtr<World2D>(L, 1);
-  auto &c = udValue<Collider>(L, 2);
+static auto lWorld2DDestroyCollider(Ptr<World2D> w, Collider &c) {
   w->destroyCollider(c);
-  return 0;
+  return;
 }
 
-static int lWorld2DSetGravity(lua_State *L) {
-  auto w = udPtr<World2D>(L, 1);
-  auto &g = udValue<Vec3>(L, 2);
+static auto lWorld2DSetGravity(Ptr<World2D> w, Vec3 &g) {
   w->setGravity(g);
-  return 0;
+  return;
 }
 
-static int lWorld2DGetGravity(lua_State *L) {
-  auto w = udPtr<World2D>(L, 1);
-  udNewOwned<Vec3>(L, w->getGravity());
-  return 1;
+static auto lWorld2DGetGravity(Ptr<World2D> w) { return w->getGravity(); }
+
+static auto lWorld2DBodyCount(Ptr<World2D> w) {
+  return static_cast<lua_Integer>(w->bodyCount());
 }
 
-static int lWorld2DBodyCount(lua_State *L) {
-  auto w = udPtr<World2D>(L, 1);
-  lua_pushinteger(L, static_cast<lua_Integer>(w->bodyCount()));
-  return 1;
-}
-
-static int lWorld2DOptimizeBroadPhase(lua_State *L) {
-  auto w = udPtr<World2D>(L, 1);
+static auto lWorld2DOptimizeBroadPhase(Ptr<World2D> w) {
   w->optimizeBroadPhase();
-  return 0;
+  return;
 }
 
-static int lWorld2DUpdate(lua_State *L) {
-  auto w = udPtr<World2D>(L, 1);
-  float time = static_cast<float>(luaL_checknumber(L, 2));
-  int collisionSteps = static_cast<int>(luaL_checkinteger(L, 3));
+static auto lWorld2DUpdate(Ptr<World2D> w, float time, int collisionSteps) {
   w->update(time, collisionSteps);
-  return 0;
+  return;
 }
 
-static int lWorld3DNew(lua_State *L) {
-  udPushPtr<World3D>(L, World3D::create());
-  return 1;
-}
+static auto lWorld3DNew() { return World3D::create(); }
 
 static int lWorld3DNewBoxCollider(lua_State *L) {
   auto w = udPtr<World3D>(L, 1);
@@ -185,103 +163,87 @@ static int lWorld3DRaycastClosest(lua_State *L) {
   lua_setfield(L, -2, "point");
   udNewOwned<Vec3>(L, hit.normal);
   lua_setfield(L, -2, "normal");
-  Binding::registerNumber(L, "fraction", hit.fraction);
-  Binding::registerNumber(L, "distance", hit.distance);
-  Binding::registerInteger(L, "userMaterialId",
+  luau::table(L, -1).value("fraction", hit.fraction);
+  luau::table(L, -1).value("distance", hit.distance);
+  luau::table(L, -1).value("userMaterialId",
                            static_cast<lua_Integer>(hit.userMaterialId));
-  Binding::registerInteger(L, "triangleIndex",
+  luau::table(L, -1).value("triangleIndex",
                            static_cast<lua_Integer>(hit.triangleIndex));
-  Binding::registerInteger(L, "childIndex",
+  luau::table(L, -1).value("childIndex",
                            static_cast<lua_Integer>(hit.childIndex));
   return 1;
 }
-static int lWorld3DRemoveCollider(lua_State *L) {
-  auto w = udPtr<World3D>(L, 1);
-  auto &c = udValue<Collider>(L, 2);
+static auto lWorld3DRemoveCollider(Ptr<World3D> w, Collider &c) {
   w->removeCollider(c);
-  return 0;
+  return;
 }
-static int lWorld3DDestroyCollider(lua_State *L) {
-  auto w = udPtr<World3D>(L, 1);
-  auto &c = udValue<Collider>(L, 2);
+static auto lWorld3DDestroyCollider(Ptr<World3D> w, Collider &c) {
   w->destroyCollider(c);
-  return 0;
+  return;
 }
 
-static int lWorld3DSetGravity(lua_State *L) {
-  auto w = udPtr<World3D>(L, 1);
-  auto &g = udValue<Vec3>(L, 2);
+static auto lWorld3DSetGravity(Ptr<World3D> w, Vec3 &g) {
   w->setGravity(g);
-  return 0;
+  return;
 }
-static int lWorld3DGetGravity(lua_State *L) {
-  auto w = udPtr<World3D>(L, 1);
-  udNewOwned<Vec3>(L, w->getGravity());
-  return 1;
+static auto lWorld3DGetGravity(Ptr<World3D> w) { return w->getGravity(); }
+static auto lWorld3DBodyCount(Ptr<World3D> w) {
+  return static_cast<lua_Integer>(w->bodyCount());
 }
-static int lWorld3DBodyCount(lua_State *L) {
-  auto w = udPtr<World3D>(L, 1);
-  lua_pushinteger(L, static_cast<lua_Integer>(w->bodyCount()));
-  return 1;
-}
-static int lWorld3DOptimizeBroadPhase(lua_State *L) {
-  auto w = udPtr<World3D>(L, 1);
+static auto lWorld3DOptimizeBroadPhase(Ptr<World3D> w) {
   w->optimizeBroadPhase();
-  return 0;
+  return;
 }
-static int lWorld3DUpdate(lua_State *L) {
-  auto w = udPtr<World3D>(L, 1);
-  float time = static_cast<float>(luaL_checknumber(L, 2));
-  int collisionSteps = static_cast<int>(luaL_checkinteger(L, 3));
+static auto lWorld3DUpdate(Ptr<World3D> w, float time, int collisionSteps) {
   w->update(time, collisionSteps);
-  return 0;
+  return;
 }
 void registerPhysics(lua_State *L) {
-  luaL_newmetatable(L, World2D::metaTableName());
+  pushClassMetatable<Ptr<World2D>>(L, World2D::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "newBoxCollider", lWorld2DNewBoxCollider);
-  Binding::registerFunction(L, "newCircleCollider", lWorld2DNewCircleCollider);
-  Binding::registerFunction(L, "newCapsuleCollider",
-                            lWorld2DNewCapsuleCollider);
-  Binding::registerFunction(L, "addCollider", lWorld2DAddCollider);
-  Binding::registerFunction(L, "removeCollider", lWorld2DRemoveCollider);
-  Binding::registerFunction(L, "destroyCollider", lWorld2DDestroyCollider);
-  Binding::registerFunction(L, "setGravity", lWorld2DSetGravity);
-  Binding::registerFunction(L, "getGravity", lWorld2DGetGravity);
-  Binding::registerFunction(L, "bodyCount", lWorld2DBodyCount);
-  Binding::registerFunction(L, "optimizeBroadPhase",
-                            lWorld2DOptimizeBroadPhase);
-  Binding::registerFunction(L, "update", lWorld2DUpdate);
+  luau::table(L, -1).raw_function("newBoxCollider", lWorld2DNewBoxCollider);
+  luau::table(L, -1).raw_function("newCircleCollider",
+                                  lWorld2DNewCircleCollider);
+  luau::table(L, -1).raw_function("newCapsuleCollider",
+                                  lWorld2DNewCapsuleCollider);
+  luau::table(L, -1).raw_function("addCollider", lWorld2DAddCollider);
+  luau::table(L, -1).function("removeCollider", lWorld2DRemoveCollider);
+  luau::table(L, -1).function("destroyCollider", lWorld2DDestroyCollider);
+  luau::table(L, -1).function("setGravity", lWorld2DSetGravity);
+  luau::table(L, -1).function("getGravity", lWorld2DGetGravity);
+  luau::table(L, -1).function("bodyCount", lWorld2DBodyCount);
+  luau::table(L, -1).function("optimizeBroadPhase", lWorld2DOptimizeBroadPhase);
+  luau::table(L, -1).function("update", lWorld2DUpdate);
   lua_pop(L, 1);
 
-  luaL_newmetatable(L, World3D::metaTableName());
+  pushClassMetatable<Ptr<World3D>>(L, World3D::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "newBoxCollider", lWorld3DNewBoxCollider);
-  Binding::registerFunction(L, "newSphereCollider", lWorld3DNewSphereCollider);
-  Binding::registerFunction(L, "newCylinderCollider",
-                            lWorld3DNewCylinderCollider);
-  Binding::registerFunction(L, "newCapsuleCollider",
-                            lWorld3DNewCapsuleCollider);
-  Binding::registerFunction(L, "addCollider", lWorld3DAddCollider);
-  Binding::registerFunction(L, "raycastClosest", lWorld3DRaycastClosest);
-  Binding::registerFunction(L, "removeCollider", lWorld3DRemoveCollider);
-  Binding::registerFunction(L, "destroyCollider", lWorld3DDestroyCollider);
-  Binding::registerFunction(L, "setGravity", lWorld3DSetGravity);
-  Binding::registerFunction(L, "getGravity", lWorld3DGetGravity);
-  Binding::registerFunction(L, "bodyCount", lWorld3DBodyCount);
-  Binding::registerFunction(L, "optimizeBroadPhase",
-                            lWorld3DOptimizeBroadPhase);
-  Binding::registerFunction(L, "update", lWorld3DUpdate);
+  luau::table(L, -1).raw_function("newBoxCollider", lWorld3DNewBoxCollider);
+  luau::table(L, -1).raw_function("newSphereCollider",
+                                  lWorld3DNewSphereCollider);
+  luau::table(L, -1).raw_function("newCylinderCollider",
+                                  lWorld3DNewCylinderCollider);
+  luau::table(L, -1).raw_function("newCapsuleCollider",
+                                  lWorld3DNewCapsuleCollider);
+  luau::table(L, -1).raw_function("addCollider", lWorld3DAddCollider);
+  luau::table(L, -1).raw_function("raycastClosest", lWorld3DRaycastClosest);
+  luau::table(L, -1).function("removeCollider", lWorld3DRemoveCollider);
+  luau::table(L, -1).function("destroyCollider", lWorld3DDestroyCollider);
+  luau::table(L, -1).function("setGravity", lWorld3DSetGravity);
+  luau::table(L, -1).function("getGravity", lWorld3DGetGravity);
+  luau::table(L, -1).function("bodyCount", lWorld3DBodyCount);
+  luau::table(L, -1).function("optimizeBroadPhase", lWorld3DOptimizeBroadPhase);
+  luau::table(L, -1).function("update", lWorld3DUpdate);
   lua_pop(L, 1);
 
   pushSnNamed(L, "World2D");
-  Binding::registerFunction(L, "new", lWorld2DNew);
+  luau::table(L, -1).function("new", lWorld2DNew);
   lua_pop(L, 1);
 
   pushSnNamed(L, "World3D");
-  Binding::registerFunction(L, "new", lWorld3DNew);
+  luau::table(L, -1).function("new", lWorld3DNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

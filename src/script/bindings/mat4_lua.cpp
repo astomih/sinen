@@ -24,43 +24,26 @@ static int lMat4New(lua_State *L) {
   return luaLError2(L, "sn.Mat4.new expects 0, 1, or 16 numbers");
 }
 
-static int lMat4Mul(lua_State *L) {
-  const auto &a = udValue<Mat4>(L, 1);
-  const auto &b = udValue<Mat4>(L, 2);
-  udNewOwned<Mat4>(L, a * b);
-  return 1;
-}
+static auto lMat4Mul(const Mat4 &a, const Mat4 &b) { return a * b; }
 
-static int lMat4Copy(lua_State *L) {
-  const auto &m = udValue<Mat4>(L, 1);
-  udNewOwned<Mat4>(L, m);
-  return 1;
-}
+static auto lMat4Copy(const Mat4 &m) { return m; }
 
-static int lMat4Transpose(lua_State *L) {
-  const auto &m = udValue<Mat4>(L, 1);
-  udNewOwned<Mat4>(L, Mat4::transpose(m));
-  return 1;
-}
+static auto lMat4Transpose(const Mat4 &m) { return Mat4::transpose(m); }
 
-static int lMat4Identity(lua_State *L) {
-  udNewOwned<Mat4>(L, Mat4::identity());
-  return 1;
-}
+static auto lMat4Identity() { return Mat4::identity(); }
 
 void registerMat4(lua_State *L) {
-  luaL_newmetatable(L, Mat4::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<Mat4>);
+  pushClassMetatable<Mat4>(L, Mat4::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "__mul", lMat4Mul);
-  Binding::registerFunction(L, "copy", lMat4Copy);
-  Binding::registerFunction(L, "transpose", lMat4Transpose);
+  luau::table(L, -1).function("__mul", lMat4Mul);
+  luau::table(L, -1).function("copy", lMat4Copy);
+  luau::table(L, -1).function("transpose", lMat4Transpose);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Mat4");
-  Binding::registerFunction(L, "new", lMat4New);
-  Binding::registerFunction(L, "identity", lMat4Identity);
+  luau::table(L, -1).raw_function("new", lMat4New);
+  luau::table(L, -1).function("identity", lMat4Identity);
   lua_pop(L, 1);
 }
 } // namespace sinen

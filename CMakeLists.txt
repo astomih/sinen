@@ -330,7 +330,7 @@ function(sinen_add_script_module)
            ${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger/include
            ${SINEN_SOURCE_DIR}/libs/cppdap/include
     PRIVATE ${SINEN_SOURCE_DIR}/src)
-  target_link_libraries(sinen_script PUBLIC Luau.VM Luau.Compiler Luau.Ast
+  target_link_libraries(sinen_script PUBLIC sinen::luau_bind Luau.VM Luau.Compiler Luau.Ast
                                             Luau.Require cppdap
                                             Luau.Debugger SDL3::SDL3)
   if(NOT EMSCRIPTEN)

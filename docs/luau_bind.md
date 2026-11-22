@@ -54,6 +54,8 @@ print(c:add(3), native.sum(2, 3)) -- 13, 5
 | `.constructor<Args...>()` | `Class.new(...)` and `Class(...)` |
 | `.method(name, callable)` | Member pointer, or callable with `T&` / `const T&` first |
 | `.static_function(name, callable)` | `Class.function(...)` |
+| `.metamethod(name, callable)` | Typed operators such as `__add` and `__tostring` |
+| `.metatable()` | Low-level table handle for custom C API metamethods |
 | `.field(name, &T::member)` / `.readonly(name, &T::member)` | Writable / read-only field |
 | `.property(name, getter[, setter])` | Accessor property; setter returns `void` |
 
@@ -73,6 +75,8 @@ Specialize `sinen::luau::stack<T>` with `matches(L, index)`, `get(L, index)`, an
 
 `table` and `class_builder` hold registry references and must be destroyed before `lua_close`. Registered functions and classes remain valid after these C++ handles die. Plugin binaries must remain loaded until the VM closes; Sinen's existing loader guarantees this ordering. Registration preserves stack height; `.push()` explicitly adds one table.
 
-C++ exceptions become Luau errors that scripts can catch with `pcall`. Wrap registration with `sinen::luau::open`. Raw C API callbacks manage their own return counts and exceptions. Enable C++ exceptions in both Luau and plugins, with `LUA_USE_LONGJMP=0`. Destructors must not throw. Automatic inheritance, Luau-to-C++ function callbacks, and yielding across C++ calls are outside this API's scope.
+C++ exceptions become Luau errors that scripts can catch with `pcall`. Wrap registration with `sinen::luau::open`. Raw C API callbacks manage their own stack and return counts; their C++ exceptions are also translated into Luau errors. Enable C++ exceptions in both Luau and plugins, with `LUA_USE_LONGJMP=0`. Destructors must not throw. Automatic inheritance, Luau-to-C++ function callbacks, and yielding across C++ calls are outside this API's scope.
 
 See the [DLL fixture](https://github.com/astomih/sinen/blob/main/tests/cpp/native_module_fixture.cpp), [behavior tests](https://github.com/astomih/sinen/blob/main/tests/cpp/luau_bind_library_tests.cpp), and [native module loading guide](native_modules.md).
+
+The engine uses this same binding API. Value classes and `Ptr<T>` resources share its userdata ownership and type checks. Complex callbacks and table parsers use `raw_function`; their userdata conversions use `stack<T>` as well. Existing `sn.Class.new(...)` entry points remain available. Typed entry points use the strict conversions described above.

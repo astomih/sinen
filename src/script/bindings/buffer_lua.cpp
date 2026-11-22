@@ -99,10 +99,7 @@ static int lBufferFromBytes(lua_State *L) {
   return 1;
 }
 
-static int lBufferToHeader(lua_State *L) {
-  auto &buffer = udValue<Buffer>(L, 1);
-  const char *symbolName = luaL_checkstring(L, 2);
-
+static auto lBufferToHeader(Buffer &buffer, const char *symbolName) {
   std::ostringstream out;
   out << "unsigned char " << symbolName << "[] = {\n";
 
@@ -131,28 +128,22 @@ static int lBufferToHeader(lua_State *L) {
   if (!header.empty()) {
     std::memcpy(headerBuffer.data(), header.data(), header.size());
   }
-  udNewOwned<Buffer>(L, std::move(headerBuffer));
-  return 1;
+  return std::move(headerBuffer);
 }
 
-static int lBufferSize(lua_State *L) {
-  auto &buffer = udValue<Buffer>(L, 1);
-  lua_pushinteger(L, buffer.size());
-  return 1;
-}
+static auto lBufferSize(Buffer &buffer) { return buffer.size(); }
 
 void registerBuffer(lua_State *L) {
-  luaL_newmetatable(L, Buffer::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<Buffer>);
+  pushClassMetatable<Buffer>(L, Buffer::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "size", lBufferSize);
-  Binding::registerFunction(L, "toHeader", lBufferToHeader);
+  luau::table(L, -1).function("size", lBufferSize);
+  luau::table(L, -1).function("toHeader", lBufferToHeader);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Buffer");
-  Binding::registerFunction(L, "new", lBufferNew);
-  Binding::registerFunction(L, "fromBytes", lBufferFromBytes);
+  luau::table(L, -1).raw_function("new", lBufferNew);
+  luau::table(L, -1).raw_function("fromBytes", lBufferFromBytes);
   lua_pop(L, 1);
 }
 } // namespace sinen

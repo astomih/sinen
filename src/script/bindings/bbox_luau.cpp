@@ -2,10 +2,7 @@
 #include <math/geometry/bbox.hpp>
 
 namespace sinen {
-static int lAabbNew(lua_State *L) {
-  udNewOwned<AABB>(L, AABB{});
-  return 1;
-}
+static auto lAabbNew() { return AABB{}; }
 static int lAabbIndex(lua_State *L) {
   auto &aabb = udValue<AABB>(L, 1);
   const char *k = luaL_checkstring(L, 2);
@@ -36,31 +33,23 @@ static int lAabbNewindex(lua_State *L) {
   }
   return luaLError2(L, "sn.AABB: invalid field '%s'", k);
 }
-static int lAabbUpdateWorld(lua_State *L) {
-  auto &aabb = udValue<AABB>(L, 1);
-  auto &p = udValue<Vec3>(L, 2);
-  auto &scale = udValue<Vec3>(L, 3);
-  auto &local = udValue<AABB>(L, 4);
+static auto lAabbUpdateWorld(AABB &aabb, Vec3 &p, Vec3 &scale, AABB &local) {
   aabb.updateWorld(p, scale, local);
-  return 0;
+  return;
 }
-static int lAabbIntersectsAabb(lua_State *L) {
-  auto &a = udValue<AABB>(L, 1);
-  auto &b = udValue<AABB>(L, 2);
-  lua_pushboolean(L, a.intersectsAABB(b));
-  return 1;
+static auto lAabbIntersectsAabb(AABB &a, AABB &b) {
+  return a.intersectsAABB(b);
 }
 void registerAABB(lua_State *L) {
-  luaL_newmetatable(L, AABB::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<AABB>);
-  Binding::registerFunction(L, "__index", lAabbIndex);
-  Binding::registerFunction(L, "__newindex", lAabbNewindex);
-  Binding::registerFunction(L, "updateWorld", lAabbUpdateWorld);
-  Binding::registerFunction(L, "intersectsAABB", lAabbIntersectsAabb);
+  pushClassMetatable<AABB>(L, AABB::metaTableName());
+  luau::table(L, -1).raw_function("__index", lAabbIndex);
+  luau::table(L, -1).raw_function("__newindex", lAabbNewindex);
+  luau::table(L, -1).function("updateWorld", lAabbUpdateWorld);
+  luau::table(L, -1).function("intersectsAABB", lAabbIntersectsAabb);
   lua_pop(L, 1);
 
   pushSnNamed(L, "AABB");
-  Binding::registerFunction(L, "new", lAabbNew);
+  luau::table(L, -1).function("new", lAabbNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

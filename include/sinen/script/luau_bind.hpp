@@ -504,6 +504,14 @@ template <class F> int function_call(lua_State *L) {
   });
 }
 
+inline int raw_function_call(lua_State *L) {
+  return protect(L, [&] {
+    auto *value = static_cast<capture<lua_CFunction> *>(
+        lua_touserdata(L, lua_upvalueindex(1)));
+    return (*value->pointer)(L);
+  });
+}
+
 template <class F>
 void push_function(lua_State *L, F &&function, const char *name) {
   push_closure<F, function_call<std::decay_t<F>>>(L, std::forward<F>(function),
@@ -591,10 +599,12 @@ public:
     return *this;
   }
   // Escape hatch for int(lua_State*) functions that manage their own stack.
+  // As with typed functions, C++ exceptions become Luau errors.
   table &raw_function(const char *name, lua_CFunction function) {
     detail::stack_guard guard(L);
     push();
-    lua_pushcfunction(L, function, name);
+    detail::push_closure<lua_CFunction, detail::raw_function_call>(
+        L, std::move(function), name);
     lua_setfield(L, -2, name);
     return *this;
   }
@@ -702,14 +712,14 @@ template <class T> class class_builder {
 public:
   class_builder(const table &parent, const char *name)
       : L(parent.state()), methods(table::create(L)), getters(table::create(L)),
-        setters(table::create(L)), metatable(table::create(L)),
+        setters(table::create(L)), metaTable(table::create(L)),
         constructors(table::create(L)) {
     detail::stack_guard guard(L);
     lua_rawgetp(L, LUA_REGISTRYINDEX, &detail::type_key<T>);
     detail::require(lua_isnil(L, -1),
                     "C++ class already registered in this VM/module");
     lua_pop(L, 1);
-    metatable.push();
+    metaTable.push();
     getters.push();
     methods.push();
     lua_pushcclosure(L, detail::class_index, "C++.__index", 2);
@@ -723,6 +733,13 @@ public:
     lua_setfield(L, -2, "__metatable");
     lua_rawsetp(L, LUA_REGISTRYINDEX, &detail::type_key<T>);
     parent_copy(parent, name);
+  }
+  // Low-level access for custom metamethods and existing C API bindings.
+  // Prefer field/property/method for ordinary class members.
+  table metatable() const { return metaTable; }
+  template <class F> class_builder &metamethod(const char *name, F &&function) {
+    metaTable.function(name, std::forward<F>(function));
+    return *this;
   }
   template <class... A> class_builder &constructor() {
     static_assert(std::is_constructible_v<T, A...>,
@@ -801,7 +818,7 @@ private:
     copy.set_table(name, constructors);
   }
   lua_State *L;
-  table methods, getters, setters, metatable, constructors;
+  table methods, getters, setters, metaTable, constructors;
 };
 
 template <class T> class_builder<T> table::class_(const char *name) {

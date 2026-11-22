@@ -4,21 +4,20 @@
 namespace sinen {
 void registerPivot(lua_State *L) {
   pushSnNamed(L, "Pivot");
-  Binding::registerInteger(L, "TopLeft",
-                         static_cast<lua_Integer>(Pivot::TopLeft));
-  Binding::registerInteger(L, "TopCenter",
-                         static_cast<lua_Integer>(Pivot::TopCenter));
-  Binding::registerInteger(L, "TopRight",
-                         static_cast<lua_Integer>(Pivot::TopRight));
-  Binding::registerInteger(L, "Left", static_cast<lua_Integer>(Pivot::Left));
-  Binding::registerInteger(L, "Center", static_cast<lua_Integer>(Pivot::Center));
-  Binding::registerInteger(L, "Right", static_cast<lua_Integer>(Pivot::Right));
-  Binding::registerInteger(L, "BottomLeft",
-                         static_cast<lua_Integer>(Pivot::BottomLeft));
-  Binding::registerInteger(L, "BottomCenter",
-                         static_cast<lua_Integer>(Pivot::BottomCenter));
-  Binding::registerInteger(L, "BottomRight",
-                         static_cast<lua_Integer>(Pivot::BottomRight));
+  luau::table(L, -1).value("TopLeft", static_cast<lua_Integer>(Pivot::TopLeft));
+  luau::table(L, -1).value("TopCenter",
+                           static_cast<lua_Integer>(Pivot::TopCenter));
+  luau::table(L, -1).value("TopRight",
+                           static_cast<lua_Integer>(Pivot::TopRight));
+  luau::table(L, -1).value("Left", static_cast<lua_Integer>(Pivot::Left));
+  luau::table(L, -1).value("Center", static_cast<lua_Integer>(Pivot::Center));
+  luau::table(L, -1).value("Right", static_cast<lua_Integer>(Pivot::Right));
+  luau::table(L, -1).value("BottomLeft",
+                           static_cast<lua_Integer>(Pivot::BottomLeft));
+  luau::table(L, -1).value("BottomCenter",
+                           static_cast<lua_Integer>(Pivot::BottomCenter));
+  luau::table(L, -1).value("BottomRight",
+                           static_cast<lua_Integer>(Pivot::BottomRight));
   lua_pop(L, 1);
 }
 } // namespace sinen

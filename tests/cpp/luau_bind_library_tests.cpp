@@ -369,4 +369,29 @@ TEST_F(LuauBindLibrary, ClassRegistrationsAreIndependentAcrossStates) {
   EXPECT_EQ(lua_pcall(second, 0, 0, 0), LUA_OK);
   lua_close(second);
 }
+
+TEST_F(LuauBindLibrary, RawCallbacksTranslateExceptionsAndPreserveResults) {
+  auto module = bind::table::create(L);
+  module
+      .raw_function(
+          "fail",
+          +[](lua_State *) -> int {
+            throw std::runtime_error("raw callback failed");
+          })
+      .raw_function(
+          "pair",
+          +[](lua_State *state) {
+            lua_pushinteger(state, 2);
+            lua_pushinteger(state, 3);
+            return 2;
+          })
+      .publish("test");
+  ASSERT_TRUE(run(R"(
+local ok, message = pcall(test.fail)
+assert(not ok and string.find(message, "raw callback failed", 1, true))
+local a, b = test.pair()
+assert(a == 2 and b == 3)
+)"));
+  EXPECT_EQ(lua_gettop(L), 0);
+}
 } // namespace

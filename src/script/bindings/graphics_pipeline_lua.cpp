@@ -4,21 +4,15 @@
 #include <graphics/graphics_pipeline.hpp>
 
 namespace sinen {
-static int lPipelineNew(lua_State *L) {
-  udPushPtr<GraphicsPipeline>(L, makePtr<GraphicsPipeline>());
-  return 1;
-}
-static int lPipelineSetVertexShader(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1);
-  auto &s = udPtr<Shader>(L, 2);
+static auto lPipelineNew() { return makePtr<GraphicsPipeline>(); }
+static auto lPipelineSetVertexShader(Ptr<GraphicsPipeline> &p, Ptr<Shader> &s) {
   p->setVertexShader(*s);
-  return 0;
+  return;
 }
-static int lPipelineSetFragmentShader(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1);
-  auto &s = udPtr<Shader>(L, 2);
+static auto lPipelineSetFragmentShader(Ptr<GraphicsPipeline> &p,
+                                       Ptr<Shader> &s) {
   p->setFragmentShader(*s);
-  return 0;
+  return;
 }
 static int lPipelineSetEnableDepthTest(lua_State *L) {
   auto &p = udPtr<GraphicsPipeline>(L, 1);
@@ -55,25 +49,27 @@ static int lPipelineBuild(lua_State *L) {
   return 0;
 }
 void registerPipeline(lua_State *L) {
-  luaL_newmetatable(L, GraphicsPipeline::metaTableName());
+  pushClassMetatable<Ptr<GraphicsPipeline>>(L,
+                                            GraphicsPipeline::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "setVertexShader", lPipelineSetVertexShader);
-  Binding::registerFunction(L, "setFragmentShader", lPipelineSetFragmentShader);
-  Binding::registerFunction(L, "setEnableDepthTest",
-                            lPipelineSetEnableDepthTest);
-  Binding::registerFunction(L, "setEnableDepthWrite",
-                            lPipelineSetEnableDepthWrite);
-  Binding::registerFunction(L, "setEnableInstanced",
-                            lPipelineSetEnableInstanced);
-  Binding::registerFunction(L, "setEnableAnimation",
-                            lPipelineSetEnableAnimation);
-  Binding::registerFunction(L, "setEnableTangent", lPipelineSetEnableTangent);
-  Binding::registerFunction(L, "build", lPipelineBuild);
+  luau::table(L, -1).function("setVertexShader", lPipelineSetVertexShader);
+  luau::table(L, -1).function("setFragmentShader", lPipelineSetFragmentShader);
+  luau::table(L, -1).raw_function("setEnableDepthTest",
+                                  lPipelineSetEnableDepthTest);
+  luau::table(L, -1).raw_function("setEnableDepthWrite",
+                                  lPipelineSetEnableDepthWrite);
+  luau::table(L, -1).raw_function("setEnableInstanced",
+                                  lPipelineSetEnableInstanced);
+  luau::table(L, -1).raw_function("setEnableAnimation",
+                                  lPipelineSetEnableAnimation);
+  luau::table(L, -1).raw_function("setEnableTangent",
+                                  lPipelineSetEnableTangent);
+  luau::table(L, -1).raw_function("build", lPipelineBuild);
   lua_pop(L, 1);
 
   pushSnNamed(L, "GraphicsPipeline");
-  Binding::registerFunction(L, "new", lPipelineNew);
+  luau::table(L, -1).function("new", lPipelineNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

@@ -40,12 +40,10 @@ static int lGraphicsDrawRect(lua_State *L) {
   Graphics::drawRect(rect, color);
   return 0;
 }
-static int lGraphicsDrawText(lua_State *L) {
-  const char *text = luaL_checkstring(L, 1);
-  auto &style = udValue<TextStyle>(L, 2);
-  auto &transform = udValue<TextTransform>(L, 3);
+static auto lGraphicsDrawText(const char *text, TextStyle &style,
+                              TextTransform &transform) {
   Graphics::drawText(StringView(text), style, transform);
-  return 0;
+  return;
 }
 static int lGraphicsDrawImage(lua_State *L) {
   auto &tex = udPtr<Texture>(L, 1);
@@ -58,16 +56,13 @@ static int lGraphicsDrawImage(lua_State *L) {
   Graphics::drawImage(tex, rect);
   return 0;
 }
-static int lGraphicsDrawCubemap(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1);
+static auto lGraphicsDrawCubemap(Ptr<Texture> &tex) {
   Graphics::drawCubemap(tex);
-  return 0;
+  return;
 }
-static int lGraphicsDrawModel(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1);
-  auto &t = udValue<Transform>(L, 2);
+static auto lGraphicsDrawModel(Ptr<Model> &m, Transform &t) {
   Graphics::drawModel(*m, t);
-  return 0;
+  return;
 }
 static int lGraphicsDrawModelInstanced(lua_State *L) {
   auto &m = udPtr<Model>(L, 1);
@@ -92,15 +87,13 @@ static int lGraphicsBegin2D(lua_State *L) {
   Graphics::begin2D();
   return 0;
 }
-static int lGraphicsBegin3D(lua_State *L) {
-  auto &cam = udValue<Camera3D>(L, 1);
+static auto lGraphicsBegin3D(Camera3D &cam) {
   Graphics::begin3D(cam);
-  return 0;
+  return;
 }
-static int lGraphicsFinish(lua_State *L) {
-  (void)L;
+static auto lGraphicsFinish() {
   Graphics::finish();
-  return 0;
+  return;
 }
 static int lGraphicsBegin2DPass(lua_State *L) {
   Ptr<Render2DPass> pass;
@@ -155,10 +148,8 @@ static int lGraphicsEndPass(lua_State *L) {
   return 0;
 }
 
-static int lMaterialNew(lua_State *L) {
-  auto &pipeline = udPtr<GraphicsPipeline>(L, 1);
-  udPushPtr<Material>(L, makePtr<Material>(GlobalAllocator::get(), pipeline));
-  return 1;
+static auto lMaterialNew(Ptr<GraphicsPipeline> &pipeline) {
+  return makePtr<Material>(GlobalAllocator::get(), pipeline);
 }
 static int lMaterialSetUniformBuffer(lua_State *L) {
   auto &material = udPtr<Material>(L, 1);
@@ -209,21 +200,22 @@ static int lMaterialResetAllTexture(lua_State *L) {
 }
 
 static void registerMaterial(lua_State *L) {
-  luaL_newmetatable(L, Material::metaTableName());
+  pushClassMetatable<Ptr<Material>>(L, Material::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "setUniformBuffer", lMaterialSetUniformBuffer);
-  Binding::registerFunction(L, "resetUniformBuffer",
-                            lMaterialResetUniformBuffer);
-  Binding::registerFunction(L, "resetAllUniformBuffers",
-                            lMaterialResetAllUniformBuffers);
-  Binding::registerFunction(L, "setTexture", lMaterialSetTexture);
-  Binding::registerFunction(L, "resetTexture", lMaterialResetTexture);
-  Binding::registerFunction(L, "resetAllTexture", lMaterialResetAllTexture);
+  luau::table(L, -1).raw_function("setUniformBuffer",
+                                  lMaterialSetUniformBuffer);
+  luau::table(L, -1).raw_function("resetUniformBuffer",
+                                  lMaterialResetUniformBuffer);
+  luau::table(L, -1).raw_function("resetAllUniformBuffers",
+                                  lMaterialResetAllUniformBuffers);
+  luau::table(L, -1).raw_function("setTexture", lMaterialSetTexture);
+  luau::table(L, -1).raw_function("resetTexture", lMaterialResetTexture);
+  luau::table(L, -1).raw_function("resetAllTexture", lMaterialResetAllTexture);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Material");
-  Binding::registerFunction(L, "new", lMaterialNew);
+  luau::table(L, -1).function("new", lMaterialNew);
   lua_pop(L, 1);
 }
 
@@ -347,9 +339,11 @@ static int lRender3DPassDrawMesh(lua_State *L) {
   size_t vertexBytes = 0, indexBytes = 0;
   const auto *vertices =
       static_cast<const char *>(luaL_checkbuffer(L, 2, &vertexBytes));
-  const auto *indices = static_cast<const char *>(luaL_checkbuffer(L, 3, &indexBytes));
+  const auto *indices =
+      static_cast<const char *>(luaL_checkbuffer(L, 3, &indexBytes));
   auto &transform = udValue<Transform>(L, 4);
-  // Wire layout: 12 float32 values (position, normal, UV, RGBA), uint32 indices.
+  // Wire layout: 12 float32 values (position, normal, UV, RGBA), uint32
+  // indices.
   static_assert(sizeof(Vertex) == 12 * sizeof(float));
   static_assert(offsetof(Vertex, normal) == 3 * sizeof(float));
   static_assert(offsetof(Vertex, uv) == 6 * sizeof(float));
@@ -408,49 +402,46 @@ static int lRender3DPassDrawModelInstanced(lua_State *L) {
 }
 
 template <class T> static void registerRenderPassCommon(lua_State *L) {
-  Binding::registerFunction(L, "isFinished", lRenderPassIsFinished<T>);
-  Binding::registerFunction(L, "setGraphicsPipeline",
-                            lRenderPassSetGraphicsPipeline<T>);
-  Binding::registerFunction(L, "resetGraphicsPipeline",
-                            lRenderPassResetGraphicsPipeline<T>);
-  Binding::registerFunction(L, "setUniformBuffer",
-                            lRenderPassSetUniformBuffer<T>);
-  Binding::registerFunction(L, "setTexture", lRenderPassSetTexture<T>);
-  Binding::registerFunction(L, "resetTexture", lRenderPassResetTexture<T>);
-  Binding::registerFunction(L, "resetAllTexture",
-                            lRenderPassResetAllTexture<T>);
+  luau::table(L, -1).raw_function("isFinished", lRenderPassIsFinished<T>);
+  luau::table(L, -1).raw_function("setGraphicsPipeline",
+                                  lRenderPassSetGraphicsPipeline<T>);
+  luau::table(L, -1).raw_function("resetGraphicsPipeline",
+                                  lRenderPassResetGraphicsPipeline<T>);
+  luau::table(L, -1).raw_function("setUniformBuffer",
+                                  lRenderPassSetUniformBuffer<T>);
+  luau::table(L, -1).raw_function("setTexture", lRenderPassSetTexture<T>);
+  luau::table(L, -1).raw_function("resetTexture", lRenderPassResetTexture<T>);
+  luau::table(L, -1).raw_function("resetAllTexture",
+                                  lRenderPassResetAllTexture<T>);
 }
 
 static void registerRenderPasses(lua_State *L) {
-  luaL_newmetatable(L, Render2DPass::metaTableName());
+  pushClassMetatable<Ptr<Render2DPass>>(L, Render2DPass::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   registerRenderPassCommon<Render2DPass>(L);
-  Binding::registerFunction(L, "windowToCurrent", lRender2DPassWindowToCurrent);
-  Binding::registerFunction(L, "drawRect", lRender2DPassDrawRect);
-  Binding::registerFunction(L, "drawImage", lRender2DPassDrawImage);
-  Binding::registerFunction(L, "drawText", lRender2DPassDrawText);
+  luau::table(L, -1).raw_function("windowToCurrent",
+                                  lRender2DPassWindowToCurrent);
+  luau::table(L, -1).raw_function("drawRect", lRender2DPassDrawRect);
+  luau::table(L, -1).raw_function("drawImage", lRender2DPassDrawImage);
+  luau::table(L, -1).raw_function("drawText", lRender2DPassDrawText);
   lua_pop(L, 1);
 
-  luaL_newmetatable(L, Render3DPass::metaTableName());
+  pushClassMetatable<Ptr<Render3DPass>>(L, Render3DPass::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   registerRenderPassCommon<Render3DPass>(L);
-  Binding::registerFunction(L, "drawCubemap", lRender3DPassDrawCubemap);
-  Binding::registerFunction(L, "drawModel", lRender3DPassDrawModel);
-  Binding::registerFunction(L, "drawMesh", lRender3DPassDrawMesh);
-  Binding::registerFunction(L, "drawModelInstanced",
-                            lRender3DPassDrawModelInstanced);
+  luau::table(L, -1).raw_function("drawCubemap", lRender3DPassDrawCubemap);
+  luau::table(L, -1).raw_function("drawModel", lRender3DPassDrawModel);
+  luau::table(L, -1).raw_function("drawMesh", lRender3DPassDrawMesh);
+  luau::table(L, -1).raw_function("drawModelInstanced",
+                                  lRender3DPassDrawModelInstanced);
   lua_pop(L, 1);
 }
-static int lGraphicsGetClearColor(lua_State *L) {
-  udNewOwned<Color>(L, Graphics::getClearColor());
-  return 1;
-}
-static int lGraphicsSetClearColor(lua_State *L) {
-  auto &c = udValue<Color>(L, 1);
+static auto lGraphicsGetClearColor() { return Graphics::getClearColor(); }
+static auto lGraphicsSetClearColor(Color &c) {
   Graphics::setClearColor(c);
-  return 0;
+  return;
 }
 static int lGraphicsSetMSAASampleCount(lua_State *L) {
   UInt32 sampleCount = static_cast<UInt32>(luaL_checkinteger(L, 1));
@@ -462,19 +453,16 @@ static int lGraphicsSetMSAASampleCount(lua_State *L) {
   Graphics::setMSAASampleCount(sampleCount);
   return 0;
 }
-static int lGraphicsGetMSAASampleCount(lua_State *L) {
-  lua_pushinteger(L, Graphics::getMSAASampleCount());
-  return 1;
+static auto lGraphicsGetMSAASampleCount() {
+  return Graphics::getMSAASampleCount();
 }
-static int lGraphicsSetGraphicsPipeline(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1);
+static auto lGraphicsSetGraphicsPipeline(Ptr<GraphicsPipeline> &p) {
   Graphics::setGraphicsPipeline(*p);
-  return 0;
+  return;
 }
-static int lGraphicsResetGraphicsPipeline(lua_State *L) {
-  (void)L;
+static auto lGraphicsResetGraphicsPipeline() {
   Graphics::resetGraphicsPipeline();
-  return 0;
+  return;
 }
 static int lGraphicsSetTexture(lua_State *L) {
   auto &t = udPtr<Texture>(L, 2);
@@ -497,10 +485,9 @@ static int lGraphicsResetTexture(lua_State *L) {
   }
   return 0;
 }
-static int lGraphicsResetAllTexture(lua_State *L) {
-  (void)L;
+static auto lGraphicsResetAllTexture() {
   Graphics::resetAllTexture();
-  return 0;
+  return;
 }
 static int lGraphicsSetUniformBuffer(lua_State *L) {
   auto &b = udValue<Buffer>(L, 2);
@@ -513,31 +500,24 @@ static int lGraphicsSetUniformBuffer(lua_State *L) {
   }
   return 0;
 }
-static int lGraphicsBeginRenderTarget(lua_State *L) {
-  auto &rt = udPtr<RenderTexture>(L, 1);
+static auto lGraphicsBeginRenderTarget(Ptr<RenderTexture> &rt) {
   Graphics::beginRenderTarget(*rt);
-  return 0;
+  return;
 }
-static int lGraphicsEndRenderTarget(lua_State *L) {
-  (void)L;
+static auto lGraphicsEndRenderTarget() {
   Graphics::endRenderTarget();
-  return 0;
+  return;
 }
-static int lGraphicsReadbackTexture(lua_State *L) {
-  auto &rt = udPtr<RenderTexture>(L, 1);
-  auto &out = udPtr<Texture>(L, 2);
-  lua_pushboolean(L, Graphics::readbackTexture(*rt, out));
-  return 1;
+static auto lGraphicsReadbackTexture(Ptr<RenderTexture> &rt,
+                                     Ptr<Texture> &out) {
+  return Graphics::readbackTexture(*rt, out);
 }
 static int lGraphicsGetBackendName(lua_State *L) {
   const auto name = Graphics::getBackendName();
   lua_pushstring(L, name.c_str());
   return 1;
 }
-static int lRenderDocIsAvailable(lua_State *L) {
-  lua_pushboolean(L, RenderDoc::isAvailable());
-  return 1;
-}
+static auto lRenderDocIsAvailable() { return RenderDoc::isAvailable(); }
 static int lRenderDocTriggerCapture(lua_State *L) {
   const int frames = luaL_optinteger(L, 1, 1);
   if (frames <= 0) {
@@ -547,18 +527,15 @@ static int lRenderDocTriggerCapture(lua_State *L) {
   lua_pushboolean(L, RenderDoc::triggerCapture(static_cast<UInt32>(frames)));
   return 1;
 }
-static int lRenderDocIsFrameCapturing(lua_State *L) {
-  lua_pushboolean(L, RenderDoc::isFrameCapturing());
-  return 1;
+static auto lRenderDocIsFrameCapturing() {
+  return RenderDoc::isFrameCapturing();
 }
 static int lRenderDocSetCaptureFilePathTemplate(lua_State *L) {
-  lua_pushboolean(L, RenderDoc::setCaptureFilePathTemplate(luaL_checkstring(L, 1)));
+  lua_pushboolean(
+      L, RenderDoc::setCaptureFilePathTemplate(luaL_checkstring(L, 1)));
   return 1;
 }
-static int lRenderDocGetNumCaptures(lua_State *L) {
-  lua_pushnumber(L, RenderDoc::getNumCaptures());
-  return 1;
-}
+static auto lRenderDocGetNumCaptures() { return RenderDoc::getNumCaptures(); }
 static int lRenderDocGetCaptureFilePath(lua_State *L) {
   const int index = luaL_checkinteger(L, 1);
   if (index < 0) {
@@ -571,48 +548,50 @@ static int lRenderDocGetCaptureFilePath(lua_State *L) {
 }
 void registerGraphics(lua_State *L) {
   pushSnNamed(L, "RenderDoc");
-  Binding::registerFunction(L, "isAvailable", lRenderDocIsAvailable);
-  Binding::registerFunction(L, "triggerCapture", lRenderDocTriggerCapture);
-  Binding::registerFunction(L, "isFrameCapturing", lRenderDocIsFrameCapturing);
-  Binding::registerFunction(L, "setCaptureFilePathTemplate",
-                            lRenderDocSetCaptureFilePathTemplate);
-  Binding::registerFunction(L, "getNumCaptures", lRenderDocGetNumCaptures);
-  Binding::registerFunction(L, "getCaptureFilePath", lRenderDocGetCaptureFilePath);
+  luau::table(L, -1).function("isAvailable", lRenderDocIsAvailable);
+  luau::table(L, -1).raw_function("triggerCapture", lRenderDocTriggerCapture);
+  luau::table(L, -1).function("isFrameCapturing", lRenderDocIsFrameCapturing);
+  luau::table(L, -1).raw_function("setCaptureFilePathTemplate",
+                                  lRenderDocSetCaptureFilePathTemplate);
+  luau::table(L, -1).function("getNumCaptures", lRenderDocGetNumCaptures);
+  luau::table(L, -1).raw_function("getCaptureFilePath",
+                                  lRenderDocGetCaptureFilePath);
   lua_pop(L, 1);
   registerMaterial(L);
   registerRenderPasses(L);
   pushSnNamed(L, "Graphics");
-  Binding::registerFunction(L, "drawRect", lGraphicsDrawRect);
-  Binding::registerFunction(L, "drawText", lGraphicsDrawText);
-  Binding::registerFunction(L, "drawImage", lGraphicsDrawImage);
-  Binding::registerFunction(L, "drawCubemap", lGraphicsDrawCubemap);
-  Binding::registerFunction(L, "drawModel", lGraphicsDrawModel);
-  Binding::registerFunction(L, "drawModelInstanced",
-                            lGraphicsDrawModelInstanced);
-  Binding::registerFunction(L, "begin2D", lGraphicsBegin2D);
-  Binding::registerFunction(L, "begin3D", lGraphicsBegin3D);
-  Binding::registerFunction(L, "finish", lGraphicsFinish);
-  Binding::registerFunction(L, "begin2DPass", lGraphicsBegin2DPass);
-  Binding::registerFunction(L, "begin3DPass", lGraphicsBegin3DPass);
-  Binding::registerFunction(L, "endPass", lGraphicsEndPass);
-  Binding::registerFunction(L, "getClearColor", lGraphicsGetClearColor);
-  Binding::registerFunction(L, "setClearColor", lGraphicsSetClearColor);
-  Binding::registerFunction(L, "setMSAASampleCount",
-                            lGraphicsSetMSAASampleCount);
-  Binding::registerFunction(L, "getMSAASampleCount",
-                            lGraphicsGetMSAASampleCount);
-  Binding::registerFunction(L, "setGraphicsPipeline",
-                            lGraphicsSetGraphicsPipeline);
-  Binding::registerFunction(L, "resetGraphicsPipeline",
-                            lGraphicsResetGraphicsPipeline);
-  Binding::registerFunction(L, "setTexture", lGraphicsSetTexture);
-  Binding::registerFunction(L, "resetTexture", lGraphicsResetTexture);
-  Binding::registerFunction(L, "resetAllTexture", lGraphicsResetAllTexture);
-  Binding::registerFunction(L, "setUniformBuffer", lGraphicsSetUniformBuffer);
-  Binding::registerFunction(L, "beginRenderTarget", lGraphicsBeginRenderTarget);
-  Binding::registerFunction(L, "endRenderTarget", lGraphicsEndRenderTarget);
-  Binding::registerFunction(L, "readbackTexture", lGraphicsReadbackTexture);
-  Binding::registerFunction(L, "getBackendName", lGraphicsGetBackendName);
+  luau::table(L, -1).raw_function("drawRect", lGraphicsDrawRect);
+  luau::table(L, -1).function("drawText", lGraphicsDrawText);
+  luau::table(L, -1).raw_function("drawImage", lGraphicsDrawImage);
+  luau::table(L, -1).function("drawCubemap", lGraphicsDrawCubemap);
+  luau::table(L, -1).function("drawModel", lGraphicsDrawModel);
+  luau::table(L, -1).raw_function("drawModelInstanced",
+                                  lGraphicsDrawModelInstanced);
+  luau::table(L, -1).raw_function("begin2D", lGraphicsBegin2D);
+  luau::table(L, -1).function("begin3D", lGraphicsBegin3D);
+  luau::table(L, -1).function("finish", lGraphicsFinish);
+  luau::table(L, -1).raw_function("begin2DPass", lGraphicsBegin2DPass);
+  luau::table(L, -1).raw_function("begin3DPass", lGraphicsBegin3DPass);
+  luau::table(L, -1).raw_function("endPass", lGraphicsEndPass);
+  luau::table(L, -1).function("getClearColor", lGraphicsGetClearColor);
+  luau::table(L, -1).function("setClearColor", lGraphicsSetClearColor);
+  luau::table(L, -1).raw_function("setMSAASampleCount",
+                                  lGraphicsSetMSAASampleCount);
+  luau::table(L, -1).function("getMSAASampleCount",
+                              lGraphicsGetMSAASampleCount);
+  luau::table(L, -1).function("setGraphicsPipeline",
+                              lGraphicsSetGraphicsPipeline);
+  luau::table(L, -1).function("resetGraphicsPipeline",
+                              lGraphicsResetGraphicsPipeline);
+  luau::table(L, -1).raw_function("setTexture", lGraphicsSetTexture);
+  luau::table(L, -1).raw_function("resetTexture", lGraphicsResetTexture);
+  luau::table(L, -1).function("resetAllTexture", lGraphicsResetAllTexture);
+  luau::table(L, -1).raw_function("setUniformBuffer",
+                                  lGraphicsSetUniformBuffer);
+  luau::table(L, -1).function("beginRenderTarget", lGraphicsBeginRenderTarget);
+  luau::table(L, -1).function("endRenderTarget", lGraphicsEndRenderTarget);
+  luau::table(L, -1).function("readbackTexture", lGraphicsReadbackTexture);
+  luau::table(L, -1).raw_function("getBackendName", lGraphicsGetBackendName);
   lua_pop(L, 1);
 }
 

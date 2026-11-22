@@ -65,6 +65,8 @@ print(c:add(3), c.value, native.sum(2, 3)) -- 13, 13, 5
 | `.constructor<Args...>()` | `Class.new(...)` と `Class(...)` |
 | `.method(name, callable)` | メンバー関数、または第1引数に `T&` / `const T&` を取る関数 |
 | `.static_function(name, callable)` | `Class.function(...)` |
+| `.metamethod(name, callable)` | `__add` や `__tostring` などの型付き演算子 |
+| `.metatable()` | 独自の C API メタメソッド用のテーブル参照 |
 | `.field(name, &T::member)` / `.readonly(name, &T::member)` | 読み書き / 読み取り専用フィールド |
 | `.property(name, getter[, setter])` | アクセサによるプロパティ |
 
@@ -103,10 +105,12 @@ C++ 側でオーバーロードされている関数は、`static_cast<int (*)(i
 
 `table` と `class_builder` はレジストリ参照を保持し、スタックの位置に依存しません。これらのC++ハンドルは `lua_close` より前に破棄してください。登録された関数やクラスはハンドル破棄後も有効です。プラグインのDLLはVM終了後にアンロードしてください。既存の Sinen ローダーはこの順序を保証します。
 
-通常の登録操作はスタックの高さを維持します。`.push()` だけは明示的にテーブルを1つ積みます。C++例外は Luau エラーへ変換され、スクリプトの `pcall` で処理できます。登録時は `sinen::luau::open` を使用してください。`raw_function` は従来の C API 関数をそのまま登録するため、例外と戻り値の管理はその関数が担当します。
+通常の登録操作はスタックの高さを維持します。`.push()` だけは明示的にテーブルを1つ積みます。C++例外は Luau エラーへ変換され、スクリプトの `pcall` で処理できます。登録時は `sinen::luau::open` を使用してください。`raw_function` の関数はスタックと戻り値の数を管理します。C++例外は型付き関数と同様に Luau エラーへ変換されます。
 
 Luau とプラグインの両方でC++例外を有効にし、`LUA_USE_LONGJMP=0` を使用してください。デストラクタは例外を投げないことが前提です。自動継承、Luau関数からC++コールバックへの変換、yieldをまたぐC++呼び出しは対象外です。
 
 登録の実例は [DLLテストプラグイン](https://github.com/astomih/sinen/blob/main/tests/cpp/native_module_fixture.cpp)、動作仕様は [テスト](https://github.com/astomih/sinen/blob/main/tests/cpp/luau_bind_library_tests.cpp) にあります。
 
 API設計の参考: [sol2 usertype](https://sol2.readthedocs.io/en/latest/api/usertype.html)、[luaaa](https://github.com/gengyong/luaaa)。
+
+エンジンも同じバインディングAPIを使用します。値型と `Ptr<T>` リソースのuserdata管理・型チェックを共有し、複雑なコールバックやテーブル解析には `raw_function` と `stack<T>` を使用します。既存の `sn.Class.new(...)` は引き続き利用できます。型付きAPIの引数には上記の厳密な型変換が適用されます。

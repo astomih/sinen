@@ -140,6 +140,13 @@ if(TARGET sinen_gpu)
 endif()
 
 if(TARGET sinen_script)
+  add_executable(sinen_engine_binding_tests engine_binding_tests.cpp)
+  target_include_directories(sinen_engine_binding_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+  target_link_libraries(sinen_engine_binding_tests PRIVATE sinen_script GTest::gtest_main)
+  set_property(TARGET sinen_engine_binding_tests PROPERTY CXX_STANDARD 23)
+  add_test(NAME sinen_engine_binding_tests COMMAND sinen_engine_binding_tests)
+  set_tests_properties(sinen_engine_binding_tests PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
   if(WIN32)
     add_executable(sinen_text_cache_tests text_cache_tests.cpp)
     target_include_directories(sinen_text_cache_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
@@ -160,7 +167,6 @@ if(TARGET sinen_script)
     sinen_luau_binding_tests
     luau_binding_tests.cpp
     luau_bind_library_tests.cpp
-    ${SINEN_SOURCE_DIR}/src/script/bindings/binding_registration.cpp
     ${SINEN_SOURCE_DIR}/src/script/require_alias.cpp)
   if(WIN32)
     target_sources(

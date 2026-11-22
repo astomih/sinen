@@ -5,16 +5,12 @@
 #include <graphics/graphics.hpp>
 
 namespace sinen {
-static int lComputePipelineNew(lua_State *L) {
-  udPushPtr<ComputePipeline>(L, makePtr<ComputePipeline>());
-  return 1;
-}
+static auto lComputePipelineNew() { return makePtr<ComputePipeline>(); }
 
-static int lComputePipelineSetShader(lua_State *L) {
-  auto &pipeline = udPtr<ComputePipeline>(L, 1);
-  auto &shader = udPtr<Shader>(L, 2);
+static auto lComputePipelineSetShader(Ptr<ComputePipeline> &pipeline,
+                                      Ptr<Shader> &shader) {
   pipeline->setShader(*shader);
-  return 0;
+  return;
 }
 
 static int lComputePipelineBuild(lua_State *L) {
@@ -32,17 +28,17 @@ static int lComputePipelineSetThreadGroupSize(lua_State *L) {
 }
 
 void registerComputePipeline(lua_State *L) {
-  luaL_newmetatable(L, ComputePipeline::metaTableName());
+  pushClassMetatable<Ptr<ComputePipeline>>(L, ComputePipeline::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "setShader", lComputePipelineSetShader);
-  Binding::registerFunction(L, "build", lComputePipelineBuild);
-  Binding::registerFunction(L, "setThreadGroupSize",
-                            lComputePipelineSetThreadGroupSize);
+  luau::table(L, -1).function("setShader", lComputePipelineSetShader);
+  luau::table(L, -1).raw_function("build", lComputePipelineBuild);
+  luau::table(L, -1).raw_function("setThreadGroupSize",
+                                  lComputePipelineSetThreadGroupSize);
   lua_pop(L, 1);
 
   pushSnNamed(L, "ComputePipeline");
-  Binding::registerFunction(L, "new", lComputePipelineNew);
+  luau::table(L, -1).function("new", lComputePipelineNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

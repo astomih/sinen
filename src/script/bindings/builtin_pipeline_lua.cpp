@@ -35,13 +35,13 @@ static int lBuiltinPipelineGetCubemap(lua_State *L) {
 }
 void registerBuiltinPipeline(lua_State *L) {
   pushSnNamed(L, "BuiltinPipeline");
-  Binding::registerFunction(L, "getDefault3D", lBuiltinPipelineGetDefault3D);
-  Binding::registerFunction(L, "getInstanced3D",
-                            lBuiltinPipelineGetInstanced3D);
-  Binding::registerFunction(L, "getDefault2D", lBuiltinPipelineGetDefault2D);
-  Binding::registerFunction(L, "getFont2D", lBuiltinPipelineGetFont2D);
-  Binding::registerFunction(L, "getRect2D", lBuiltinPipelineGetRect2D);
-  Binding::registerFunction(L, "getCubemap", lBuiltinPipelineGetCubemap);
+  luau::table(L, -1).raw_function("getDefault3D", lBuiltinPipelineGetDefault3D);
+  luau::table(L, -1).raw_function("getInstanced3D",
+                                  lBuiltinPipelineGetInstanced3D);
+  luau::table(L, -1).raw_function("getDefault2D", lBuiltinPipelineGetDefault2D);
+  luau::table(L, -1).raw_function("getFont2D", lBuiltinPipelineGetFont2D);
+  luau::table(L, -1).raw_function("getRect2D", lBuiltinPipelineGetRect2D);
+  luau::table(L, -1).raw_function("getCubemap", lBuiltinPipelineGetCubemap);
   lua_pop(L, 1);
 }
 } // namespace sinen

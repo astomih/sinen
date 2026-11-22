@@ -26,37 +26,31 @@ static int lComputeBufferCreate(lua_State *L) {
   return 0;
 }
 
-static int lComputeBufferUpload(lua_State *L) {
-  auto &buffer = udPtr<ComputeBuffer>(L, 1);
-  auto &data = udValue<Buffer>(L, 2);
+static auto lComputeBufferUpload(Ptr<ComputeBuffer> &buffer, Buffer &data) {
   buffer->upload(data);
-  return 0;
+  return;
 }
 
-static int lComputeBufferDownload(lua_State *L) {
-  auto &buffer = udPtr<ComputeBuffer>(L, 1);
-  udNewOwned<Buffer>(L, buffer->download());
-  return 1;
+static auto lComputeBufferDownload(Ptr<ComputeBuffer> &buffer) {
+  return buffer->download();
 }
 
-static int lComputeBufferSize(lua_State *L) {
-  auto &buffer = udPtr<ComputeBuffer>(L, 1);
-  lua_pushinteger(L, buffer->size());
-  return 1;
+static auto lComputeBufferSize(Ptr<ComputeBuffer> &buffer) {
+  return buffer->size();
 }
 
 void registerComputeBuffer(lua_State *L) {
-  luaL_newmetatable(L, ComputeBuffer::metaTableName());
+  pushClassMetatable<Ptr<ComputeBuffer>>(L, ComputeBuffer::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "create", lComputeBufferCreate);
-  Binding::registerFunction(L, "upload", lComputeBufferUpload);
-  Binding::registerFunction(L, "download", lComputeBufferDownload);
-  Binding::registerFunction(L, "size", lComputeBufferSize);
+  luau::table(L, -1).raw_function("create", lComputeBufferCreate);
+  luau::table(L, -1).function("upload", lComputeBufferUpload);
+  luau::table(L, -1).function("download", lComputeBufferDownload);
+  luau::table(L, -1).function("size", lComputeBufferSize);
   lua_pop(L, 1);
 
   pushSnNamed(L, "ComputeBuffer");
-  Binding::registerFunction(L, "new", lComputeBufferNew);
+  luau::table(L, -1).raw_function("new", lComputeBufferNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

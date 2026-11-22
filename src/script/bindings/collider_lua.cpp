@@ -48,17 +48,13 @@ static int lColliderSetPositionAndRotation(lua_State *L) {
   c.setPositionAndRotation(p, r, activate);
   return 0;
 }
-static int lColliderSetLinearVelocity(lua_State *L) {
-  auto &c = udValue<Collider>(L, 1);
-  auto &v = udValue<Vec3>(L, 2);
+static auto lColliderSetLinearVelocity(Collider &c, Vec3 &v) {
   c.setLinearVelocity(v);
-  return 0;
+  return;
 }
-static int lColliderSetAngularVelocity(lua_State *L) {
-  auto &c = udValue<Collider>(L, 1);
-  auto &v = udValue<Vec3>(L, 2);
+static auto lColliderSetAngularVelocity(Collider &c, Vec3 &v) {
   c.setAngularVelocity(v);
-  return 0;
+  return;
 }
 static int lColliderAddForce(lua_State *L) {
   auto &c = udValue<Collider>(L, 1);
@@ -67,23 +63,17 @@ static int lColliderAddForce(lua_State *L) {
   c.addForce(f, activate);
   return 0;
 }
-static int lColliderAddImpulse(lua_State *L) {
-  auto &c = udValue<Collider>(L, 1);
-  auto &i = udValue<Vec3>(L, 2);
+static auto lColliderAddImpulse(Collider &c, Vec3 &i) {
   c.addImpulse(i);
-  return 0;
+  return;
 }
-static int lColliderSetFriction(lua_State *L) {
-  auto &c = udValue<Collider>(L, 1);
-  float v = static_cast<float>(luaL_checknumber(L, 2));
+static auto lColliderSetFriction(Collider &c, float v) {
   c.setFriction(v);
-  return 0;
+  return;
 }
-static int lColliderSetRestitution(lua_State *L) {
-  auto &c = udValue<Collider>(L, 1);
-  float v = static_cast<float>(luaL_checknumber(L, 2));
+static auto lColliderSetRestitution(Collider &c, float v) {
   c.setRestitution(v);
-  return 0;
+  return;
 }
 static int lColliderActivate(lua_State *L) {
   udValue<Collider>(L, 1).activate();
@@ -102,32 +92,31 @@ static int lColliderDestroy(lua_State *L) {
   return 0;
 }
 void registerCollider(lua_State *L) {
-  luaL_newmetatable(L, Collider::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<Collider>);
+  pushClassMetatable<Collider>(L, Collider::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "isValid", lColliderIsValid);
-  Binding::registerFunction(L, "isAdded", lColliderIsAdded);
-  Binding::registerFunction(L, "getPosition", lColliderGetPosition);
-  Binding::registerFunction(L, "getRotation", lColliderGetRotation);
-  Binding::registerFunction(L, "getVelocity", lColliderGetVelocity);
-  Binding::registerFunction(L, "getAngularVelocity",
-                            lColliderGetAngularVelocity);
-  Binding::registerFunction(L, "setPosition", lColliderSetPosition);
-  Binding::registerFunction(L, "setRotation", lColliderSetRotation);
-  Binding::registerFunction(L, "setPositionAndRotation",
-                            lColliderSetPositionAndRotation);
-  Binding::registerFunction(L, "setLinearVelocity", lColliderSetLinearVelocity);
-  Binding::registerFunction(L, "setAngularVelocity",
-                            lColliderSetAngularVelocity);
-  Binding::registerFunction(L, "addForce", lColliderAddForce);
-  Binding::registerFunction(L, "addImpulse", lColliderAddImpulse);
-  Binding::registerFunction(L, "setFriction", lColliderSetFriction);
-  Binding::registerFunction(L, "setRestitution", lColliderSetRestitution);
-  Binding::registerFunction(L, "activate", lColliderActivate);
-  Binding::registerFunction(L, "deactivate", lColliderDeactivate);
-  Binding::registerFunction(L, "remove", lColliderRemove);
-  Binding::registerFunction(L, "destroy", lColliderDestroy);
+  luau::table(L, -1).raw_function("isValid", lColliderIsValid);
+  luau::table(L, -1).raw_function("isAdded", lColliderIsAdded);
+  luau::table(L, -1).raw_function("getPosition", lColliderGetPosition);
+  luau::table(L, -1).raw_function("getRotation", lColliderGetRotation);
+  luau::table(L, -1).raw_function("getVelocity", lColliderGetVelocity);
+  luau::table(L, -1).raw_function("getAngularVelocity",
+                                  lColliderGetAngularVelocity);
+  luau::table(L, -1).raw_function("setPosition", lColliderSetPosition);
+  luau::table(L, -1).raw_function("setRotation", lColliderSetRotation);
+  luau::table(L, -1).raw_function("setPositionAndRotation",
+                                  lColliderSetPositionAndRotation);
+  luau::table(L, -1).function("setLinearVelocity", lColliderSetLinearVelocity);
+  luau::table(L, -1).function("setAngularVelocity",
+                              lColliderSetAngularVelocity);
+  luau::table(L, -1).raw_function("addForce", lColliderAddForce);
+  luau::table(L, -1).function("addImpulse", lColliderAddImpulse);
+  luau::table(L, -1).function("setFriction", lColliderSetFriction);
+  luau::table(L, -1).function("setRestitution", lColliderSetRestitution);
+  luau::table(L, -1).raw_function("activate", lColliderActivate);
+  luau::table(L, -1).raw_function("deactivate", lColliderDeactivate);
+  luau::table(L, -1).raw_function("remove", lColliderRemove);
+  luau::table(L, -1).raw_function("destroy", lColliderDestroy);
   lua_pop(L, 1);
 }
 } // namespace sinen

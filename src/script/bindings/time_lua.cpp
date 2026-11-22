@@ -2,23 +2,14 @@
 #include <core/time/time.hpp>
 
 namespace sinen {
-static int lTimeSeconds(lua_State *L) {
-  lua_pushnumber(L, Time::seconds());
-  return 1;
-}
-static int lTimeMilli(lua_State *L) {
-  lua_pushinteger(L, static_cast<lua_Integer>(Time::milli()));
-  return 1;
-}
-static int lTimeDelta(lua_State *L) {
-  lua_pushnumber(L, Time::deltaTime());
-  return 1;
-}
+static auto lTimeSeconds() { return Time::seconds(); }
+static auto lTimeMilli() { return static_cast<lua_Integer>(Time::milli()); }
+static auto lTimeDelta() { return Time::deltaTime(); }
 void registerTime(lua_State *L) {
   pushSnNamed(L, "Time");
-  Binding::registerFunction(L, "seconds", lTimeSeconds);
-  Binding::registerFunction(L, "milli", lTimeMilli);
-  Binding::registerFunction(L, "delta", lTimeDelta);
+  luau::table(L, -1).function("seconds", lTimeSeconds);
+  luau::table(L, -1).function("milli", lTimeMilli);
+  luau::table(L, -1).function("delta", lTimeDelta);
   lua_pop(L, 1);
 }
 

@@ -4,10 +4,7 @@
 #include <math/transform/transform.hpp>
 
 namespace sinen {
-static int lTransformNew(lua_State *L) {
-  udNewOwned<Transform>(L, Transform());
-  return 1;
-}
+static auto lTransformNew() { return Transform(); }
 static int lTransformIndex(lua_State *L) {
   auto &t = udValue<Transform>(L, 1);
   const char *k = luaL_checkstring(L, 2);
@@ -46,28 +43,23 @@ static int lTransformNewindex(lua_State *L) {
   }
   return luaLError2(L, "sn.Transform: invalid field '%s'", k);
 }
-static int lTransformTostring(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1);
+static auto lTransformTostring(Transform &t) {
   String s = t.tableString();
-  lua_pushlstring(L, s.data(), s.size());
-  return 1;
+  return s;
 }
-static int lTransformGetWorldMatrix(lua_State *L) {
-  const auto &t = udValue<Transform>(L, 1);
-  udNewOwned<Mat4>(L, t.getWorldMatrix());
-  return 1;
+static auto lTransformGetWorldMatrix(const Transform &t) {
+  return t.getWorldMatrix();
 }
 void registerTransform(lua_State *L) {
-  luaL_newmetatable(L, Transform::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<Transform>);
-  Binding::registerFunction(L, "__index", lTransformIndex);
-  Binding::registerFunction(L, "__newindex", lTransformNewindex);
-  Binding::registerFunction(L, "__tostring", lTransformTostring);
-  Binding::registerFunction(L, "getWorldMatrix", lTransformGetWorldMatrix);
+  pushClassMetatable<Transform>(L, Transform::metaTableName());
+  luau::table(L, -1).raw_function("__index", lTransformIndex);
+  luau::table(L, -1).raw_function("__newindex", lTransformNewindex);
+  luau::table(L, -1).function("__tostring", lTransformTostring);
+  luau::table(L, -1).function("getWorldMatrix", lTransformGetWorldMatrix);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Transform");
-  Binding::registerFunction(L, "new", lTransformNew);
+  luau::table(L, -1).function("new", lTransformNew);
   lua_pop(L, 1);
 }
 

@@ -77,6 +77,8 @@ public:
   D3D12_GPU_VIRTUAL_ADDRESS vertexUniform(UInt32 slot) const;
   D3D12_GPU_VIRTUAL_ADDRESS fragmentUniform(UInt32 slot) const;
   D3D12_GPU_VIRTUAL_ADDRESS computeUniform(UInt32 slot) const;
+  D3D12_GPU_DESCRIPTOR_HANDLE
+  samplerTable(const std::vector<Ptr<gpu::Sampler>> &samplers);
   void keepAlive(ComPtr<ID3D12Resource> resource) { keepAlive(resource.Get()); }
   void keepAlive(IUnknown *resource) {
     if (!resource) {
@@ -100,6 +102,11 @@ private:
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> vertexUniforms{};
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> fragmentUniforms{};
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> computeUniforms{};
+  struct SamplerTable {
+    std::vector<Ptr<gpu::Sampler>> samplers;
+    D3D12_GPU_DESCRIPTOR_HANDLE handle;
+  };
+  std::vector<SamplerTable> samplerTables;
 };
 
 class CopyPass : public gpu::CopyPass {

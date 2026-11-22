@@ -1054,7 +1054,8 @@ void Graphics::drawText(StringView text, const TextStyle &style,
     return;
   }
 
-  const auto model = textModelCache.acquire(textData.mesh, currentCommandBuffer);
+  const auto model =
+      textModelCache.acquire(textData.mesh, currentCommandBuffer);
   const auto scale = style.fontSize / static_cast<float>(font->size());
   const auto meshScale = scale * 0.5f;
   Vec2 textPosition = transform.position;
@@ -1242,6 +1243,14 @@ void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {
   drawBaseCubemap(box);
 }
 void Graphics::drawModel(const Model &model, const Transform &transform) {
+  if (!model.getParts().empty()) {
+    const auto bindings = currentTextureBindings;
+    for (const auto &part : model.getParts()) {
+      currentTextureBindings = bindings;
+      drawModel(*part, transform);
+    }
+    return;
+  }
   if (!isModelReadyForDraw(model)) {
     return;
   }
@@ -1266,6 +1275,14 @@ void Graphics::drawModel(const Model &model, const Transform &transform) {
 }
 void Graphics::drawModelInstanced(const Model &model,
                                   const Array<Transform> &transforms) {
+  if (!model.getParts().empty()) {
+    const auto bindings = currentTextureBindings;
+    for (const auto &part : model.getParts()) {
+      currentTextureBindings = bindings;
+      drawModelInstanced(*part, transforms);
+    }
+    return;
+  }
   if (transforms.empty() || !isModelReadyForDraw(model))
     return;
 
@@ -1764,7 +1781,14 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
 
   const UInt32 srcTightBytesPerRow = width * srcBytesPerPixel;
   const UInt32 dstTightBytesPerRow = width * dstBytesPerPixel;
-  const UInt32 downloadBytesPerRow = alignTo(srcTightBytesPerRow, 256);
+  const auto backend = device->getBackendAPI();
+  const bool paddedRows = backend == GPUBackendAPI::WebGPU
+#ifdef SINEN_PLATFORM_WINDOWS
+                          || backend == GPUBackendAPI::D3D12
+#endif
+      ;
+  const UInt32 downloadBytesPerRow =
+      paddedRows ? alignTo(srcTightBytesPerRow, 256) : srcTightBytesPerRow;
   const size_t dataSize = static_cast<size_t>(dstTightBytesPerRow) * height;
   const size_t downloadSize = static_cast<size_t>(downloadBytesPerRow) * height;
   gpu::TransferBuffer::CreateInfo downloadInfo{};

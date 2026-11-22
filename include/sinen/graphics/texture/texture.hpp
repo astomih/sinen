@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <vector>
 
-
 namespace sinen {
 /**
  * @brief Texture
@@ -37,8 +36,11 @@ public:
    * @return true success
    * @return false failed
    */
-  bool load(StringView fileName);
-  bool load(const Buffer &buffer);
+  bool load(StringView fileName, uint32_t maxDimension = 0);
+  bool load(const Buffer &buffer, uint32_t maxDimension = 0);
+  // Representative CPU-side color, including mean opacity. No GPU readback.
+  Color averageColor(bool linearizeSrgb = true) const;
+  bool hasTransparency() const;
 
   bool loadCubemap(StringView fileName);
   bool loadIrradianceCubemap(StringView fileName, uint32_t faceSize = 64,
@@ -87,6 +89,8 @@ public:
   Texture(int, int);
 
 private:
+  mutable bool transparencyKnown = false;
+  mutable bool transparentPixels = false;
   Ptr<gpu::Texture> texture;
   std::atomic<bool> loading = false;
   uint32_t pendingWidth = 0;

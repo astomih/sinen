@@ -6,6 +6,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <new>
 
 namespace {
 struct PoolSlot {
@@ -89,4 +91,20 @@ TEST(TLSFAllocatorTest, AllocatesAlignedBlocksAndReusesFreedMemory) {
   EXPECT_TRUE(isAligned(second, kAlignment));
 
   allocator.deallocate(second, kSize, kAlignment);
+}
+
+TEST(TLSFAllocatorTest, ExhaustionThrowsAndOptionalOverflowPreservesAlignment) {
+  sinen::TLSFAllocator fixed(64 * 1024);
+  EXPECT_THROW((void)fixed.allocate(128 * 1024), std::bad_alloc);
+  sinen::TLSFAllocator growing(64 * 1024, true);
+  auto *pooled = growing.allocate(128, 32);
+  auto *overflow = growing.allocate(128 * 1024, 256);
+  ASSERT_NE(overflow, nullptr);
+  EXPECT_TRUE(isAligned(overflow, 256));
+  std::memset(overflow, 0x6b, 128 * 1024);
+  growing.deallocate(overflow, 128 * 1024, 256);
+  growing.deallocate(pooled, 128, 32);
+  auto *reused = growing.allocate(128, 32);
+  EXPECT_EQ(reused, pooled);
+  growing.deallocate(reused, 128, 32);
 }

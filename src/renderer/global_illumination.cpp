@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstring>
 #include <limits>
+#include <meshoptimizer.h>
 #include <numeric>
 #include <type_traits>
 
@@ -469,17 +470,55 @@ void GlobalIllumination::setSkyColor(const Color &value) {
 
 void GlobalIllumination::addModel(const Model &model,
                                   const Transform &transform,
-                                  const Color &albedo, const Color &emission) {
+                                  const Color &albedo, const Color &emission,
+                                  UInt32 triangleBudget) {
+  if (!model.getParts().empty()) {
+    const auto total = model.getTriangleCount();
+    for (const auto &part : model.getParts()) {
+      const auto budget =
+          triangleBudget && total
+              ? std::max(1u,
+                         static_cast<UInt32>(uint64_t(triangleBudget) *
+                                             part->getTriangleCount() / total))
+              : 0u;
+      addModel(*part, transform, albedo, emission, budget);
+    }
+    return;
+  }
   invalidate();
   const auto mesh = model.getMesh().data();
-  if (!mesh)
+  if (!mesh || mesh->vertices.empty())
     return;
+  const auto base = model.getTexture(TextureKey::BaseColor);
+  const auto &surface = model.getSurfaceProperties();
+  if (triangleBudget &&
+      (surface.alphaCutoff > 0 ||
+       (surface.autoAlphaMask && base && base->hasTransparency())))
+    return;
+  const auto reflectance =
+      rgb(albedo) * (base ? rgb(base->averageColor()) : Vec3(1));
+  auto radiance = rgb(emission);
+  if (const auto image = model.getTexture(TextureKey::Emissive))
+    radiance += rgb(image->averageColor(false)) * rgb(surface.emissiveFactor);
+  Array<UInt32> simplified;
+  const auto *indices = &mesh->indices;
+  if (triangleBudget && triangleBudget < mesh->indices.size() / 3) {
+    simplified.resize(mesh->indices.size());
+    const auto count = meshopt_simplifySloppy(
+        simplified.data(), mesh->indices.data(), mesh->indices.size(),
+        &mesh->vertices[0].position.x, mesh->vertices.size(), sizeof(Vertex),
+        nullptr, size_t(triangleBudget) * 3, 1.0f, nullptr);
+    if (count) {
+      simplified.resize(count);
+      indices = &simplified;
+    }
+  }
   // World matrices use column vectors in the renderer; Vec3::transform uses
   // row vectors, so transpose here to match the vertex shader exactly.
   const auto matrix = Mat4::transpose(transform.getWorldMatrix());
-  for (size_t i = 0; i + 2 < mesh->indices.size(); i += 3) {
-    const auto ia = mesh->indices[i], ib = mesh->indices[i + 1],
-               ic = mesh->indices[i + 2];
+  for (size_t i = 0; i + 2 < indices->size(); i += 3) {
+    const auto ia = (*indices)[i], ib = (*indices)[i + 1],
+               ic = (*indices)[i + 2];
     if (ia >= mesh->vertices.size() || ib >= mesh->vertices.size() ||
         ic >= mesh->vertices.size())
       continue;
@@ -488,9 +527,9 @@ void GlobalIllumination::addModel(const Model &model,
     Triangle t{Vec3::transform(a.position, matrix),
                Vec3::transform(b.position, matrix),
                Vec3::transform(c.position, matrix),
-               rgb(albedo) * ((rgb(a.color) + rgb(b.color) + rgb(c.color)) *
+               reflectance * ((rgb(a.color) + rgb(b.color) + rgb(c.color)) *
                               (1.0f / 3.0f)),
-               rgb(emission)};
+               radiance};
     if (!finite(t.a) || !finite(t.b) || !finite(t.c) ||
         Vec3::cross(t.b - t.a, t.c - t.a).lengthSqrt() < 1e-16f)
       continue;

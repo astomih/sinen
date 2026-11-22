@@ -276,8 +276,14 @@ export type TextureKey = {
 	LightMap: number,
 }
 
+export type ModelLoadOptions = { maxTextureSize: number?, packedSpecular: boolean?, flipNormalY: boolean?, staticScene: boolean? }
+
 export type Model = {
-	new: (source: string | Buffer | ExternalFile) -> Model,
+	new: (source: string | Buffer | ExternalFile, options: ModelLoadOptions?) -> Model,
+	isReady: (self: Model) -> boolean,
+	getPartCount: (self: Model) -> number,
+	getMaterialCount: (self: Model) -> number,
+	getTriangleCount: (self: Model) -> number,
 	newSprite: () -> Model,
 	newBox: () -> Model,
 	getAABB: (self: Model) -> AABB,
@@ -799,7 +805,7 @@ export type GlobalIllumination = {
 	-- Submit GPU work without CPU readback. Call before drawing; history is 0..0.99.
 	update: (self: GlobalIllumination, historyWeight: number?) -> boolean,
 	isRealtime: (self: GlobalIllumination) -> boolean,
-	addModel: (self: GlobalIllumination, model: Model, transform: Transform, albedo: Color?, emission: Color?) -> nil,
+	addModel: (self: GlobalIllumination, model: Model, transform: Transform, albedo: Color?, emission: Color?, triangleBudget: number?) -> nil,
 	setLight: (self: GlobalIllumination, light: Light) -> nil,
 	clearLight: (self: GlobalIllumination) -> nil,
 	setSkyColor: (self: GlobalIllumination, color: Color) -> nil,
@@ -819,6 +825,8 @@ export type PBRRenderer = {
 	clearFillLight: (self: PBRRenderer) -> nil,
 	-- Positive exposure enables tone mapping and sRGB output for an SDR target.
 	setExposure: (self: PBRRenderer, exposure: number) -> nil,
+	-- Base-color alpha test for foliage/fences; zero disables it.
+	setAlphaCutoff: (self: PBRRenderer, cutoff: number) -> nil,
 	setEnvironment: (self: PBRRenderer, brdfLut: Texture, irradiance: Texture, prefiltered: Texture) -> nil,
 	clearEnvironment: (self: PBRRenderer) -> nil,
 	-- Attach a volume; real-time updates stay live. Replaces ambient diffuse.

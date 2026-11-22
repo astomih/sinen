@@ -201,6 +201,11 @@ void Render3DPass::drawCubemap(const Ptr<Texture> &cubemap,
 }
 
 void Render3DPass::drawModel(const Model &model, const Transform &transform) {
+  if (!model.getParts().empty()) {
+    for (const auto &part : model.getParts())
+      drawModel(*part, transform);
+    return;
+  }
   if (activate()) {
     Graphics::drawModel(model, transform);
   }
@@ -208,6 +213,11 @@ void Render3DPass::drawModel(const Model &model, const Transform &transform) {
 
 void Render3DPass::drawModel(const Model &model, const Transform &transform,
                              const Material &material) {
+  if (!model.getParts().empty()) {
+    for (const auto &part : model.getParts())
+      drawModel(*part, transform, material);
+    return;
+  }
   if (activate(material)) {
     Graphics::drawModel(model, transform);
   }
@@ -215,6 +225,11 @@ void Render3DPass::drawModel(const Model &model, const Transform &transform,
 
 void Render3DPass::drawModelInstanced(const Model &model,
                                       const Array<Transform> &transforms) {
+  if (!model.getParts().empty()) {
+    for (const auto &part : model.getParts())
+      drawModelInstanced(*part, transforms);
+    return;
+  }
   if (activate()) {
     Graphics::drawModelInstanced(model, transforms);
   }
@@ -223,6 +238,11 @@ void Render3DPass::drawModelInstanced(const Model &model,
 void Render3DPass::drawModelInstanced(const Model &model,
                                       const Array<Transform> &transforms,
                                       const Material &material) {
+  if (!model.getParts().empty()) {
+    for (const auto &part : model.getParts())
+      drawModelInstanced(*part, transforms, material);
+    return;
+  }
   if (activate(material)) {
     Graphics::drawModelInstanced(model, transforms);
   }

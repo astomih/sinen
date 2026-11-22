@@ -55,6 +55,29 @@ protected:
   dx::ComPtr<ID3D12InfoQueue> messages;
 };
 
+TEST_F(D3D12Frames, RepeatedMaterialSamplersReuseACommandLocalTable) {
+  device->beginFrame();
+  auto commands = std::static_pointer_cast<dx::CommandBuffer>(
+      device->acquireCommandBuffer({allocator}));
+  gpu::Sampler::CreateInfo info{};
+  info.allocator = allocator;
+  info.maxLod = 16;
+  auto sampler = device->createSampler(info);
+  ASSERT_NE(sampler, nullptr);
+  std::vector<Ptr<gpu::Sampler>> bindings(6, sampler);
+  const auto table = commands->samplerTable(bindings);
+  for (int i = 0; i < 1000; ++i)
+    EXPECT_EQ(commands->samplerTable(bindings).ptr, table.ptr);
+  const auto next = device->allocateTransientSamplerDescriptor();
+  const auto stride = device->getNative()->GetDescriptorHandleIncrementSize(
+      D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+  EXPECT_EQ(next.gpu.ptr - table.ptr, bindings.size() * stride);
+  bindings[2].reset();
+  EXPECT_NE(commands->samplerTable(bindings).ptr, table.ptr);
+  device->submitCommandBuffer(commands);
+  device->endFrame();
+}
+
 // A watchdog releases a GPU gate even if a regression blocks submit(). The
 // test checks whether CPU submission finished before that watchdog was needed.
 class QueueGate {

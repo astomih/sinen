@@ -42,6 +42,11 @@ if(TARGET sinen_renderer)
 endif()
 
 if(TARGET sinen_graphics)
+  add_executable(sinen_dds_decoder_tests dds_decoder_tests.cpp)
+  target_include_directories(sinen_dds_decoder_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+  target_link_libraries(sinen_dds_decoder_tests PRIVATE GTest::gtest_main)
+  set_property(TARGET sinen_dds_decoder_tests PROPERTY CXX_STANDARD 23)
+  add_test(NAME sinen_dds_decoder_tests COMMAND sinen_dds_decoder_tests)
   if(NOT EMSCRIPTEN)
     # Decode generated H.264 in native tests, keeping decoder code out of the engine.
     # The upstream decoder uses sem_timedwait, absent in single-threaded Wasm.

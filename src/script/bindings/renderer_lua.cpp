@@ -165,6 +165,12 @@ int setExposure(lua_State *L) {
   return 0;
 }
 
+int setAlphaCutoff(lua_State *L) {
+  udValue<PBRRenderer>(L, 1).setAlphaCutoff(
+      static_cast<float>(luaL_checknumber(L, 2)));
+  return 0;
+}
+
 int clearEnvironment(lua_State *L) {
   udValue<PBRRenderer>(L, 1).clearEnvironment();
   return 0;
@@ -173,7 +179,8 @@ int clearEnvironment(lua_State *L) {
 int addGIModel(lua_State *L) {
   udValue<GlobalIllumination>(L, 1).addModel(
       *udPtr<Model>(L, 2), udValue<Transform>(L, 3), optionalColor(L, 4),
-      lua_isnoneornil(L, 5) ? Color(0.0f) : udValue<Color>(L, 5));
+      lua_isnoneornil(L, 5) ? Color(0.0f) : udValue<Color>(L, 5),
+      static_cast<UInt32>(std::max(0, luaL_optinteger(L, 6, 0))));
   return 0;
 }
 int bakeGI(lua_State *L) {
@@ -306,6 +313,7 @@ void registerRenderer(lua_State *L) {
                             setLight<PBRRenderer, &PBRRenderer::setFillLight>);
   Binding::registerFunction(L, "clearFillLight", clearFillLight);
   Binding::registerFunction(L, "setExposure", setExposure);
+  Binding::registerFunction(L, "setAlphaCutoff", setAlphaCutoff);
   Binding::registerFunction(L, "setEnvironment", setEnvironment);
   Binding::registerFunction(L, "clearEnvironment", clearEnvironment);
   Binding::registerFunction(L, "setGlobalIllumination", setGI);

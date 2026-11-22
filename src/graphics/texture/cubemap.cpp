@@ -1,5 +1,5 @@
-#include <core/thread/future_poll.hpp>
 #include <core/profiler.hpp>
+#include <core/thread/future_poll.hpp>
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
@@ -17,6 +17,7 @@
 #include <future>
 #include <iostream>
 #include <memory>
+#include <stb_image.h>
 #include <string>
 
 #define TINYEXR_IMPLEMENTATION
@@ -469,20 +470,27 @@ void computeBRDFLUT(uint32_t size, uint32_t sampleCount, FloatPixels &out) {
 }
 
 bool loadEXRFloat(StringView path, FloatPixels &img, int &W, int &H, int &C) {
-  float *out;
+  float *out = nullptr;
   const char *err = nullptr;
-  int w, h;
-  int ret = TINYEXR_ERROR_INVALID_ARGUMENT;
-  String bytes;
-  if (AssetReader::isArchiveMounted() && AssetReader::exists(path)) {
-    bytes = AssetReader::readAsString(path);
-    ret = LoadEXRFromMemory(
-        &out, &w, &h, reinterpret_cast<const unsigned char *>(bytes.data()),
-        bytes.size(), &err);
-  } else {
-    auto filePath = AssetReader::getFilePath(path);
-    ret = LoadEXR(&out, &w, &h, filePath.c_str(), &err);
+  int w = 0, h = 0;
+  const auto bytes = AssetReader::readAsString(path);
+  if (bytes.empty() || bytes.size() > INT_MAX)
+    return false;
+  const auto *source = reinterpret_cast<const unsigned char *>(bytes.data());
+  if (stbi_is_hdr_from_memory(source, static_cast<int>(bytes.size()))) {
+    int channels = 0;
+    out = stbi_loadf_from_memory(source, static_cast<int>(bytes.size()), &w, &h,
+                                 &channels, 4);
+    if (!out)
+      return false;
+    W = w;
+    H = h;
+    C = 4;
+    img.assign(out, out + size_t(W) * H * C);
+    stbi_image_free(out);
+    return true;
   }
+  const int ret = LoadEXRFromMemory(&out, &w, &h, source, bytes.size(), &err);
   if (ret != TINYEXR_SUCCESS) {
     if (err) {
       std::cerr << "LoadEXR error: " << err << "\n";
@@ -801,8 +809,8 @@ bool Texture::loadCubemap(StringView path) {
     if (isVerticalCubemapAtlas(w, h, c)) {
       verticalCubemapAtlasToCubemap(equirect.data(), w, h, c, faces);
     } else {
-      equirectToCubemap(equirect.data(), w, h, c,
-                        static_cast<int>(faceSize), faces);
+      equirectToCubemap(equirect.data(), w, h, c, static_cast<int>(faceSize),
+                        faces);
     }
 
     state->faces = std::move(faces);

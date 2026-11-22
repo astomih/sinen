@@ -17,11 +17,11 @@ public:
     return "sn.GlobalIllumination";
   }
   void clear();
-  // Linear diffuse reflectance and emitted radiance, independent of textures.
-  // Vertex colors are included; meshes are treated as opaque and two-sided.
+  // Includes vertex colors and the mean texture color. Geometry is opaque and
+  // two-sided; optional simplification omits alpha-masked parts for a GI proxy.
   void addModel(const Model &model, const Transform &transform,
                 const Color &albedo = Color(1.0f),
-                const Color &emission = Color(0.0f));
+                const Color &emission = Color(0.0f), UInt32 triangleBudget = 0);
   void setLight(const Light &value);
   void clearLight();
   void setSkyColor(const Color &value);

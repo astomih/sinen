@@ -26,6 +26,9 @@ UNIFORM_FRAG(Lighting, 0) {
   float4 giMinimumAndIntensity;
   float4 giInverseExtent;
   float4 giProbeCounts;
+  float4 materialSettings; // Alpha cutoff; zero disables alpha testing.
+  float4 surfaceFactors; // Roughness, metallic multipliers.
+  float4 emissiveFactor;
 }
 
 float3 probeLobe(float3 cell, float lobe) {
@@ -80,6 +83,8 @@ float3 surfaceNormal(Surface input) {
   float2 duvdx = ddx(input.uv);
   float2 duvdy = ddy(input.uv);
   float3 mapped = normalMap.Sample(input.uv).rgb * 2.0 - 1.0;
+  if (materialSettings.z != 0.0) mapped.z = sqrt(saturate(1.0 - dot(mapped.xy, mapped.xy)));
+  mapped.y *= materialSettings.y;
   float det = duvdx.x * duvdy.y - duvdx.y * duvdy.x;
   float3 tangent = dpdx * duvdy.y - dpdy * duvdx.y;
   tangent -= normal * dot(normal, tangent);
@@ -126,15 +131,16 @@ float3 srgbToLinear(float3 value) {
 
 [shader("fragment")]
 float4 FSMain(Surface input) : SV_Target {
-  float3 baseColor = albedoMap.Sample(input.uv).rgb;
+  float4 baseSample = albedoMap.Sample(input.uv);
+  float3 baseColor = baseSample.rgb;
   // The SDR path accepts conventional sRGB base-color textures in UNORM slots.
   float3 albedo = (settings.y > 0.0 ? srgbToLinear(baseColor) : baseColor) * input.color.rgb;
   // glTF packs roughness in green and metallic in blue.
-  float2 roughnessMetallic = metallicRoughnessMap.Sample(input.uv).gb;
+  float2 roughnessMetallic = metallicRoughnessMap.Sample(input.uv).gb * surfaceFactors.xy;
   float roughness = clamp(roughnessMetallic.x, 0.045, 1.0);
   float metallic = saturate(roughnessMetallic.y);
   float occlusion = occlusionMap.Sample(input.uv).r;
-  float3 emissive = emissiveMap.Sample(input.uv).rgb;
+  float3 emissive = emissiveMap.Sample(input.uv).rgb * emissiveFactor.rgb;
   float3 normal = surfaceNormal(input);
   float3 view = normalize(cameraPositionAndMaxMip.xyz - input.worldPosition);
   float3 reflectance = lerp(float3(0.04), albedo, metallic);
@@ -168,5 +174,8 @@ float4 FSMain(Surface input) : SV_Target {
     float3 exposed = max(result * settings.y, 0.0);
     result = linearToSrgb(exposed / (1.0 + exposed));
   }
+  // Keep derivative-based normal/texture evaluation before divergent discard.
+  if (materialSettings.x > 0.0 && baseSample.a * input.color.a < materialSettings.x)
+    discard;
   return float4(result, 1.0);
 }

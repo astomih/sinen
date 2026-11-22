@@ -573,22 +573,40 @@ void RenderPass::bindIndexBuffer(const BufferBinding &binding,
   commandBuffer->getNative()->IASetIndexBuffer(&view);
 }
 
+D3D12_GPU_DESCRIPTOR_HANDLE
+CommandBuffer::samplerTable(const std::vector<Ptr<gpu::Sampler>> &samplers) {
+  for (const auto &cached : samplerTables)
+    if (cached.samplers == samplers)
+      return cached.handle;
+  D3D12_GPU_DESCRIPTOR_HANDLE first{};
+  for (size_t i = 0; i < samplers.size(); ++i) {
+    const auto descriptor = device->allocateTransientSamplerDescriptor();
+    if (i == 0)
+      first = descriptor.gpu;
+    const auto source = samplers[i] ? downCast<Sampler>(samplers[i])->getCpu()
+                                    : device->getDefaultSampler().cpu;
+    device->getNative()->CopyDescriptorsSimple(
+        1, descriptor.cpu, source, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+  }
+  // Retain source samplers so their CPU descriptor slots cannot be recycled
+  // into different samplers while this command buffer's cache is in use.
+  samplerTables.push_back({samplers, first});
+  return first;
+}
+
 void RenderPass::bindFragmentSamplers(
     UInt32 startSlot, const Array<TextureSamplerBinding> &bindings) {
   const UInt32 count =
       std::max<UInt32>(1, startSlot + static_cast<UInt32>(bindings.size()));
   auto device = commandBuffer->getDevice();
   CpuGpuDescriptor firstSrv{};
-  CpuGpuDescriptor firstSampler{};
+  std::vector<Ptr<gpu::Sampler>> samplers(count);
   for (UInt32 i = 0; i < count; ++i) {
     auto srv = device->allocateTransientSrvDescriptor();
-    auto sampler = device->allocateTransientSamplerDescriptor();
     if (i == 0) {
       firstSrv = srv;
-      firstSampler = sampler;
     }
     CpuGpuDescriptor srcSrv = device->getDefaultSrv();
-    CpuGpuDescriptor srcSampler = device->getDefaultSampler();
     if (i >= startSlot && i < startSlot + bindings.size()) {
       const auto &binding = bindings[i - startSlot];
       if (binding.texture) {
@@ -599,21 +617,17 @@ void RenderPass::bindFragmentSamplers(
         srcSrv = {texture->getSrvCpu(), {}};
       }
       if (binding.sampler) {
-        auto samplerObj = downCast<Sampler>(binding.sampler);
-        srcSampler = {samplerObj->getCpu(), {}};
+        samplers[i] = binding.sampler;
       }
     }
     device->getNative()->CopyDescriptorsSimple(
         1, srv.cpu, srcSrv.cpu, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    device->getNative()->CopyDescriptorsSimple(
-        1, sampler.cpu, srcSampler.cpu, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
   }
+  const auto firstSampler = commandBuffer->samplerTable(samplers);
   commandBuffer->getNative()->SetGraphicsRootDescriptorTable(4, firstSrv.gpu);
-  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(5,
-                                                             firstSampler.gpu);
+  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(5, firstSampler);
   commandBuffer->getNative()->SetGraphicsRootDescriptorTable(10, firstSrv.gpu);
-  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(11,
-                                                             firstSampler.gpu);
+  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(11, firstSampler);
 }
 
 void RenderPass::bindFragmentSampler(UInt32 startSlot,

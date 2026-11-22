@@ -27,8 +27,10 @@
 #include <math/math.hpp>
 #include <platform/io/asset_reader.hpp>
 
+#include <assimp/GltfMaterial.h>
 #include <assimp/IOSystem.hpp>
 #include <assimp/Importer.hpp>
+#include <assimp/config.h>
 #include <assimp/matrix4x4.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -57,6 +59,8 @@ struct EmbeddedTextureData {
   int channels = 4;
   gpu::TextureFormat format = gpu::TextureFormat::R8G8B8A8_UNORM;
   Array<char> bytes;
+  String path;
+  String key;
 };
 
 static EmbeddedTextureData extractEmbeddedTexture(aiScene *scene,
@@ -75,6 +79,7 @@ static EmbeddedTextureData extractEmbeddedTexture(aiScene *scene,
   }
 
   out.present = true;
+  out.key = texPath.C_Str();
   if (aiTex->mHeight == 0) {
     out.compressed = true;
     out.bytes.resize(aiTex->mWidth);
@@ -91,10 +96,23 @@ static EmbeddedTextureData extractEmbeddedTexture(aiScene *scene,
   const size_t sizeBytes =
       static_cast<size_t>(out.width) * static_cast<size_t>(out.height) * 4u;
   out.bytes.resize(sizeBytes);
-  std::memcpy(out.bytes.data(), aiTex->pcData, sizeBytes);
+  for (size_t i = 0; i < sizeBytes / 4; ++i) {
+    out.bytes[i * 4] = static_cast<char>(aiTex->pcData[i].r);
+    out.bytes[i * 4 + 1] = static_cast<char>(aiTex->pcData[i].g);
+    out.bytes[i * 4 + 2] = static_cast<char>(aiTex->pcData[i].b);
+    out.bytes[i * 4 + 3] = static_cast<char>(aiTex->pcData[i].a);
+  }
   return out;
 }
 
+struct ImportedMaterial {
+  Array<EmbeddedTextureData> textures{6};
+  Model::SurfaceProperties surface;
+};
+struct ImportedPart {
+  Mesh mesh;
+  UInt32 material = 0;
+};
 struct AsyncModelState {
   std::future<void> future;
   String debugName;
@@ -105,6 +123,11 @@ struct AsyncModelState {
   Array<EmbeddedTextureData> embeddedTextures;
   bool ok = false;
   std::atomic<bool> finalized = false;
+  Array<ImportedPart> parts;
+  Array<ImportedMaterial> materials;
+  Model::LoadOptions options;
+  TaskGroup group;
+  bool staticScene = false;
 };
 
 static void optimizeIndexOrder(Mesh &mesh, Array<UInt32> &indices) {
@@ -340,7 +363,7 @@ void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
           uv.y = aiuv.y;
         }
         Color color = Color(1.f, 1.f, 1.f, 1.f);
-        if (aimesh->HasVertexColors(j)) {
+        if (aimesh->HasVertexColors(0)) {
           const aiColor4D &c = aimesh->mColors[0][j];
           color = Color(c.r, c.g, c.b, c.a);
         } else if (hasBaseColor) {
@@ -480,9 +503,270 @@ void loadMaterial(aiScene *scene, Array<Ptr<Texture>> &textures) {
     }
   }
 }
+namespace {
+EmbeddedTextureData importedTexture(const aiScene *scene,
+                                    const aiMaterial *material,
+                                    std::initializer_list<aiTextureType> types,
+                                    StringView modelPath) {
+  for (const auto type : types) {
+    aiString name;
+    if (material->GetTexture(type, 0, &name) != AI_SUCCESS)
+      continue;
+    if (scene->GetEmbeddedTexture(name.C_Str()))
+      return extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                    const_cast<aiMaterial *>(material), type);
+    String relative(name.C_Str());
+    std::replace(relative.begin(), relative.end(), '\\', '/');
+    const auto slash = relative.find_last_of('/');
+    const String basename =
+        slash == String::npos ? relative : relative.substr(slash + 1);
+    const auto modelSlash = modelPath.find_last_of("/\\");
+    const String directory = modelSlash == StringView::npos
+                                 ? String()
+                                 : String(modelPath.substr(0, modelSlash + 1));
+    Array<String> candidates;
+    if (!relative.empty() && relative.front() != '/' &&
+        relative.find(':') == String::npos)
+      candidates.push_back(directory + relative);
+    candidates.push_back(directory + basename);
+    candidates.push_back(directory + "Textures/" + basename);
+    candidates.push_back(directory + "textures/" + basename);
+    for (const auto &path : candidates)
+      if (AssetReader::exists(path)) {
+        EmbeddedTextureData result;
+        result.present = true;
+        result.path = path;
+        result.key = path;
+        return result;
+      }
+    Log::warn("Model texture not found: {} (model {})", relative, modelPath);
+  }
+  return {};
+}
+
+bool importStaticScene(const aiScene *scene, AsyncModelState &state,
+                       StringView path) {
+  if (scene->HasAnimations() && !state.options.staticScene)
+    return false;
+  for (unsigned i = 0; i < scene->mNumMeshes; ++i)
+    if (scene->mMeshes[i]->HasBones())
+      return false;
+  state.staticScene = true;
+  state.materials.resize(scene->mNumMaterials);
+  Array<Color> baseColors(scene->mNumMaterials, Color(1.0f));
+  for (unsigned i = 0; i < scene->mNumMaterials; ++i) {
+    auto &target = state.materials[i];
+    auto &surface = target.surface;
+    const auto *material = scene->mMaterials[i];
+    aiString name;
+    material->Get(AI_MATKEY_NAME, name);
+    surface.materialName = name.C_Str();
+    aiColor4D color(1, 1, 1, 1);
+    if (material->Get(AI_MATKEY_BASE_COLOR, color) != AI_SUCCESS)
+      material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+    float opacity = 1;
+    material->Get(AI_MATKEY_OPACITY, opacity);
+    baseColors[i] = Color(color.r, color.g, color.b,
+                          color.a * std::clamp(opacity, 0.0f, 1.0f));
+    surface.metallicFactor = 0;
+    material->Get(AI_MATKEY_METALLIC_FACTOR, surface.metallicFactor);
+    material->Get(AI_MATKEY_ROUGHNESS_FACTOR, surface.roughnessFactor);
+    aiColor3D emission(0, 0, 0);
+    material->Get(AI_MATKEY_COLOR_EMISSIVE, emission);
+    surface.emissiveFactor = Color(emission.r, emission.g, emission.b, 1);
+    surface.normalY = state.options.flipNormalY ? -1.0f : 1.0f;
+    surface.autoAlphaMask = state.options.packedSpecular;
+    aiString mode;
+    if (material->Get(AI_MATKEY_GLTF_ALPHAMODE, mode) == AI_SUCCESS &&
+        StringView(mode.C_Str()) == "MASK") {
+      surface.alphaCutoff = 0.5f;
+      material->Get(AI_MATKEY_GLTF_ALPHACUTOFF, surface.alphaCutoff);
+    }
+    target.textures[0] = importedTexture(
+        scene, material, {aiTextureType_BASE_COLOR, aiTextureType_DIFFUSE},
+        path);
+    target.textures[1] = importedTexture(
+        scene, material, {aiTextureType_NORMALS, aiTextureType_NORMAL_CAMERA},
+        path);
+    target.textures[2] =
+        state.options.packedSpecular
+            ? importedTexture(
+                  scene, material,
+                  {aiTextureType_SPECULAR, aiTextureType_DIFFUSE_ROUGHNESS},
+                  path)
+            : importedTexture(scene, material,
+                              {aiTextureType_DIFFUSE_ROUGHNESS}, path);
+    target.textures[3] =
+        importedTexture(scene, material, {aiTextureType_METALNESS}, path);
+    target.textures[4] =
+        importedTexture(scene, material, {aiTextureType_EMISSIVE}, path);
+    target.textures[5] = state.options.packedSpecular
+                             ? target.textures[2]
+                             : importedTexture(scene, material,
+                                               {aiTextureType_AMBIENT_OCCLUSION,
+                                                aiTextureType_LIGHTMAP},
+                                               path);
+    if (state.options.packedSpecular) {
+      surface.metallicFactor = surface.roughnessFactor = 1;
+      if (target.textures[4].present)
+        surface.emissiveFactor = Color(1.0f);
+    }
+  }
+  aiMatrix4x4 units;
+  // Assimp has already applied the file's FBX axis/unit metadata to its root.
+  // Preserve that scale instead of applying a second unit conversion.
+  std::function<void(const aiNode *, const aiMatrix4x4 &)> visit =
+      [&](const aiNode *node, const aiMatrix4x4 &parent) {
+        const auto world = parent * node->mTransformation;
+        aiMatrix3x3 normalMatrix(world);
+        if (std::abs(normalMatrix.Determinant()) < 1e-12f)
+          return;
+        const bool mirrored = normalMatrix.Determinant() < 0;
+        normalMatrix.Inverse().Transpose();
+        for (unsigned slot = 0; slot < node->mNumMeshes; ++slot) {
+          const auto *source = scene->mMeshes[node->mMeshes[slot]];
+          if (!source->mNumVertices || !source->mNumFaces)
+            continue;
+          ImportedPart part;
+          part.material =
+              std::min(source->mMaterialIndex, scene->mNumMaterials - 1);
+          const auto base = baseColors[part.material];
+          auto mesh = part.mesh.data();
+          mesh->vertices.reserve(source->mNumVertices);
+          for (unsigned v = 0; v < source->mNumVertices; ++v) {
+            const auto p = world * source->mVertices[v];
+            auto n =
+                normalMatrix * (source->HasNormals() ? source->mNormals[v]
+                                                     : aiVector3D(0, 1, 0));
+            if (n.SquareLength() > 1e-16f)
+              n.Normalize();
+            const auto uv = source->HasTextureCoords(0)
+                                ? source->mTextureCoords[0][v]
+                                : aiVector3D();
+            const auto c = source->HasVertexColors(0) ? source->mColors[0][v]
+                                                      : aiColor4D(1, 1, 1, 1);
+            mesh->vertices.emplace_back(
+                Vec3(p.x, p.y, p.z), Vec3(n.x, n.y, n.z), Vec2(uv.x, 1 - uv.y),
+                Color(base.r * c.r, base.g * c.g, base.b * c.b, base.a * c.a));
+          }
+          for (unsigned f = 0; f < source->mNumFaces; ++f) {
+            const auto &face = source->mFaces[f];
+            if (face.mNumIndices != 3)
+              continue;
+            mesh->indices.push_back(face.mIndices[0]);
+            mesh->indices.push_back(face.mIndices[mirrored ? 2 : 1]);
+            mesh->indices.push_back(face.mIndices[mirrored ? 1 : 2]);
+          }
+          if (mesh->indices.empty())
+            continue;
+          optimizeMesh(part.mesh);
+          state.parts.push_back(std::move(part));
+        }
+        for (unsigned i = 0; i < node->mNumChildren; ++i)
+          visit(node->mChildren[i], world);
+      };
+  if (scene->mNumMaterials && scene->mRootNode)
+    visit(scene->mRootNode, units);
+  state.ok = !state.parts.empty();
+  return true;
+}
+} // namespace
+
+void Model::finalizeImport(const Ptr<void> &opaque) {
+  auto state = std::static_pointer_cast<AsyncModelState>(opaque);
+  ScopedLoadContext context(state->group);
+  Hashmap<String, Ptr<Texture>> cache;
+  Array<Array<Ptr<Texture>>> images;
+  images.resize(state->materials.size());
+  for (size_t i = 0; i < state->materials.size(); ++i) {
+    auto &material = state->materials[i];
+    auto &textures = images[i];
+    textures.resize(6);
+    for (size_t t = 0; t < 6; ++t) {
+      const auto &source = material.textures[t];
+      if (!source.present)
+        continue;
+      if (const auto found = cache.find(source.key); found != cache.end()) {
+        textures[t] = found->second;
+        continue;
+      }
+      auto image = Texture::create();
+      if (!source.path.empty())
+        image->load(source.path, state->options.maxTextureSize);
+      else if (source.compressed) {
+        auto buffer = makeBuffer(source.bytes.size(), BufferType::Binary);
+        std::memcpy(buffer.data(), source.bytes.data(), source.bytes.size());
+        image->load(buffer, state->options.maxTextureSize);
+      } else
+        image->loadFromMemory(const_cast<char *>(source.bytes.data()),
+                              source.width, source.height, source.format,
+                              source.channels);
+      textures[t] = image;
+      cache.insert_or_assign(source.key, image);
+    }
+    if (!textures[2]) {
+      auto image = Texture::create();
+      image->fill(
+          Color(0, std::clamp(material.surface.roughnessFactor, 0.0f, 1.0f),
+                std::clamp(material.surface.metallicFactor, 0.0f, 1.0f), 1));
+      textures[2] = image;
+      material.surface.constantMetallicRoughness = true;
+    }
+    const auto &emission = material.surface.emissiveFactor;
+    if (!textures[4] && (emission.r > 0 || emission.g > 0 || emission.b > 0)) {
+      textures[4] = Texture::create();
+      textures[4]->fill(Color(1.0f));
+    }
+  }
+  for (auto &part : state->parts) {
+    auto child = makePtr<Model>(GlobalAllocator::get());
+    child->mesh = std::move(part.mesh);
+    child->surface = state->materials[part.material].surface;
+    child->textures = images[part.material];
+    child->materialCount = 1;
+    child->updateBounds();
+    const auto data = child->mesh.data();
+    auto buffers = createVertexIndexBuffer(data->vertices, data->indices);
+    child->vertexBuffer = std::move(buffers.first);
+    child->indexBuffer = std::move(buffers.second);
+    child->lodIndexBuffers =
+        createLodIndexBuffers(child->mesh, child->indexBuffer);
+    parts.push_back(std::move(child));
+  }
+  Array<bool> used(state->materials.size(), false);
+  for (const auto &part : state->parts)
+    used[part.material] = true;
+  materialCount =
+      static_cast<UInt32>(std::count(used.begin(), used.end(), true));
+  if (parts.empty())
+    return;
+  localAABB = parts[0]->localAABB;
+  for (const auto &part : parts) {
+    const auto &b = part->localAABB;
+    localAABB.min = Vec3(std::min(localAABB.min.x, b.min.x),
+                         std::min(localAABB.min.y, b.min.y),
+                         std::min(localAABB.min.z, b.min.z));
+    localAABB.max = Vec3(std::max(localAABB.max.x, b.max.x),
+                         std::max(localAABB.max.y, b.max.y),
+                         std::max(localAABB.max.z, b.max.z));
+  }
+  if (parts.size() == 1) {
+    const auto child = parts.front();
+    mesh = std::move(child->mesh);
+    surface = std::move(child->surface);
+    textures = std::move(child->textures);
+    vertexBuffer = std::move(child->vertexBuffer);
+    indexBuffer = std::move(child->indexBuffer);
+    lodIndexBuffers = std::move(child->lodIndexBuffers);
+    parts.clear();
+  }
+}
+
 Model::Model() : textures(6) {}
 
-void Model::load(StringView path) {
+void Model::load(StringView path) { load(path, LoadOptions{}); }
+
+void Model::load(StringView path, const LoadOptions &options) {
   const TaskGroup group = LoadContext::current();
   group.add();
 
@@ -492,10 +776,16 @@ void Model::load(StringView path) {
   this->indexBuffer = nullptr;
   this->lodIndexBuffers.clear();
   this->textures.assign(6, nullptr);
+  parts.clear();
+  mesh = Mesh();
+  surface = {};
+  materialCount = 0;
 
-  const String pathStr = path.data();
+  const String pathStr(path);
   auto state = makePtr<AsyncModelState>();
   state->embeddedTextures.resize(6);
+  state->options = options;
+  state->group = group;
   state->debugName = "Model::load(" + pathStr + ")";
   const Ptr<void> stateVoid = std::static_pointer_cast<void>(state);
   this->data = stateVoid;
@@ -506,7 +796,8 @@ void Model::load(StringView path) {
       Assimp::Importer importer;
       const unsigned int flags =
           aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-          aiProcess_JoinIdenticalVertices | aiProcess_Triangulate;
+          aiProcess_JoinIdenticalVertices | aiProcess_Triangulate |
+          aiProcess_GenSmoothNormals;
       const aiScene *scene = nullptr;
       String modelBytes;
 #if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
@@ -535,9 +826,15 @@ void Model::load(StringView path) {
       }
 #endif
       if (!scene) {
+        Log::error("Cannot import model {}: {}", pathStr,
+                   importer.GetErrorString());
         state->ok = false;
         return;
       }
+
+      stage = "static scene hierarchy and materials";
+      if (importStaticScene(scene, *state, pathStr))
+        return;
 
       Mesh mesh;
       AABB aabb;
@@ -625,6 +922,12 @@ void Model::load(StringView path) {
           return;
         }
 
+        if (state->staticScene) {
+          finalizeImport(stateVoid);
+          this->data.reset();
+          return;
+        }
+
         this->mesh = std::move(state->mesh);
         this->localAABB = state->aabb;
         this->boneMap = std::move(state->boneMap);
@@ -673,11 +976,14 @@ void Model::load(StringView path) {
         }
       });
 }
-void Model::load(const Buffer &buffer) {
-  load(buffer, "");
-}
+void Model::load(const Buffer &buffer) { load(buffer, ""); }
 
 void Model::load(const Buffer &buffer, StringView formatHint) {
+  load(buffer, formatHint, LoadOptions{});
+}
+
+void Model::load(const Buffer &buffer, StringView formatHint,
+                 const LoadOptions &options) {
   const TaskGroup group = LoadContext::current();
   group.add();
 
@@ -687,8 +993,14 @@ void Model::load(const Buffer &buffer, StringView formatHint) {
   this->indexBuffer = nullptr;
   this->lodIndexBuffers.clear();
   this->textures.assign(6, nullptr);
+  parts.clear();
+  mesh = Mesh();
+  surface = {};
+  materialCount = 0;
 
   auto state = makePtr<AsyncModelState>();
+  state->options = options;
+  state->group = group;
   state->embeddedTextures.resize(6);
   state->debugName = "Model::load(buffer, " + String(formatHint) + ")";
   const Ptr<void> stateVoid = std::static_pointer_cast<void>(state);
@@ -704,12 +1016,16 @@ void Model::load(const Buffer &buffer, StringView formatHint) {
       const aiScene *scene = importer.ReadFileFromMemory(
           buf.data(), buf.size(),
           aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-              aiProcess_JoinIdenticalVertices | aiProcess_Triangulate,
+              aiProcess_JoinIdenticalVertices | aiProcess_Triangulate |
+              aiProcess_GenSmoothNormals,
           hint.empty() ? nullptr : hint.c_str());
       if (!scene) {
         state->ok = false;
         return;
       }
+
+      if (importStaticScene(scene, *state, ""))
+        return;
 
       Mesh mesh;
       AABB aabb;
@@ -797,6 +1113,11 @@ void Model::load(const Buffer &buffer, StringView formatHint) {
           return;
         }
 
+        if (state->staticScene) {
+          finalizeImport(stateVoid);
+          this->data.reset();
+          return;
+        }
         this->mesh = std::move(state->mesh);
         this->localAABB = state->aabb;
         this->boneMap = std::move(state->boneMap);
@@ -847,6 +1168,10 @@ void Model::load(const Buffer &buffer, StringView formatHint) {
 }
 
 void Model::loadFromVertexArray(const Mesh &m, bool optimize) {
+  data.reset();
+  parts.clear();
+  surface = {};
+  materialCount = 0;
   this->mesh = Mesh(*m.data());
   if (optimize) {
     optimizeMesh(this->mesh);
@@ -873,7 +1198,8 @@ bool Model::loadTransientFromVertexArray(
   vertexInfo.allocator = commands->getCreateInfo().allocator;
   vertexInfo.size = data->vertices.size() * sizeof(Vertex);
   vertexInfo.usage = gpu::BufferUsage::Vertex;
-  auto vertices = commands->createTransientBuffer(vertexInfo, data->vertices.data());
+  auto vertices =
+      commands->createTransientBuffer(vertexInfo, data->vertices.data());
   if (!vertices) {
     return false;
   }
@@ -881,11 +1207,16 @@ bool Model::loadTransientFromVertexArray(
   indexInfo.allocator = vertexInfo.allocator;
   indexInfo.size = data->indices.size() * sizeof(UInt32);
   indexInfo.usage = gpu::BufferUsage::Index;
-  auto indices = commands->createTransientBuffer(indexInfo, data->indices.data());
+  auto indices =
+      commands->createTransientBuffer(indexInfo, data->indices.data());
   if (!indices) {
     return false;
   }
   mesh = source;
+  this->data.reset();
+  parts.clear();
+  surface = {};
+  materialCount = 0;
   vertexBuffer = std::move(vertices);
   indexBuffer = std::move(indices);
   lodIndexBuffers.clear();
@@ -896,6 +1227,8 @@ bool Model::loadTransientFromVertexArray(
 void Model::updateBounds() {
   auto mesh = this->mesh.data();
   AABB aabb;
+  if (!mesh->vertices.empty())
+    aabb.min = aabb.max = mesh->vertices.front().position;
   for (auto &v : mesh->vertices) {
     aabb.min.x = Math::min(aabb.min.x, v.position.x);
     aabb.min.y = Math::min(aabb.min.y, v.position.y);
@@ -1206,13 +1539,64 @@ void Model::loadBoneUniform(float start) {
   }
 }
 bool Model::hasTexture(TextureKey type) const {
-  return textures[static_cast<UInt32>(type)] != nullptr;
+  return getTexture(type) != nullptr;
 }
 Ptr<Texture> Model::getTexture(TextureKey type) const {
-  return textures[static_cast<UInt32>(type)];
+  const auto index = static_cast<UInt32>(type);
+  if (index >= textures.size())
+    return nullptr;
+  if (textures[index])
+    return textures[index];
+  for (const auto &part : parts)
+    if (auto t = part->getTexture(type))
+      return t;
+  return nullptr;
 }
 void Model::setTexture(TextureKey type, const Ptr<Texture> &texture) {
-  textures[static_cast<UInt32>(type)] = texture;
+  const auto index = static_cast<UInt32>(type);
+  if (index >= textures.size())
+    return;
+  textures[index] = texture;
+  for (const auto &part : parts)
+    part->setTexture(type, texture);
+}
+
+Mesh Model::getMesh() const {
+  if (!parts.empty() && mesh.data()->vertices.empty()) {
+    auto target = mesh.data();
+    for (const auto &part : parts) {
+      const auto source = part->getMesh().data();
+      const auto offset = static_cast<UInt32>(target->vertices.size());
+      target->vertices.insert(target->vertices.end(), source->vertices.begin(),
+                              source->vertices.end());
+      for (auto index : source->indices)
+        target->indices.push_back(offset + index);
+    }
+  }
+  return mesh;
+}
+
+UInt32 Model::getTriangleCount() const {
+  UInt32 count = 0;
+  if (parts.empty())
+    return static_cast<UInt32>(mesh.data()->indices.size() / 3);
+  for (const auto &part : parts)
+    count += part->getTriangleCount();
+  return count;
+}
+
+bool Model::isReady() const {
+  if (data)
+    return false;
+  if (parts.empty() && (!vertexBuffer || !indexBuffer))
+    return false;
+  for (const auto &part : parts)
+    if (!part->isReady())
+      return false;
+  for (const auto &texture : textures)
+    if (texture && !texture->getRaw())
+      return false;
+  return true;
 }
 
 } // namespace sinen

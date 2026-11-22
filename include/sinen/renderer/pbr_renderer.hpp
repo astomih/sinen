@@ -26,6 +26,8 @@ public:
   void clearFillLight();
   // Positive exposure enables tone mapping and sRGB output for an SDR target.
   void setExposure(float value);
+  // Alpha test for foliage/fences; zero disables it. Uses base-color alpha.
+  void setAlphaCutoff(float value);
   // Use the supplied lighting textures when all three are ready.
   void setEnvironment(const Environment &environment);
   void clearEnvironment();
@@ -44,6 +46,7 @@ private:
   Light light = PointLight(Vec3(1.0f, 1.0f, 1.0f));
   std::optional<Light> fillLight;
   float exposure = 0.0f;
+  float alphaCutoff = 0.0f;
   Ptr<Texture> giTexture;
   Vec3 giMinimum, giExtent, giCounts;
   float giIntensity = 1.0f;

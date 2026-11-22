@@ -303,6 +303,7 @@ __pycache__/
 *.pyc
 /.venv/
 /site/
+/docs/site/
 /.cache/
 
 # Cake - Uncomment if you are using it

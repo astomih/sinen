@@ -1,7 +1,7 @@
 # [Luau API](https://github.com/astomih/sinen/blob/main/api/sinen/init.luau)
 
 `sn.RenderDoc` によるGPUフレームキャプチャの設定と使用方法は
-[RenderDoc](../renderdoc.md)を参照してください。
+[RenderDoc](renderdoc.md)を参照してください。
 
 ## 2D 座標
 
@@ -207,7 +207,7 @@ RaytracingAccelerationStructure scene : register(t0, space6);
 RWByteAddressBuffer outputPixels : register(u0, space0);
 ```
 
-## Immediate GUI
+## 即時モード GUI
 
 `sn.Gui` は小さな immediate-mode GUI レイヤーです。`draw()` から毎フレーム widget を呼ぶと、その場で描画され、新しい入力状態が戻り値で返ります。
 

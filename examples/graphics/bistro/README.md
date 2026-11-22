@@ -1,46 +1,33 @@
-# Bistro: advanced graphics
+# Bistro: 高度なグラフィックス
 
-Amazon Lumberyard's **Bistro Exterior** loaded directly from the original FBX,
-with PBR materials, alpha-tested foliage, HDR reflections and real-time probe GI.
+Amazon Lumberyard の **Bistro Exterior** を元の FBX から直接読み込み、PBR マテリアル、アルファテスト付きの植生、HDR 反射、リアルタイムのプローブ GI で描画します。
 
-![Bistro Exterior rendered in Sinen](preview.png)
+![Sinen で描画した Bistro Exterior](preview.png)
 
-Scene: **Amazon Lumberyard Bistro**, [NVIDIA ORCA](https://developer.nvidia.com/orca/amazon-lumberyard-bistro),
-Amazon Lumberyard, July 2017, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-The screenshot is an engine render. The original license and README are copied
-beside the local assets.
+シーン: **Amazon Lumberyard Bistro**、[NVIDIA ORCA](https://developer.nvidia.com/orca/amazon-lumberyard-bistro)、Amazon Lumberyard、2017 年 7 月、[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。画像はエンジンで描画したものです。元のライセンスと README はローカルのアセットと一緒にコピーされます。
 
-## Download original assets
+## 元のアセットをダウンロードする
 
-From the repository root:
+リポジトリのルートから実行します。
 
 ```powershell
 ./examples/graphics/bistro/prepare.ps1
 ```
 
-This downloads the official **Bistro v5.2** archive (about **853 MiB**), verifies
-its SHA-256, extracts it under the ignored build directory, and copies the
-original exterior FBX, DDS textures, HDR panorama and license into
-`assets/Bistro_v5_2/`. It performs no conversion or mesh splitting and requires
-no Blender installation. Allow a few GB of disk space.
+公式の **Bistro v5.2** アーカイブ（約 **853 MiB**）をダウンロードし、SHA-256 を検証して Git の対象外であるビルドディレクトリに展開します。その後、元の外観 FBX、DDS テクスチャ、HDR パノラマ、ライセンスを `assets/Bistro_v5_2/` にコピーします。変換やメッシュ分割は行わず、Blender も不要です。ディスクには数 GiB の空き容量を確保してください。
 
-Existing downloads/extractions can be reused:
+ダウンロード済みのアーカイブや展開済みディレクトリも再利用できます。
 
 ```powershell
 ./examples/graphics/bistro/prepare.ps1 -Archive C:/Assets/Bistro_v5_2.zip
 ./examples/graphics/bistro/prepare.ps1 -SourceDirectory C:/Assets/Bistro_v5_2
 ```
 
-On other platforms, copy `BistroExterior.fbx`, `Textures/`,
-`san_giuseppe_bridge_4k.hdr`, `LICENSE.txt` and `README.txt` from the official
-extraction into this example's `assets/Bistro_v5_2/` directory.
+その他のプラットフォームでは、公式アーカイブから展開した `BistroExterior.fbx`、`Textures/`、`san_giuseppe_bridge_4k.hdr`、`LICENSE.txt`、`README.txt` を、このサンプルの `assets/Bistro_v5_2/` にコピーします。
 
-Start the examples launcher and choose **Graphics → Bistro (Advanced)**.
-The loading screen waits for model import and external texture loads before GI
-starts. Large assets are ignored by Git. Initial loading uses substantially more
-memory than the small examples.
+サンプルランチャーを起動し、**Graphics → Bistro (Advanced)** を選択します。ロード画面はモデルのインポートと外部テクスチャの読み込みを待ってから GI を開始します。大きなアセットは Git の対象外です。初回読み込みでは小さなサンプルより多くのメモリを使用します。
 
-## Direct model loading
+## モデルの直接読み込み
 
 ```luau
 local model = sn.Model.new("assets/Bistro_v5_2/BistroExterior.fbx", {
@@ -49,72 +36,41 @@ local model = sn.Model.new("assets/Bistro_v5_2/BistroExterior.fbx", {
     flipNormalY = true,
     staticScene = true,
 })
--- In draw(), PBRRenderer binds every part's material automatically.
+-- draw() 内で、PBRRenderer が各パーツのマテリアルを自動でバインドします。
 renderer:drawModel(pass, model, transform)
 ```
 
-The static model importer preserves every mesh placement and material from the
-FBX node hierarchy. It applies node transforms, FBX axis/unit metadata, normals,
-UVs and vertex colors, then builds internal draw parts. No intermediate GLB,
-manifest, PNG, EXR or proxy file is generated. PBR frustum-culls imported parts
-and shares texture objects between materials referencing the same file.
-`isReady()`, `getPartCount()`, `getMaterialCount()` and `getTriangleCount()` expose
-loading status and scene statistics. Existing animated/skinned import retains
-its previous animation path; this hierarchy/material extension is for static
-models. `staticScene` bakes the authored node pose when a file also contains
-animation tracks, as Bistro does; skinned meshes retain the animation path.
+静的モデルのインポーターは、FBX ノード階層にあるメッシュの配置とマテリアルをすべて維持します。ノード変換、FBX の軸・単位メタデータ、法線、UV、頂点カラーを適用し、内部の描画パーツを作ります。中間の GLB、マニフェスト、PNG、EXR、プロキシファイルは生成しません。PBR は読み込んだパーツを視錐台でカリングし、同じファイルを参照するマテリアル間でテクスチャを共有します。
 
-`maxTextureSize` selects a suitable DDS mip or resizes a decoded image during
-loading (zero preserves full resolution). The DDS decoder supports 2D BC1–BC5
-UNORM and masked RGB/RGBA images, including mip chains. BC6/BC7, arrays,
-cubemaps and signed BC4/BC5 are unsupported.
+`isReady()`、`getPartCount()`、`getMaterialCount()`、`getTriangleCount()` から読み込み状態とシーンの統計を取得できます。既存のアニメーション・スキニング付きモデルの読み込み経路は維持されます。階層とマテリアルの拡張は静的モデル向けです。Bistro のようにアニメーショントラックを含むファイルでは、`staticScene` が作者のノード姿勢を焼き付けます。スキニング付きメッシュはアニメーション経路を使います。
 
-ORCA's legacy `Specular` DDS stores occlusion in R, roughness in G and metalness
-in B. `packedSpecular` explicitly opts into this convention. BC5 normal Z is
-reconstructed by PBR; `flipNormalY` selects the source's DirectX convention.
-Base-color alpha uses a 0.5 cutoff for this scene. Glass is approximated with
-alpha testing. The HDR panorama is loaded directly for IBL; `sky.slang` applies
-an SDR display mapping to the background.
+`maxTextureSize` は適切な DDS ミップを選ぶか、読み込み時にデコード済み画像を縮小します。`0` は元の解像度を保持します。DDS デコーダーは 2D の BC1～BC5 UNORM とマスク付き RGB/RGBA 画像に対応し、ミップチェーンも扱えます。BC6/BC7、配列、キューブマップ、符号付き BC4/BC5 には対応しません。
 
-## Controls
+ORCA の旧形式の `Specular` DDS では、R にオクルージョン、G に粗さ、B に金属度を格納しています。`packedSpecular` でこの規約を明示的に有効化します。PBR は BC5 法線の Z を再構成し、`flipNormalY` は元画像の DirectX 規約を選びます。このシーンのベースカラーのアルファには 0.5 のカットオフを使い、ガラスはアルファテストで近似します。HDR パノラマは IBL 用に直接読み込み、`sky.slang` が背景へ SDR 表示マッピングを適用します。
 
-| Input | Action |
+## 操作
+
+| 入力 | 操作 |
 | --- | --- |
-| Hold right mouse / arrow keys | Look around |
-| W / A / S / D | Move horizontally |
-| Q / E | Move down / up |
-| Left Shift | Faster movement |
-| R | Restore the author's camera |
-| G | Toggle local indirect light |
-| P | Animate the sun; GI follows the lighting change |
-| Z / X | Decrease / increase exposure |
-| F10 | Save `bistro.png` after a 40-frame history warmup |
-| Escape | Return to Graphics examples |
+| 右マウスボタン長押し / 矢印キー | 視点移動 |
+| W / A / S / D | 水平方向に移動 |
+| Q / E | 下降 / 上昇 |
+| 左 Shift | 高速移動 |
+| R | 作者のカメラ位置に戻す |
+| G | 局所的な間接光を切り替え |
+| P | 太陽を動かす。GI も照明の変化に追従 |
+| Z / X | 露出を下げる / 上げる |
+| F10 | 40 フレームの履歴を蓄積してから `bistro.png` を保存 |
+| Esc | Graphics のサンプル一覧に戻る |
 
-`capture.luau` is an alternative entry point that captures the author's camera
-and exits. Captures freeze movement and omit the HUD.
+`capture.luau` は作者のカメラ位置で画像を保存して終了する別のエントリーポイントです。キャプチャ中は移動を止め、HUD を表示しません。
 
-## Real-time GI
+## リアルタイム GI
 
-In `ready()`, `gi:addModel(model, transform, nil, nil, 40000)` creates an
-approximate GI proxy **in memory** using meshoptimizer. The budget is distributed
-among imported parts; small parts retain a minimum of geometry, so it is a
-simplification target rather than a strict global cap. Alpha-masked parts are
-omitted to avoid opaque leaf-card occluders. Mean texture colors and vertex
-colors approximate diffuse reflectance; emissive maps supply emitted radiance.
+`ready()` 内の `gi:addModel(model, transform, nil, nil, 40000)` は、meshoptimizer を使って **メモリ上**に近似 GI プロキシを生成します。頂点数の予算は読み込んだパーツに配分され、小さなパーツにも最低限の形状を残すため、厳密な全体上限ではなく簡略化の目標です。不透明な葉カードが遮蔽物になるのを避けるため、アルファマスク付きパーツは除外します。テクスチャの平均色と頂点カラーで拡散反射率を近似し、発光マップから放射輝度を取得します。
 
-The static proxy/BVH is registered once. A **12 × 6 × 12** local probe volume
-traces **64 GPU rays per probe per frame**, up to **2 diffuse hits**, with a
-history weight of **0.88**. The 64 m wide volume recenters with the camera and
-resets temporal history. The tracer evaluates the sun and constant sky; PBR
-retains HDR specular IBL and a weaker blue directional fill. GI is a diffuse
-approximation and does not provide full-resolution ray-traced direct shadows.
+静的なプロキシと BVH は一度登録します。**12 × 6 × 12** の局所プローブボリュームは、プローブごとに毎フレーム **64 本の GPU レイ**を追跡し、拡散反射は最大 **2 回**、履歴の重みは **0.88** です。幅 64 m のボリュームはカメラに追従して中心を移し、時間履歴をリセットします。トレーサーは太陽と一定の空の光を評価します。PBR は HDR の鏡面 IBL と弱い青色の指向性補助光を保持します。GI は拡散光の近似で、高解像度のレイトレーシングによる直接光の影は生成しません。
 
-The original v5.2 FBX imports as **2,832,120 triangles**, **132 used materials**
-and **1,591 internal parts**. On an RTX 4070 Ti SUPER, the Windows Release/D3D12
-build measured about **60 FPS at 1280 × 720** with GI enabled (180 frames after
-warmup, VSync enabled). This is a machine-specific observation, not an uncapped
-GPU timing or a guarantee for other hardware.
+元の v5.2 FBX は **2,832,120 三角形**、使用中の **132 マテリアル**、**1,591 内部パーツ**として読み込まれます。RTX 4070 Ti SUPER では、Windows Release / D3D12 ビルドで GI を有効にした 1280 × 720 の描画が約 **60 FPS** でした（ウォームアップ後の 180 フレーム、VSync 有効）。これは特定のマシンでの測定であり、GPU 単体の無制限な処理時間や他のハードウェアでの性能保証ではありません。
 
-`sky.frag.snb` contains SPIR-V, SPIR-V 1.3, WGSL and DXIL variants; the shader
-compiler plugin is not required to run the example.
+`sky.frag.snb` は SPIR-V、SPIR-V 1.3、WGSL、DXIL の各形式を含みます。サンプルの実行にシェーダーコンパイラプラグインは不要です。

@@ -139,4 +139,4 @@ my_game/
 ```luau
 local Player = require("./player")
 ```
-API 一覧は `docs/ja/luau_api.md` から参照できます。
+API 一覧は [Luau API](luau_api.md) から参照できます。

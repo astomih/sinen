@@ -91,7 +91,7 @@ end
 スクリプトが有効な構成では `SINEN_PLUGIN_OCEAN` は標準で `ON` です。
 `sn.Script.loadPlugin("ocean")` でロードし、`require("@sinen/plugin/ocean")` で取得します。
 Phillips / JONSWAP の FFT 風浪と独立したうねり、水平変位、法線、白波マスク、再利用可能なメッシュバッファを生成します。
-詳細は [Ocean の API とサンプル](../../plugins/ocean/README.md) を参照してください。
+詳細は [Ocean の API とサンプル](https://github.com/astomih/sinen/blob/main/plugins/ocean/README.md) を参照してください。
 
 ## shader_compiler
 

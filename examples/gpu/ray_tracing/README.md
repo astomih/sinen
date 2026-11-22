@@ -1,10 +1,10 @@
-# 20 Ray Tracing
+# 20 レイトレーシング
 
-This sample renders a triangle through the Luau `sn.Raytracing` API.
+このサンプルは Luau の `sn.Raytracing` API で三角形を描画します。
 
-- `main.luau` creates BLAS/TLAS, builds the ray tracing pipeline, uploads the shader table, dispatches rays, and displays the storage-buffer result as a texture.
-- `raytrace.slang` contains ray generation, miss, and closest-hit entry points.
+- `main.luau` は BLAS/TLAS の生成、レイトレーシングパイプラインの構築、シェーダーテーブルのアップロード、レイの発射を行い、ストレージバッファの結果をテクスチャとして表示します。
+- `raytrace.slang` にはレイ生成、ミス、最近接ヒットのエントリーポイントがあります。
 
-Ray tracing shader resources use SPIR-V set 4 / DX space 4. Acceleration structures start at `vk::binding(0, 4)` / `register(t0, space4)`, and storage buffers start after the acceleration-structure block at `vk::binding(8, 4)` / `register(u0, space4)`.
+レイトレーシング用のシェーダーリソースは SPIR-V の set 4 / DX の space 4 を使います。アクセラレーション構造は `vk::binding(0, 4)` / `register(t0, space4)` から、ストレージバッファはその領域の後にある `vk::binding(8, 4)` / `register(u0, space4)` から始まります。
 
-The sample requires a desktop backend/device with D3D12 DXR or Vulkan KHR ray tracing support.
+D3D12 DXR または Vulkan KHR レイトレーシングに対応したデスクトップのバックエンドとデバイスが必要です。

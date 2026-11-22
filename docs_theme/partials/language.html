@@ -1,5 +1,0 @@
-{# Keep language-specific UI and HTML metadata in a single bilingual build. #}
-{% set language = "ja" if page is defined and page.url is startingwith("ja/") else "en" %}
-{% import "partials/languages/" ~ language ~ ".html" as local %}
-{% import "partials/languages/en.html" as fallback %}
-{% macro t(key) %}{{ local.t(key) or fallback.t(key) or key }}{% endmacro %}

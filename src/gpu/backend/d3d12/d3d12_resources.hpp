@@ -33,11 +33,14 @@ struct CpuGpuDescriptor {
 class Buffer : public gpu::Buffer {
 public:
   Buffer(const CreateInfo &createInfo, Ptr<Device> device,
-         ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES state);
+         ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES state,
+         UINT64 offset = 0, bool upload = false);
   ID3D12Resource *getNative() const { return resource.Get(); }
   D3D12_GPU_VIRTUAL_ADDRESS getDeviceAddress() const {
-    return resource ? resource->GetGPUVirtualAddress() : 0;
+    return resource ? resource->GetGPUVirtualAddress() + offset : 0;
   }
+  UINT64 getOffset() const { return offset; }
+  bool isUpload() const { return upload; }
   D3D12_RESOURCE_STATES getState() const { return state; }
   void setState(D3D12_RESOURCE_STATES value) { state = value; }
 
@@ -45,6 +48,8 @@ private:
   Ref<Device> device;
   ComPtr<ID3D12Resource> resource;
   D3D12_RESOURCE_STATES state;
+  UINT64 offset;
+  bool upload;
 };
 
 class Texture : public gpu::Texture {
@@ -52,6 +57,7 @@ public:
   Texture(const CreateInfo &createInfo, Ptr<Device> device,
           ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES state,
           bool swapchainTexture = false);
+  ~Texture() override;
   ID3D12Resource *getNative() const { return resource.Get(); }
   D3D12_RESOURCE_STATES getState() const { return state; }
   void setState(D3D12_RESOURCE_STATES value) { state = value; }
@@ -94,6 +100,7 @@ class Sampler : public gpu::Sampler {
 public:
   Sampler(const CreateInfo &createInfo, Ptr<Device> device,
           CpuGpuDescriptor descriptor);
+  ~Sampler() override;
   D3D12_CPU_DESCRIPTOR_HANDLE getCpu() const { return descriptor.cpu; }
   D3D12_GPU_DESCRIPTOR_HANDLE getGpu() const { return descriptor.gpu; }
 

@@ -846,9 +846,54 @@ void Model::load(const Buffer &buffer, StringView formatHint) {
       });
 }
 
-void Model::loadFromVertexArray(const Mesh &m) {
+void Model::loadFromVertexArray(const Mesh &m, bool optimize) {
   this->mesh = Mesh(*m.data());
-  optimizeMesh(this->mesh);
+  if (optimize) {
+    optimizeMesh(this->mesh);
+  }
+  updateBounds();
+  auto mesh = this->mesh.data();
+  auto viBuffer = createVertexIndexBuffer(mesh->vertices, mesh->indices);
+  this->vertexBuffer = viBuffer.first;
+  this->indexBuffer = viBuffer.second;
+  this->lodIndexBuffers = createLodIndexBuffers(this->mesh, this->indexBuffer);
+}
+
+bool Model::loadTransientFromVertexArray(
+    const Mesh &source, const Ptr<gpu::CommandBuffer> &commands) {
+  const auto data = source.data();
+  if (!commands || !data || data->vertices.empty() || data->indices.empty()) {
+    return false;
+  }
+  if (data->vertices.size() > UINT32_MAX / sizeof(Vertex) ||
+      data->indices.size() > UINT32_MAX / sizeof(UInt32)) {
+    return false;
+  }
+  gpu::Buffer::CreateInfo vertexInfo{};
+  vertexInfo.allocator = commands->getCreateInfo().allocator;
+  vertexInfo.size = data->vertices.size() * sizeof(Vertex);
+  vertexInfo.usage = gpu::BufferUsage::Vertex;
+  auto vertices = commands->createTransientBuffer(vertexInfo, data->vertices.data());
+  if (!vertices) {
+    return false;
+  }
+  gpu::Buffer::CreateInfo indexInfo{};
+  indexInfo.allocator = vertexInfo.allocator;
+  indexInfo.size = data->indices.size() * sizeof(UInt32);
+  indexInfo.usage = gpu::BufferUsage::Index;
+  auto indices = commands->createTransientBuffer(indexInfo, data->indices.data());
+  if (!indices) {
+    return false;
+  }
+  mesh = source;
+  vertexBuffer = std::move(vertices);
+  indexBuffer = std::move(indices);
+  lodIndexBuffers.clear();
+  updateBounds();
+  return true;
+}
+
+void Model::updateBounds() {
   auto mesh = this->mesh.data();
   AABB aabb;
   for (auto &v : mesh->vertices) {
@@ -860,10 +905,6 @@ void Model::loadFromVertexArray(const Mesh &m) {
     aabb.max.z = Math::max(aabb.max.z, v.position.z);
   }
   this->localAABB = aabb;
-  auto viBuffer = createVertexIndexBuffer(mesh->vertices, mesh->indices);
-  this->vertexBuffer = viBuffer.first;
-  this->indexBuffer = viBuffer.second;
-  this->lodIndexBuffers = createLodIndexBuffers(this->mesh, this->indexBuffer);
 }
 
 void Model::loadSprite() {

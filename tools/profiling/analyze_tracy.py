@@ -45,9 +45,13 @@ def analyze(directory, sample_count):
             zones.setdefault(name, [0.0] * len(frames))[index] += event["duration"] / 1e6
             counts[name] = counts.get(name, 0) + 1
     without_waits = [frame["duration"] / 1e6 - zones.get("GPU submit", [0] * sample_count)[index] - zones.get("GPU wait idle", [0] * sample_count)[index] for index, frame in enumerate(frames)]
+    # Async D3D12 moves pacing to frame-slot reuse; keep its wait separate from
+    # the actual command reset, object retirement and draw work in beginFrame.
+    without_pacing = [value - zones.get("GPU frame slot wait", [0] * sample_count)[index] for index, value in enumerate(without_waits)]
     result = {"sample_frames": len(frames),
               "frame_interval_ms": stats([(starts[index + 1] - starts[index]) / 1e6 for index in range(len(starts) - 1)]),
               "frame_without_submit_idle_ms": stats(without_waits),
+              "frame_without_pacing_ms": stats(without_pacing),
               "zones_ms_per_frame": {name: stats(values) for name, values in zones.items()},
               "zone_calls_per_frame": {name: count / len(frames) for name, count in counts.items()},
               "startup_workers_ms": [{"name": event["name"], "duration_ms": event["duration"] / 1e6} for event in events if event["name"].startswith("IBL ")],
@@ -55,6 +59,7 @@ def analyze(directory, sample_count):
     (directory / "summary.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     return {"run": directory.name, "interval": result["frame_interval_ms"],
             "work": result["frame_without_submit_idle_ms"],
+            "work_without_pacing": result["frame_without_pacing_ms"],
             "zones_mean_ms": {name: value["mean"] for name, value in result["zones_ms_per_frame"].items()},
             "calls": result["zone_calls_per_frame"], "startup": result["startup_workers_ms"]}
 

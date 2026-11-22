@@ -19,18 +19,40 @@
 namespace sinen::gpu::d3d12 {
 class Device;
 
+// Device-owned storage has no engine Device reference. It can outlive the
+// recording wrapper until its submission fence completes, without a cycle.
+struct CommandContext {
+  struct UploadPage {
+    ComPtr<ID3D12Resource> resource;
+    std::byte *mapped = nullptr;
+    UINT64 capacity = 0;
+    UINT64 used = 0;
+  };
+  ~CommandContext();
+  ComPtr<ID3D12CommandAllocator> allocator;
+  ComPtr<ID3D12GraphicsCommandList> list;
+  std::vector<UploadPage> pages;
+  std::vector<ComPtr<IUnknown>> retainedObjects;
+  Size pageIndex = 0;
+  UINT64 fenceValue = 0;
+  UINT frameIndex = 0;
+  bool closed = false;
+};
+
 class CommandBuffer : public gpu::CommandBuffer {
 public:
   CommandBuffer(const CreateInfo &createInfo, Ptr<Device> device,
-                ComPtr<ID3D12CommandAllocator> allocator,
-                ComPtr<ID3D12GraphicsCommandList> commandList);
-  ~CommandBuffer() override;
+                const std::shared_ptr<CommandContext> &context);
+  ~CommandBuffer() override { close(); }
 
   ID3D12GraphicsCommandList *getNative() const { return commandList.Get(); }
   Ptr<Device> getDevice() const { return device; }
   void close();
   bool usesSwapchain() const { return swapchainUsed; }
   void markUsesSwapchain() { swapchainUsed = true; }
+  const std::shared_ptr<CommandContext> &getContext() const { return context; }
+  Ptr<gpu::Buffer> createTransientBuffer(const gpu::Buffer::CreateInfo &info,
+                                         const void *data) override;
 
   Ptr<gpu::CopyPass> beginCopyPass() override;
   void endCopyPass(Ptr<gpu::CopyPass> copyPass) override;
@@ -55,41 +77,29 @@ public:
   D3D12_GPU_VIRTUAL_ADDRESS vertexUniform(UInt32 slot) const;
   D3D12_GPU_VIRTUAL_ADDRESS fragmentUniform(UInt32 slot) const;
   D3D12_GPU_VIRTUAL_ADDRESS computeUniform(UInt32 slot) const;
-  void keepAlive(ComPtr<ID3D12Resource> resource) {
-    if (resource) {
-      referencedResources.push_back(resource);
-    }
-  }
-  void keepAlive(ID3D12Resource *resource) {
+  void keepAlive(ComPtr<ID3D12Resource> resource) { keepAlive(resource.Get()); }
+  void keepAlive(IUnknown *resource) {
     if (!resource) {
       return;
     }
     resource->AddRef();
-    ComPtr<ID3D12Resource> retained;
+    ComPtr<IUnknown> retained;
     retained.Attach(resource);
-    referencedResources.push_back(retained);
+    context->retainedObjects.push_back(retained);
   }
 
 private:
   D3D12_GPU_VIRTUAL_ADDRESS uploadUniform(const void *data, size_t size);
-
-  struct UniformPage {
-    ComPtr<ID3D12Resource> resource;
-    std::byte *mapped = nullptr;
-    UINT64 capacity = 0;
-    UINT64 used = 0;
-  };
+  bool uploadData(const void *data, Size size, UINT64 alignment,
+                  ComPtr<ID3D12Resource> &resource, UINT64 &offset);
 
   Ptr<Device> device;
-  ComPtr<ID3D12CommandAllocator> allocator;
+  std::shared_ptr<CommandContext> context;
   ComPtr<ID3D12GraphicsCommandList> commandList;
-  bool closed = false;
   bool swapchainUsed = false;
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> vertexUniforms{};
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> fragmentUniforms{};
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> computeUniforms{};
-  std::vector<UniformPage> uniformPages;
-  std::vector<ComPtr<ID3D12Resource>> referencedResources;
 };
 
 class CopyPass : public gpu::CopyPass {

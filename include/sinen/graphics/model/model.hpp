@@ -43,7 +43,10 @@ public:
   void load(StringView str);
   void load(const Buffer &buffer);
   void load(const Buffer &buffer, StringView formatHint);
-  void loadFromVertexArray(const Mesh &mesh);
+  void loadFromVertexArray(const Mesh &mesh, bool optimize = true);
+  // Returns false when the backend cannot provide command-local streaming.
+  bool loadTransientFromVertexArray(const Mesh &mesh,
+                                    const Ptr<gpu::CommandBuffer> &commands);
   void loadSprite();
   void loadBox();
   void play(float start);
@@ -76,6 +79,7 @@ public:
   void setTexture(TextureKey type, const Ptr<Texture> &texture);
 
 private:
+  void updateBounds();
   void loadBoneUniform(float time);
   float time = 0.0f;
   AABB localAABB;

@@ -470,6 +470,8 @@ void RayTracingPass::bindRayTracingPipeline(
   if (!pipeline) {
     return;
   }
+  commandBuffer->keepAlive(pipeline->getNative());
+  commandBuffer->keepAlive(pipeline->getRootSignature());
   ComPtr<ID3D12GraphicsCommandList4> list4;
   HRESULT hr = commandBuffer->getNative()->QueryInterface(IID_PPV_ARGS(&list4));
   if (!list4) {

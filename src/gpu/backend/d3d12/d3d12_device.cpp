@@ -321,6 +321,36 @@ void Device::createDeviceObjects() {
   createComputeRootSignature();
   createRayTracingRootSignature();
   createDefaultDescriptors();
+  frames[0].srvHeap = srvHeap;
+  frames[0].samplerHeap = samplerHeap;
+  for (UINT i = 1; i < FrameCount; ++i) {
+    srvDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    samplerDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    hr = device->CreateDescriptorHeap(&srvDesc,
+                                      IID_PPV_ARGS(&frames[i].srvHeap));
+    logIfFailed(hr, "D3D12: create frame SRV heap failed");
+    if (FAILED(hr)) {
+      deviceLost = true;
+      return;
+    }
+    hr = device->CreateDescriptorHeap(&samplerDesc,
+                                      IID_PPV_ARGS(&frames[i].samplerHeap));
+    logIfFailed(hr, "D3D12: create frame sampler heap failed");
+    if (FAILED(hr)) {
+      deviceLost = true;
+      return;
+    }
+  }
+  for (auto &frame : frames) {
+    device->CopyDescriptorsSimple(
+        1, cpuHandle(frame.srvHeap.Get(), srvDescriptorSize, SrvFallbackIndex),
+        defaultSrv.cpu, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    device->CopyDescriptorsSimple(
+        1,
+        cpuHandle(frame.samplerHeap.Get(), samplerDescriptorSize,
+                  SamplerFallbackIndex),
+        defaultSampler.cpu, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+  }
 }
 
 void Device::claimWindow(void *window) {
@@ -1007,25 +1037,105 @@ Device::acquireCommandBuffer(const gpu::CommandBuffer::CreateInfo &createInfo) {
                  "unavailable");
     return nullptr;
   }
-  ComPtr<ID3D12CommandAllocator> allocator;
-  HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                              IID_PPV_ARGS(&allocator));
-  logIfFailed(hr, "D3D12: CreateCommandAllocator failed");
-  if (FAILED(hr)) {
+  std::shared_ptr<CommandContext> context;
+  const UINT64 completed = fence->GetCompletedValue();
+  if (completed == UINT64_MAX) {
+    markDeviceLost("D3D12: device removed before command acquisition",
+                   device->GetDeviceRemovedReason());
     return nullptr;
   }
-  ComPtr<ID3D12GraphicsCommandList> list;
-  hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                 allocator.Get(), nullptr, IID_PPV_ARGS(&list));
-  logIfFailed(hr, "D3D12: CreateCommandList failed");
-  if (FAILED(hr)) {
-    return nullptr;
+  for (const auto &candidate : commandContexts) {
+    if (candidate.use_count() == 1 && candidate->fenceValue <= completed) {
+      context = candidate;
+      break;
+    }
   }
+  // Bound growth when uploads outpace the GPU. Never wait on an unsubmitted
+  // context or reset a context still held by its caller.
+  if (!context && commandContexts.size() >= 32) {
+    for (const auto &candidate : commandContexts) {
+      if (candidate.use_count() == 1 && candidate->fenceValue != 0) {
+        waitForFence(candidate->fenceValue);
+        if (deviceLost) {
+          return nullptr;
+        }
+        context = candidate;
+        break;
+      }
+    }
+  }
+  HRESULT hr;
+  if (context) {
+    hr = context->allocator->Reset();
+    logIfFailed(hr, "D3D12: command allocator reset failed");
+    if (FAILED(hr)) {
+      return nullptr;
+    }
+    hr = context->list->Reset(context->allocator.Get(), nullptr);
+    logIfFailed(hr, "D3D12: command list reset failed");
+    if (FAILED(hr)) {
+      return nullptr;
+    }
+    context->retainedObjects.clear();
+    for (auto &page : context->pages) {
+      page.used = 0;
+    }
+    context->pageIndex = 0;
+    context->fenceValue = 0;
+    context->closed = false;
+  } else {
+    ZoneScopedN("D3D12 command context create");
+    context = std::make_shared<CommandContext>();
+    hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                        IID_PPV_ARGS(&context->allocator));
+    logIfFailed(hr, "D3D12: CreateCommandAllocator failed");
+    if (FAILED(hr)) {
+      return nullptr;
+    }
+    hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                   context->allocator.Get(), nullptr,
+                                   IID_PPV_ARGS(&context->list));
+    logIfFailed(hr, "D3D12: CreateCommandList failed");
+    if (FAILED(hr)) {
+      return nullptr;
+    }
+    commandContexts.push_back(context);
+  }
+  context->frameIndex = frameIndex;
+  auto list = context->list;
   ID3D12DescriptorHeap *heaps[] = {srvHeap.Get(), samplerHeap.Get()};
   list->SetDescriptorHeaps(2, heaps);
   list->SetGraphicsRootSignature(graphicsRootSignature.Get());
   return makePtr<CommandBuffer>(createInfo.allocator, createInfo, get(),
-                                allocator, list);
+                                context);
+}
+
+void Device::beginFrame() {
+  if (!isValid()) {
+    return;
+  }
+  const UINT next = (frameIndex + 1) % FrameCount;
+  {
+    ZoneScopedN("GPU frame slot wait");
+    waitForFence(frames[next].fenceValue);
+  }
+  if (deviceLost) {
+    return;
+  }
+  retireCompletedCommands();
+  if (deviceLost) {
+    return;
+  }
+  frameIndex = next;
+  srvHeap = frames[next].srvHeap;
+  samplerHeap = frames[next].samplerHeap;
+  resetTransientDescriptors();
+}
+
+void Device::endFrame() {
+  // Each submission has a fence; beginFrame waits only for the frame slot it
+  // is about to overwrite, allowing two frames to remain in flight.
+  retireCompletedCommands();
 }
 
 Ptr<gpu::Texture>
@@ -1033,11 +1143,6 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
   if (deviceLost || !commandBuffer) {
     return nullptr;
   }
-  // Descriptor tables are frame-local. Upload command buffers can be created
-  // while recording draws, so resetting from acquireCommandBuffer would
-  // invalidate descriptors already referenced by the active render command
-  // list.
-  resetTransientDescriptors();
   if (!swapchain) {
     createSwapchain();
   } else if (window) {
@@ -1068,6 +1173,11 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
     return;
   }
   auto cb = downCast<CommandBuffer>(commandBuffer);
+  if (cb->getContext()->fenceValue != 0) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: command buffer was already submitted");
+    return;
+  }
   if (cb->usesSwapchain()) {
     auto texture = downCast<Texture>(swapchainTextures[currentBackBuffer]);
     transition(cb->getNative(), texture.get(), D3D12_RESOURCE_STATE_PRESENT);
@@ -1086,12 +1196,17 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
       logIfFailed(hr, "D3D12: Present failed");
     }
   }
-  signalAndWait();
+  const UINT64 value = signalQueue();
+  cb->getContext()->fenceValue = value ? value : UINT64_MAX;
+  if (value) {
+    frames[cb->getContext()->frameIndex].fenceValue = value;
+  }
 }
 
 void Device::waitForGpuIdle() {
   if (!deviceLost && commandQueue && fence) {
-    signalAndWait();
+    waitForFence(signalQueue());
+    retireCompletedCommands();
   }
 }
 
@@ -1122,29 +1237,61 @@ void Device::markDeviceLost(const char *context, HRESULT hr) {
   destroySwapchain();
 }
 
-void Device::signalAndWait() {
-  ZoneScopedN("D3D12 signalAndWait");
+UINT64 Device::signalQueue() {
   if (deviceLost || !commandQueue || !fence || !fenceEvent) {
-    return;
+    return 0;
   }
   const UINT64 value = ++fenceValue;
   HRESULT hr = commandQueue->Signal(fence.Get(), value);
   if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
     markDeviceLost("D3D12: device removed during queue signal",
                    device->GetDeviceRemovedReason());
-    return;
+    return 0;
   }
   logIfFailed(hr, "D3D12: queue signal failed");
   if (FAILED(hr)) {
+    markDeviceLost("D3D12: queue signal failed", hr);
+    return 0;
+  }
+  return value;
+}
+
+void Device::waitForFence(UINT64 value) {
+  if (!value || deviceLost || !fence || !fenceEvent) {
+    return;
+  }
+  if (fence->GetCompletedValue() == UINT64_MAX) {
+    markDeviceLost("D3D12: device removed during fence wait",
+                   device->GetDeviceRemovedReason());
     return;
   }
   if (fence->GetCompletedValue() < value) {
-    hr = fence->SetEventOnCompletion(value, static_cast<HANDLE>(fenceEvent));
+    ZoneScopedN("D3D12 fence wait");
+    HRESULT hr =
+        fence->SetEventOnCompletion(value, static_cast<HANDLE>(fenceEvent));
     logIfFailed(hr, "D3D12: fence SetEventOnCompletion failed");
     if (FAILED(hr)) {
+      markDeviceLost("D3D12: fence event registration failed", hr);
       return;
     }
-    WaitForSingleObject(static_cast<HANDLE>(fenceEvent), INFINITE);
+    if (WaitForSingleObject(static_cast<HANDLE>(fenceEvent), INFINITE) !=
+        WAIT_OBJECT_0) {
+      markDeviceLost("D3D12: fence event wait failed", E_FAIL);
+    }
+  }
+}
+
+void Device::retireCompletedCommands() {
+  const UINT64 completed = fence->GetCompletedValue();
+  if (completed == UINT64_MAX) {
+    markDeviceLost("D3D12: device removed before command retirement",
+                   device->GetDeviceRemovedReason());
+    return;
+  }
+  for (const auto &context : commandContexts) {
+    if (context->fenceValue && context->fenceValue <= completed) {
+      context->retainedObjects.clear();
+    }
   }
 }
 
@@ -1196,7 +1343,7 @@ void Device::transition(ID3D12GraphicsCommandList *list, Texture *texture,
 
 void Device::transition(ID3D12GraphicsCommandList *list, Buffer *buffer,
                         D3D12_RESOURCE_STATES after) {
-  if (!buffer || buffer->getState() == after) {
+  if (!buffer || buffer->isUpload() || buffer->getState() == after) {
     return;
   }
   D3D12_RESOURCE_BARRIER barrier{};
@@ -1226,6 +1373,11 @@ D3D12_GPU_DESCRIPTOR_HANDLE Device::gpuHandle(ID3D12DescriptorHeap *heap,
 }
 
 CpuGpuDescriptor Device::allocateSrvDescriptor() {
+  if (!freeSrvDescriptors.empty()) {
+    const UINT index = freeSrvDescriptors.back();
+    freeSrvDescriptors.pop_back();
+    return {cpuHandle(srvCpuHeap.Get(), srvDescriptorSize, index), {}};
+  }
   if (srvUsed >= SrvFallbackIndex) {
     if (!srvOverflowLogged) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -1240,6 +1392,11 @@ CpuGpuDescriptor Device::allocateSrvDescriptor() {
 }
 
 CpuGpuDescriptor Device::allocateSamplerDescriptor() {
+  if (!freeSamplerDescriptors.empty()) {
+    const UINT index = freeSamplerDescriptors.back();
+    freeSamplerDescriptors.pop_back();
+    return {cpuHandle(samplerCpuHeap.Get(), samplerDescriptorSize, index), {}};
+  }
   if (samplerUsed >= SamplerFallbackIndex) {
     if (!samplerOverflowLogged) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -1255,6 +1412,11 @@ CpuGpuDescriptor Device::allocateSamplerDescriptor() {
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Device::allocateRtvDescriptor() {
+  if (!freeRtvDescriptors.empty()) {
+    const UINT index = freeRtvDescriptors.back();
+    freeRtvDescriptors.pop_back();
+    return cpuHandle(rtvHeap.Get(), rtvDescriptorSize, index);
+  }
   if (rtvUsed >= RtvFallbackIndex) {
     if (!rtvOverflowLogged) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -1267,6 +1429,11 @@ D3D12_CPU_DESCRIPTOR_HANDLE Device::allocateRtvDescriptor() {
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Device::allocateDsvDescriptor() {
+  if (!freeDsvDescriptors.empty()) {
+    const UINT index = freeDsvDescriptors.back();
+    freeDsvDescriptors.pop_back();
+    return cpuHandle(dsvHeap.Get(), dsvDescriptorSize, index);
+  }
   if (dsvUsed >= DsvFallbackIndex) {
     if (!dsvOverflowLogged) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -1315,6 +1482,40 @@ void Device::resetTransientDescriptors() {
   transientSamplerUsed = TransientSamplerBase;
   transientSrvOverflowLogged = false;
   transientSamplerOverflowLogged = false;
+}
+
+namespace {
+void recycleDescriptor(ID3D12DescriptorHeap *heap, UINT stride,
+                       D3D12_CPU_DESCRIPTOR_HANDLE handle, UINT limit,
+                       std::vector<UINT> &freeList) {
+  if (!heap || !handle.ptr || !stride) {
+    return;
+  }
+  const SIZE_T base = heap->GetCPUDescriptorHandleForHeapStart().ptr;
+  if (handle.ptr >= base && (handle.ptr - base) % stride == 0) {
+    const SIZE_T index = (handle.ptr - base) / stride;
+    if (index < limit) {
+      freeList.push_back(static_cast<UINT>(index));
+    }
+  }
+}
+} // namespace
+
+void Device::releaseSrvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle) {
+  recycleDescriptor(srvCpuHeap.Get(), srvDescriptorSize, handle,
+                    SrvFallbackIndex, freeSrvDescriptors);
+}
+void Device::releaseSamplerDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle) {
+  recycleDescriptor(samplerCpuHeap.Get(), samplerDescriptorSize, handle,
+                    SamplerFallbackIndex, freeSamplerDescriptors);
+}
+void Device::releaseRtvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle) {
+  recycleDescriptor(rtvHeap.Get(), rtvDescriptorSize, handle, RtvFallbackIndex,
+                    freeRtvDescriptors);
+}
+void Device::releaseDsvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle) {
+  recycleDescriptor(dsvHeap.Get(), dsvDescriptorSize, handle, DsvFallbackIndex,
+                    freeDsvDescriptors);
 }
 } // namespace sinen::gpu::d3d12
 

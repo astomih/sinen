@@ -14,6 +14,7 @@
 #include <core/data/hashmap.hpp>
 #include <gpu/gpu.hpp>
 #include <graphics/font/font.hpp>
+#include <graphics/graphics.hpp>
 #include <graphics/texture/texture.hpp>
 #include <math/color/color.hpp>
 #include <math/geometry/mesh.hpp>
@@ -436,16 +437,26 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
 
 class FontImpl : public Font {
 private:
-  Array<stbtt_packedchar> packedChars;
+  mutable Array<stbtt_packedchar> packedChars;
   Array<unsigned char> fontBytes;
-  Hashmap<UInt32, UInt32> glyphLookup;
+  mutable Hashmap<UInt32, UInt32> glyphLookup;
   stbtt_fontinfo fontInfo;
   mutable Ptr<Texture> texture;
   mutable UInt32 sheetSize;
   mutable UInt32 fallbackGlyphIndex;
   FontMethod method;
   int distanceFieldRange;
-  mutable Hashmap<String, TextDrawData> textCache;
+  struct CachedText {
+    TextDrawData data;
+    UInt64 lastUsed;
+    Size bytes;
+  };
+  static constexpr Size maxCachedTexts = 128;
+  static constexpr Size maxCachedTextBytes = 16 * 1024 * 1024;
+  mutable Hashmap<String, CachedText> textCache;
+  mutable Size textCacheBytes = 0;
+  mutable UInt64 textCacheClock = 0;
+  mutable Ref<gpu::Device> textDevice;
   std::atomic<bool> loaded = false;
   int m_size;
 
@@ -490,6 +501,8 @@ public:
     this->glyphLookup.clear();
     this->texture = Texture::create();
     this->textCache.clear();
+    this->textCacheBytes = 0;
+    this->textDevice = Graphics::getDevice();
     this->fontBytes = std::move(bytes);
 
     const int fontOffset =
@@ -527,10 +540,23 @@ public:
   }
 
   bool isLoaded() override { return loaded; }
-  void unload() override {}
+  void unload() override {
+    loaded = false;
+    textCache.clear();
+    textCacheBytes = 0;
+    packedChars.clear();
+    glyphLookup.clear();
+    texture.reset();
+    sheetSize = 0;
+  }
   int size() const override { return m_size; }
 
-  void resize(int point_size) override {}
+  void resize(int pointSize) override {
+    if (!fontBytes.empty()) {
+      auto bytes = fontBytes;
+      loadFromBytes(pointSize, std::move(bytes), method);
+    }
+  }
   Ptr<Texture> getAtlas() const override { return this->texture; }
 
   static const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
@@ -713,15 +739,31 @@ public:
     return makeTextDrawData(text).mesh;
   }
 
+  void refreshTextDevice() const {
+    const auto current = Graphics::getDevice();
+    if (textDevice.lock() != current) {
+      textCache.clear();
+      textCacheBytes = 0;
+      packedChars.clear();
+      glyphLookup.clear();
+      sheetSize = 0;
+      texture.reset();
+      textDevice = current;
+    }
+  }
+
   TextDrawData makeTextDrawData(StringView text) const override {
     TextDrawData data;
     if (!this->loaded.load()) {
       return data;
     }
 
+    refreshTextDevice();
+
     const String cacheKey(text.data(), text.size());
     if (auto it = textCache.find(cacheKey); it != textCache.end()) {
-      return it->second;
+      it->second.lastUsed = ++textCacheClock;
+      return it->second.data;
     }
 
     const Array<int> codepoints = collectTextCodepoints(text);
@@ -763,7 +805,25 @@ public:
     data.texture = textTexture;
     data.distanceFieldRange = static_cast<float>(atlasData.distanceFieldRange);
     data.valid = true;
-    textCache.emplace(cacheKey, data);
+    const Size bytes = 2 * (atlasData.atlasBitmap.size() +
+                            data.mesh.data()->vertices.size() * sizeof(Vertex) +
+                            data.mesh.data()->indices.size() * sizeof(UInt32)) + cacheKey.size();
+    if (bytes <= maxCachedTextBytes) {
+      while (!textCache.empty() &&
+             (textCache.size() >= maxCachedTexts ||
+              textCacheBytes + bytes > maxCachedTextBytes)) {
+        auto oldest = textCache.begin();
+        for (auto it = textCache.begin(); it != textCache.end(); ++it) {
+          if (it->second.lastUsed < oldest->second.lastUsed) {
+            oldest = it;
+          }
+        }
+        textCacheBytes -= oldest->second.bytes;
+        textCache.erase(oldest);
+      }
+      textCache.emplace(cacheKey, CachedText{data, ++textCacheClock, bytes});
+      textCacheBytes += bytes;
+    }
     return data;
   }
 
@@ -773,6 +833,8 @@ public:
     if (!this->loaded.load() || texts.empty()) {
       return data;
     }
+
+    refreshTextDevice();
 
     Array<int> requiredCodepoints;
     Hashmap<UInt32, UInt32> requiredLookup;

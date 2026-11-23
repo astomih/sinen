@@ -1,3 +1,5 @@
 @echo off
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0xmake_build.ps1" -Profile emscripten
+setlocal
+set "XMAKE_CONFIGDIR=%~dp0emscripten"
+xmake build -P "%~dp0.." --all %*
 exit /b %errorlevel%

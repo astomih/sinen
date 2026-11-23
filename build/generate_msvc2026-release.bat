@@ -1,5 +1,5 @@
 @echo off
-call "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
-if errorlevel 1 exit /b %errorlevel%
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0xmake_configure.ps1" -Profile msvc2026-release
+setlocal
+set "XMAKE_CONFIGDIR=%~dp0msvc2026-release"
+xmake f -P "%~dp0.." -c -o "build/msvc2026-release" -p windows -a x64 -m release --vs=2026 %*
 exit /b %errorlevel%

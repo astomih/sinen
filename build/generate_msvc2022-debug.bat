@@ -1,5 +1,5 @@
 @echo off
-call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
-if errorlevel 1 exit /b %errorlevel%
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0xmake_configure.ps1" -Profile msvc2022-debug
+setlocal
+set "XMAKE_CONFIGDIR=%~dp0msvc2022-debug"
+xmake f -P "%~dp0.." -c -o "build/msvc2022-debug" -p windows -a x64 -m debug --vs=2022 --sinen_webgpu_dawn=y %*
 exit /b %errorlevel%

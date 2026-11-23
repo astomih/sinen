@@ -21,6 +21,20 @@ end
 
 ![最初のプログラムの実行画面](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 
+## ビルド
+
+submodule を初期化したら、xmake で Sinen を設定してビルドできます。Windows の MSVC 2026 Debug の例です。
+
+```bat
+git submodule update --init --recursive
+xmake f -p windows -a x64 -m debug --vs=2026 --sinen_webgpu_dawn=y -o build/msvc2026-debug
+xmake build --all
+```
+
+`build\generate_msvc2026-debug.bat` と `build\build_msvc2026-debug.bat` を使うと、構成ごとの xmake 設定が保存されます。Android と Emscripten も `build\generate_*.bat` と `build\build_*.bat` でビルドできます。Android の Slang ビルドには Windows 側で生成するホストツールが必要です。Emscripten の `generate_emscripten.bat` は、任意の引数として同梱するアセットのディレクトリを受け取ります。
+
+SDL、Assimp、KTX、Slang、Windows の Dawn は、xmake が固定された submodule の CMake 定義を使って準備します。そのため、対象プラットフォームのツールチェーンに加えて CMake と Ninja が必要です。
+
 ## ゲーム
 
 リポジトリを VS Code で開き、**実行とデバッグ**から **Games** を選択して **F5** を押します。Debug 実行ファイルがまだない場合は、先に `generate_msvc2026` と `build_msvc2026` のタスクを実行してください。マウス、矢印キー、またはゲームパッドでゲームを選べます。ゲームのメニューでは **Q** でセレクターに戻ります（RIDGELINE では **B** も使えます）。

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url>
+        <loc>https://astomih.github.io/sinen/home/</loc>
+      </url>
+      <url>
+        <loc>https://astomih.github.io/sinen/luau_api/</loc>
+      </url>
+      <url>
+        <loc>https://astomih.github.io/sinen/luau_bind/</loc>
+      </url>
+      <url>
+        <loc>https://astomih.github.io/sinen/memory/</loc>
+      </url>
+      <url>
+        <loc>https://astomih.github.io/sinen/native_modules/</loc>
+      </url>
+      <url>
+        <loc>https://astomih.github.io/sinen/renderdoc/</loc>
+      </url>
+      <url>
+        <loc>https://astomih.github.io/sinen/shader_bundle_format/</loc>
+      </url>
+      <url>
+        <loc>https://astomih.github.io/sinen/tutorial/</loc>
+      </url>
+</urlset>

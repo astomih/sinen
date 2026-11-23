@@ -1,1 +1,0 @@
-set(SINEN_INCLUDE_DIRS ${SINEN_SOURCE_DIR}/include/sinen)

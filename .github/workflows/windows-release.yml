@@ -58,23 +58,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            build/windows-release/vendor/_deps
-            build/windows-release/vendor/plugins/shader_compiler/libs/slang/slang-*-windows-*
-            build/windows-release/vendor/plugins/shader_compiler/libs/slang/slang-tint-windows-x64
-            build/windows-release/vendor/plugins/shader_compiler/libs/slang/webgpu_dawn-windows-x64
-          key: ${{ runner.os }}-windows-release-deps-v2-${{ hashFiles('xmake.lua', 'cmake/vendor/**', '.gitmodules', 'plugins/shader_compiler/libs/slang/CMakeLists.txt') }}
+            build/windows-release/vendor/upstream/slang/_deps
+            build/windows-release/vendor/upstream/slang/slang-*-windows-*
+            build/windows-release/vendor/upstream/slang/slang-tint-windows-x64
+            build/windows-release/vendor/upstream/slang/webgpu_dawn-windows-x64
+          key: ${{ runner.os }}-windows-release-deps-v3-${{ hashFiles('xmake.lua', 'xmake/**', '.gitmodules', 'plugins/shader_compiler/libs/slang/CMakeLists.txt') }}
           restore-keys: |
-            ${{ runner.os }}-windows-release-deps-v2-
+            ${{ runner.os }}-windows-release-deps-v3-
 
       - name: Configure
         shell: pwsh
         run: |
-          ./build/xmake_configure.ps1 -Profile windows-release
+          xmake f -c -o build/windows-release -p windows -a x64 -m release --vs=2022 --sinen_webgpu_dawn=n
 
       - name: Build
         shell: pwsh
         run: |
-          ./build/xmake_build.ps1 -Profile windows-release
+          xmake build --all
 
       - name: Package
         shell: pwsh
@@ -108,7 +108,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: slang-host-generators
-          path: build/windows-release/vendor/generators/Release/bin/*.exe
+          path: |
+            build/windows-release/vendor/upstream/slang/generators/Release/bin/*.exe
+            build/windows-release/vendor/upstream/slang/generators/Release/bin/*.dll
+          if-no-files-found: error
 
   build_android:
     name: Build Android
@@ -182,11 +185,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            build/android/arm64-v8a_28_Release/vendor/_deps
-            build/android/arm64-v8a_28_Release/vendor/plugins/shader_compiler/libs/slang
-          key: ${{ runner.os }}-android-release-deps-v2-${{ hashFiles('xmake.lua', 'cmake/vendor/**', '.gitmodules', 'plugins/shader_compiler/libs/slang/CMakeLists.txt') }}
+            build/android/arm64-v8a_28_Release/vendor/upstream/slang/_deps
+            build/android/arm64-v8a_28_Release/vendor/upstream/slang/*-android-*
+          key: ${{ runner.os }}-android-release-deps-v3-${{ hashFiles('xmake.lua', 'xmake/**', '.gitmodules', 'plugins/shader_compiler/libs/slang/CMakeLists.txt') }}
           restore-keys: |
-            ${{ runner.os }}-android-release-deps-v2-
+            ${{ runner.os }}-android-release-deps-v3-
 
       - name: Configure Android
         shell: cmd
@@ -278,29 +281,14 @@ jobs:
         with:
           xmake-version: '3.1.2'
 
-      - name: Restore Dependency Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            build/emscripten/vendor/_deps
-            build/emscripten/vendor/libs
-          key: ${{ runner.os }}-emscripten-release-deps-v2-${{ hashFiles('xmake.lua', 'cmake/vendor/**', '.gitmodules') }}
-          restore-keys: |
-            ${{ runner.os }}-emscripten-release-deps-v2-
-
       - name: Configure
-        shell: pwsh
-        env:
-          SINEN_EMSCRIPTEN_PRELOAD_DIR: ${{ github.workspace }}/examples
+        shell: bash
         run: |
-          ./build/xmake_configure.ps1 -Profile emscripten
+          xmake f -c -o build/emscripten -p wasm -a wasm32 -m release --toolchain=emcc --sinen_shader_compiler=n --sinen_preload="$GITHUB_WORKSPACE/examples"
 
       - name: Build
-        shell: pwsh
-        env:
-          SINEN_EMSCRIPTEN_PRELOAD_DIR: ${{ github.workspace }}/examples
-        run: |
-          ./build/xmake_build.ps1 -Profile emscripten
+        shell: bash
+        run: xmake build --all
 
       - name: Package WebGPU Site
         shell: bash

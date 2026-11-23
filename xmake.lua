@@ -3,11 +3,10 @@ set_version("0.0.5")
 add_rules("mode.debug", "mode.release")
 set_languages("cxx23")
 
--- The upstream repositories stay pinned by .gitmodules. Their CMake build is
--- isolated in cmake/vendor; every Sinen target below is built by xmake.
 local root = os.projectdir()
-local output = os.getenv("SINEN_OUTPUT_DIR") or path.join(root, "build", "xmake")
-local vendor = path.join(output, "vendor")
+local output = path.absolute(get_config("builddir") or "build/xmake", root)
+local vendor = path.join(output, "vendor/upstream")
+local generated = path.join(output, "generated")
 local wasm = is_plat("wasm")
 local android = is_plat("android")
 local windows = is_plat("windows")
@@ -33,26 +32,42 @@ option_end()
 local webgpu = wasm or (windows and has_config("sinen_webgpu_dawn"))
 local slang = not wasm and has_config("sinen_shader_compiler")
 
-local function vendor_libraries()
-	local files = {}
-	if windows then
-		files = os.files(path.join(vendor, "**.lib"))
-	elseif android then
-		files = os.files(path.join(vendor, "**.so"))
-	else
-		files = os.files(path.join(vendor, "**.a"))
-	end
-	local relevant = {}
-	for _, file in ipairs(files) do
-		local name = path.filename(file)
-		if not name:find("basisu_encoder", 1, true) and not name:find("astcenc", 1, true) then
-			table.insert(relevant, file)
-		end
-	end
-	files = relevant
-	table.sort(files)
-	return files
-end
+option("sinen_preload")
+    set_default("")
+    set_showmenu(true)
+    set_description("Directory to preload at / in the Emscripten app")
+option_end()
+option("sinen_slang_generators")
+    set_default("")
+    set_showmenu(true)
+    set_description("Host Slang generator directory for Android")
+option_end()
+
+includes("xmake/dependencies.lua")
+
+target("sinen_vendor")
+    set_kind("phony")
+    set_default(false)
+    set_targetdir(vendor)
+    set_policy("build.fence", true)
+    set_values("sinen.dawn", windows and webgpu)
+    set_values("sinen.slang", slang)
+    on_build(function (target)
+        import("upstream", {rootdir = path.join(os.projectdir(), "xmake")})
+        upstream(target)
+    end)
+target_end()
+
+target("sinen_licenses")
+    set_kind("phony")
+    set_default(false)
+    set_policy("build.fence", true)
+    set_targetdir(generated)
+    on_build(function (target)
+        import("licenses", {rootdir = path.join(os.projectdir(), "xmake")})
+        licenses(path.join(target:targetdir(), "licenses_data.hpp"))
+    end)
+target_end()
 
 local function vendor_includes()
 	add_includedirs(
@@ -90,9 +105,9 @@ local function vendor_includes()
 		"plugins/shader_compiler/include",
 		"plugins/nativefs/include",
 		"tests/cpp/googletest/googletest/include",
-		path.join(vendor, "generated"),
-		path.join(vendor, "libs/assimp/include"),
-		path.join(vendor, "libs/SDL/include-revision")
+		generated,
+		path.join(vendor, "assimp/include"),
+		path.join(vendor, "sdl/include-revision")
 	)
 	if slang then
 		add_includedirs("plugins/shader_compiler/libs/slang/include")
@@ -100,14 +115,12 @@ local function vendor_includes()
 	if webgpu and windows then
 		add_includedirs("libs/WebGPU-distribution/dawn/include")
 		add_defines("DAWN_NATIVE_SHARED_LIBRARY", "WEBGPU_BACKEND_DAWN", "WGPU_SHARED_LIBRARY")
-		local dawn = os.files(path.join(vendor, "_deps/dawn-*-windows-*-release-src/include/webgpu/webgpu.h"))
-		if #dawn > 0 then
-			add_includedirs(path.directory(path.directory(dawn[1])))
-		end
+		add_includedirs(path.join(vendor, "dawn/include"))
 	end
 end
 
 local function common()
+	add_deps("sinen_vendor", {inherit = false})
 	set_targetdir(output)
 	set_objectdir(path.join(output, ".objs"))
 	add_includedirs("include", "include/sinen", "src")
@@ -182,6 +195,7 @@ for _, name in ipairs(modules) do
 	common()
 	add_files("src/" .. name .. "/**.cpp")
 	if name == "core" then
+		add_deps("sinen_licenses", {inherit = false})
 		add_files("libs/tlsf/tlsf.c")
 	elseif name == "platform" then
 		add_files("libs/tinyexr/deps/miniz/miniz.c")
@@ -202,17 +216,30 @@ for _, name in ipairs(modules) do
 end
 
 local function link_vendor()
-	local files = vendor_libraries()
-	if wasm then
-		table.insert(files, { group = true })
-		add_linkgroups(table.unpack(files))
-		-- KTX's read archive contains two identical buminiz implementations.
-		-- The group scan needed for Luau's static libraries encounters both.
-		add_ldflags("-Wl,--allow-multiple-definition", { force = true })
-	else
-		for _, file in ipairs(files) do
-			add_links(file)
+	local links = {"SDL3", "assimp", "ktx_read"}
+	if not android then
+		table.insert(links, "zlib")
+	end
+	if windows and webgpu then
+		table.insert(links, "webgpu_dawn")
+	end
+	if slang then
+		table.insert(links, "slang-compiler")
+		if android then
+			table.insert(links, "miniz")
 		end
+	end
+	for _, lib in ipairs(links) do
+		local filename = windows and (lib .. ".lib") or ("lib" .. lib .. (android and ".so" or ".a"))
+		add_links(path.join(vendor, "link", filename))
+	end
+	if wasm then
+		-- The pinned KTX read archive contains two copies of Basis Universal's miniz.
+		add_ldflags("-Wl,--allow-multiple-definition", {force = true})
+	end
+	add_deps("box2d", "box3d", "msdfgen-core", "meshoptimizer", "sinen_vendor_luau")
+	if has_config("sinen_profiler") then
+		add_deps("TracyClient")
 	end
 	if windows then
 		add_syslinks(
@@ -261,9 +288,9 @@ elseif wasm then
 		"-sASSERTIONS=1",
 		{ force = true }
 	)
-	local assets = os.getenv("SINEN_EMSCRIPTEN_PRELOAD_DIR")
+	local assets = get_config("sinen_preload")
 	if assets and #assets > 0 then
-		add_ldflags("--preload-file", assets .. "@/", { force = true })
+		add_ldflags("--preload-file", path.absolute(assets, root) .. "@/", { force = true })
 	end
 elseif android then
 	add_syslinks("android")
@@ -364,6 +391,7 @@ if has_config("sinen_cpp_tests") then
 		common()
 		add_files(table.unpack(files))
 		add_files("tests/cpp/xmake_test_main.cpp")
+		add_deps("sinen_vendor_gtest")
 		for _, dep in ipairs(deps) do
 			add_deps(dep)
 		end
@@ -532,4 +560,19 @@ if has_config("sinen_cpp_tests") then
 			"sinen_math",
 		})
 	end
+end
+
+
+if android then
+	target("sinen_android_package")
+		set_kind("phony")
+		add_deps("sinen")
+		add_deps("box2d", "box3d", "msdfgen-core", "cppdap")
+		if slang then add_deps("sinen_plugin_shader_compiler") end
+		if has_config("sinen_profiler") then add_deps("TracyClient") end
+		on_build(function (target)
+			import("android_stage", {rootdir = path.join(os.projectdir(), "xmake")})
+			android_stage(target)
+		end)
+	target_end()
 end

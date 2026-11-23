@@ -26,7 +26,10 @@ constexpr Size defaultAllocatorSize = 256 * bytesPerMiB;
 
 Allocator *GlobalAllocator::get() {
   std::call_once(gAllocatorOnce, [] {
-    gTlsfAllocator = new TLSFAllocator(defaultAllocatorSize);
+    // Keep the fast initial pool while allowing large asset sets such as
+    // Bistro to grow into system memory rather than hitting a fixed 256 MiB
+    // cap.
+    gTlsfAllocator = new TLSFAllocator(defaultAllocatorSize, true);
     gAllocator = new std::pmr::synchronized_pool_resource(gTlsfAllocator);
   });
 

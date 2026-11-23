@@ -39,40 +39,24 @@ static int lShaderCompileAndLoad(lua_State *L) {
   return 1;
 }
 
-static int lShaderGetCode(lua_State *L) {
-  auto &s = udPtr<Shader>(L, 1);
-  udNewOwned<Buffer>(L, s->getCode());
-  return 1;
+static auto lShaderGetCode(Ptr<Shader> &s) { return s->getCode(); }
+
+static auto lShaderIsReady(Ptr<Shader> &s) { return s->isReady(); }
+
+static auto lShaderGetNumSamplers(Ptr<Shader> &s) {
+  return s->getNumSamplers();
 }
 
-static int lShaderIsReady(lua_State *L) {
-  auto &s = udPtr<Shader>(L, 1);
-  lua_pushboolean(L, s->isReady());
-  return 1;
+static auto lShaderGetNumStorageBuffers(Ptr<Shader> &s) {
+  return s->getNumStorageBuffers();
 }
 
-static int lShaderGetNumSamplers(lua_State *L) {
-  auto &s = udPtr<Shader>(L, 1);
-  lua_pushinteger(L, s->getNumSamplers());
-  return 1;
+static auto lShaderGetNumStorageTextures(Ptr<Shader> &s) {
+  return s->getNumStorageTextures();
 }
 
-static int lShaderGetNumStorageBuffers(lua_State *L) {
-  auto &s = udPtr<Shader>(L, 1);
-  lua_pushinteger(L, s->getNumStorageBuffers());
-  return 1;
-}
-
-static int lShaderGetNumStorageTextures(lua_State *L) {
-  auto &s = udPtr<Shader>(L, 1);
-  lua_pushinteger(L, s->getNumStorageTextures());
-  return 1;
-}
-
-static int lShaderGetNumUniformBuffers(lua_State *L) {
-  auto &s = udPtr<Shader>(L, 1);
-  lua_pushinteger(L, s->getNumUniformBuffers());
-  return 1;
+static auto lShaderGetNumUniformBuffers(Ptr<Shader> &s) {
+  return s->getNumUniformBuffers();
 }
 
 static void
@@ -100,27 +84,20 @@ static int lShaderGetTextureBindings(lua_State *L) {
   return 1;
 }
 
-void registerShader(lua_State *L) {
-  luaL_newmetatable(L, Shader::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "getCode", lShaderGetCode);
-  Binding::registerFunction(L, "isReady", lShaderIsReady);
-  Binding::registerFunction(L, "getNumSamplers", lShaderGetNumSamplers);
-  Binding::registerFunction(L, "getNumStorageBuffers",
-                            lShaderGetNumStorageBuffers);
-  Binding::registerFunction(L, "getNumStorageTextures",
-                            lShaderGetNumStorageTextures);
-  Binding::registerFunction(L, "getNumUniformBuffers",
-                            lShaderGetNumUniformBuffers);
-  Binding::registerFunction(L, "getUniformBufferBindings",
-                            lShaderGetUniformBufferBindings);
-  Binding::registerFunction(L, "getTextureBindings", lShaderGetTextureBindings);
-  lua_pop(L, 1);
+void registerShader(luau::table &sn) {
+  auto shader = engineClass<Ptr<Shader>>(sn, Shader::metaTableName());
 
-  pushSnNamed(L, "Shader");
-  Binding::registerFunction(L, "new", lShaderNew);
-  Binding::registerFunction(L, "compileAndLoad", lShaderCompileAndLoad);
-  lua_pop(L, 1);
+  shader.method<lShaderGetCode>("getCode");
+  shader.method<lShaderIsReady>("isReady");
+  shader.method<lShaderGetNumSamplers>("getNumSamplers");
+  shader.method<lShaderGetNumStorageBuffers>("getNumStorageBuffers");
+  shader.method<lShaderGetNumStorageTextures>("getNumStorageTextures");
+  shader.method<lShaderGetNumUniformBuffers>("getNumUniformBuffers");
+  shader.raw_method<lShaderGetUniformBufferBindings>(
+      "getUniformBufferBindings");
+  shader.raw_method<lShaderGetTextureBindings>("getTextureBindings");
+
+  shader.raw_static_function<lShaderNew>("new");
+  shader.raw_static_function<lShaderCompileAndLoad>("compileAndLoad");
 }
 } // namespace sinen

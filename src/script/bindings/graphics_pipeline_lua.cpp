@@ -4,21 +4,15 @@
 #include <graphics/graphics_pipeline.hpp>
 
 namespace sinen {
-static int lPipelineNew(lua_State *L) {
-  udPushPtr<GraphicsPipeline>(L, makePtr<GraphicsPipeline>());
-  return 1;
-}
-static int lPipelineSetVertexShader(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1);
-  auto &s = udPtr<Shader>(L, 2);
+static auto lPipelineNew() { return makePtr<GraphicsPipeline>(); }
+static auto lPipelineSetVertexShader(Ptr<GraphicsPipeline> &p, Ptr<Shader> &s) {
   p->setVertexShader(*s);
-  return 0;
+  return;
 }
-static int lPipelineSetFragmentShader(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1);
-  auto &s = udPtr<Shader>(L, 2);
+static auto lPipelineSetFragmentShader(Ptr<GraphicsPipeline> &p,
+                                       Ptr<Shader> &s) {
   p->setFragmentShader(*s);
-  return 0;
+  return;
 }
 static int lPipelineSetEnableDepthTest(lua_State *L) {
   auto &p = udPtr<GraphicsPipeline>(L, 1);
@@ -54,26 +48,23 @@ static int lPipelineBuild(lua_State *L) {
   udPtr<GraphicsPipeline>(L, 1)->build();
   return 0;
 }
-void registerPipeline(lua_State *L) {
-  luaL_newmetatable(L, GraphicsPipeline::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "setVertexShader", lPipelineSetVertexShader);
-  Binding::registerFunction(L, "setFragmentShader", lPipelineSetFragmentShader);
-  Binding::registerFunction(L, "setEnableDepthTest",
-                            lPipelineSetEnableDepthTest);
-  Binding::registerFunction(L, "setEnableDepthWrite",
-                            lPipelineSetEnableDepthWrite);
-  Binding::registerFunction(L, "setEnableInstanced",
-                            lPipelineSetEnableInstanced);
-  Binding::registerFunction(L, "setEnableAnimation",
-                            lPipelineSetEnableAnimation);
-  Binding::registerFunction(L, "setEnableTangent", lPipelineSetEnableTangent);
-  Binding::registerFunction(L, "build", lPipelineBuild);
-  lua_pop(L, 1);
+void registerPipeline(luau::table &sn) {
+  auto graphicsPipeline =
+      engineClass<Ptr<GraphicsPipeline>>(sn, GraphicsPipeline::metaTableName());
 
-  pushSnNamed(L, "GraphicsPipeline");
-  Binding::registerFunction(L, "new", lPipelineNew);
-  lua_pop(L, 1);
+  graphicsPipeline.method<lPipelineSetVertexShader>("setVertexShader");
+  graphicsPipeline.method<lPipelineSetFragmentShader>("setFragmentShader");
+  graphicsPipeline.raw_method<lPipelineSetEnableDepthTest>(
+      "setEnableDepthTest");
+  graphicsPipeline.raw_method<lPipelineSetEnableDepthWrite>(
+      "setEnableDepthWrite");
+  graphicsPipeline.raw_method<lPipelineSetEnableInstanced>(
+      "setEnableInstanced");
+  graphicsPipeline.raw_method<lPipelineSetEnableAnimation>(
+      "setEnableAnimation");
+  graphicsPipeline.raw_method<lPipelineSetEnableTangent>("setEnableTangent");
+  graphicsPipeline.raw_method<lPipelineBuild>("build");
+
+  graphicsPipeline.static_function<lPipelineNew>("new");
 }
 } // namespace sinen

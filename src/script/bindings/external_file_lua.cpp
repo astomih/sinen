@@ -36,8 +36,8 @@ void pushExternalFile(lua_State *L, String path) {
   udNewOwned<ExternalFile>(L, ExternalFile(std::move(path)));
 }
 
-void SDLCALL onOpenFileDialog(void *userdata,
-                              const char *const *filelist, int filter) {
+void SDLCALL onOpenFileDialog(void *userdata, const char *const *filelist,
+                              int filter) {
   (void)filter;
   auto *request = static_cast<DialogRequest *>(userdata);
   DialogCompletion completion;
@@ -78,25 +78,19 @@ static int lExternalFileRead(lua_State *L) {
   return 1;
 }
 
-static int lExternalFileName(lua_State *L) {
-  const auto &file = udValue<ExternalFile>(L, 1);
+static auto lExternalFileName(const ExternalFile &file) {
   const String name = file.name();
-  lua_pushlstring(L, name.data(), name.size());
-  return 1;
+  return name;
 }
 
-static int lExternalFileExtension(lua_State *L) {
-  const auto &file = udValue<ExternalFile>(L, 1);
+static auto lExternalFileExtension(const ExternalFile &file) {
   const String extension = file.extension();
-  lua_pushlstring(L, extension.data(), extension.size());
-  return 1;
+  return extension;
 }
 
-static int lExternalFileTostring(lua_State *L) {
-  const auto &file = udValue<ExternalFile>(L, 1);
+static auto lExternalFileTostring(const ExternalFile &file) {
   const String text = "ExternalFile(" + file.name() + ")";
-  lua_pushlstring(L, text.data(), text.size());
-  return 1;
+  return text;
 }
 
 static int lFileDialogOpen(lua_State *L) {
@@ -137,34 +131,29 @@ static int lFileDialogOpen(lua_State *L) {
     gDialogRequests.insert(request);
   }
 
-  SDL_ShowOpenFileDialog(
-      onOpenFileDialog, request, WindowNative::getWindow(),
-      request->filters.empty() ? nullptr : request->filters.data(),
-      static_cast<int>(request->filters.size()), nullptr,
-      lua_toboolean(L, 3) != 0);
+  SDL_ShowOpenFileDialog(onOpenFileDialog, request, WindowNative::getWindow(),
+                         request->filters.empty() ? nullptr
+                                                  : request->filters.data(),
+                         static_cast<int>(request->filters.size()), nullptr,
+                         lua_toboolean(L, 3) != 0);
   return 0;
 }
 } // namespace
 
-void registerExternalFile(lua_State *L) {
-  luaL_newmetatable(L, ExternalFile::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<ExternalFile>);
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "read", lExternalFileRead);
-  Binding::registerFunction(L, "name", lExternalFileName);
-  Binding::registerFunction(L, "extension", lExternalFileExtension);
-  Binding::registerFunction(L, "__tostring", lExternalFileTostring);
-  lua_pop(L, 1);
+void registerExternalFile(luau::table &sn) {
+  auto externalFile =
+      engineClass<ExternalFile>(sn, ExternalFile::metaTableName());
+
+  externalFile.raw_method<lExternalFileRead>("read");
+  externalFile.method<lExternalFileName>("name");
+  externalFile.method<lExternalFileExtension>("extension");
+  externalFile.metamethod<lExternalFileTostring>("__tostring");
 
   // Expose the type namespace without a constructor. ExternalFile values can
   // only originate from a dialog selection or a drop event.
-  pushSnNamed(L, "ExternalFile");
-  lua_pop(L, 1);
 
-  pushSnNamed(L, "FileDialog");
-  Binding::registerFunction(L, "open", lFileDialogOpen);
-  lua_pop(L, 1);
+  auto fileDialog = sn.get_or_create_table("FileDialog");
+  fileDialog.raw_function<lFileDialogOpen>("open");
 }
 
 void resetExternalFileCallbacks(lua_State *L) {
@@ -243,5 +232,4 @@ void enqueueDroppedExternalFile(StringView path) {
   std::lock_guard<std::mutex> lock(gExternalFileMutex);
   gDroppedPaths.emplace_back(path);
 }
-
 } // namespace sinen

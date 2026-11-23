@@ -75,6 +75,8 @@ public:
                         const TextStyle &style);
   static void drawCubemap(const Ptr<Texture> &cubemap);
   static void drawModel(const Model &model, const Transform &transform);
+  // Stream dynamic geometry into command-local buffers where supported.
+  static void drawMesh(const Mesh &mesh, const Transform &transform);
   static void drawModelInstanced(const Model &model,
                                  const Array<Transform> &transforms);
   static void setClearColor(const Color &color);

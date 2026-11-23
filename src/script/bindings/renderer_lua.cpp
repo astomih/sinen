@@ -112,30 +112,27 @@ int getConeAngles(lua_State *L) {
 }
 
 template <class T>
-void registerLight(lua_State *L, const char *name, lua_CFunction constructor) {
-  luaL_newmetatable(L, T::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "setIntensity", setIntensity<T>);
-  Binding::registerFunction(L, "getIntensity", getIntensity<T>);
-  Binding::registerFunction(L, "setColor", setColor<T>);
-  Binding::registerFunction(L, "getColor", getColor<T>);
+void registerLight(luau::table &sn, const char *name,
+                   lua_CFunction constructor) {
+  auto binding = sn.class_<T>(name);
+  binding.metatable_name(T::metaTableName());
+  binding.template raw_method<setIntensity<T>>("setIntensity");
+  binding.template raw_method<getIntensity<T>>("getIntensity");
+  binding.template raw_method<setColor<T>>("setColor");
+  binding.template raw_method<getColor<T>>("getColor");
   if constexpr (!std::is_same_v<T, DirectionalLight>) {
-    Binding::registerFunction(L, "setPosition", setPosition<T>);
-    Binding::registerFunction(L, "getPosition", getPosition<T>);
+    binding.template raw_method<setPosition<T>>("setPosition");
+    binding.template raw_method<getPosition<T>>("getPosition");
   }
   if constexpr (!std::is_same_v<T, PointLight>) {
-    Binding::registerFunction(L, "setDirection", setDirection<T>);
-    Binding::registerFunction(L, "getDirection", getDirection<T>);
+    binding.template raw_method<setDirection<T>>("setDirection");
+    binding.template raw_method<getDirection<T>>("getDirection");
   }
   if constexpr (std::is_same_v<T, SpotLight>) {
-    Binding::registerFunction(L, "setConeAngles", setConeAngles);
-    Binding::registerFunction(L, "getConeAngles", getConeAngles);
+    binding.template raw_method<setConeAngles>("setConeAngles");
+    binding.template raw_method<getConeAngles>("getConeAngles");
   }
-  lua_pop(L, 1);
-  pushSnNamed(L, name);
-  Binding::registerFunction(L, "new", constructor);
-  lua_pop(L, 1);
+  binding.raw_static_function("new", constructor);
 }
 
 int setPointLight(lua_State *L) {
@@ -165,9 +162,101 @@ int setExposure(lua_State *L) {
   return 0;
 }
 
+int setAlphaCutoff(lua_State *L) {
+  udValue<PBRRenderer>(L, 1).setAlphaCutoff(
+      static_cast<float>(luaL_checknumber(L, 2)));
+  return 0;
+}
+
 int clearEnvironment(lua_State *L) {
   udValue<PBRRenderer>(L, 1).clearEnvironment();
   return 0;
+}
+
+int addGIModel(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).addModel(
+      *udPtr<Model>(L, 2), udValue<Transform>(L, 3), optionalColor(L, 4),
+      lua_isnoneornil(L, 5) ? Color(0.0f) : udValue<Color>(L, 5),
+      static_cast<UInt32>(std::max(0, luaL_optinteger(L, 6, 0))));
+  return 0;
+}
+int bakeGI(lua_State *L) {
+  UInt32 values[5];
+  const int defaults[] = {8, 6, 8, 512, 3};
+  const int limits[] = {32, 32, 32, 65536, 8};
+  for (int i = 0; i < 5; ++i) {
+    const int value = luaL_optinteger(L, i + 4, defaults[i]);
+    luaL_argcheck(L,
+                  value >= (i < 3    ? 2
+                            : i == 3 ? 32
+                                     : 1) &&
+                      value <= limits[i],
+                  i + 4, "GI bake parameter out of range");
+    values[i] = static_cast<UInt32>(value);
+  }
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).bake(
+                         udValue<Vec3>(L, 2), udValue<Vec3>(L, 3), values[0],
+                         values[1], values[2], values[3], values[4]));
+  return 1;
+}
+int setGISky(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).setSkyColor(udValue<Color>(L, 2));
+  return 0;
+}
+int clearGI(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).clear();
+  return 0;
+}
+int clearGILight(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).clearLight();
+  return 0;
+}
+int isGIBaked(lua_State *L) {
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).isBaked());
+  return 1;
+}
+int sampleGI(lua_State *L) {
+  udNewOwned<Vec3>(L, udValue<GlobalIllumination>(L, 1).sampleIrradiance(
+                          udValue<Vec3>(L, 2), udValue<Vec3>(L, 3)));
+  return 1;
+}
+int setGI(lua_State *L) {
+  udValue<PBRRenderer>(L, 1).setGlobalIllumination(
+      udValue<GlobalIllumination>(L, 2),
+      static_cast<float>(luaL_optnumber(L, 3, 1.0)));
+  return 0;
+}
+int clearRendererGI(lua_State *L) {
+  udValue<PBRRenderer>(L, 1).clearGlobalIllumination();
+  return 0;
+}
+
+int initializeRealtimeGI(lua_State *L) {
+  UInt32 counts[4];
+  const int defaults[] = {8, 6, 8, 2};
+  for (int i = 0; i < 4; ++i) {
+    const int value = luaL_optinteger(L, i + 4, defaults[i]);
+    luaL_argcheck(L, value >= (i < 3 ? 2 : 1) && value <= (i < 3 ? 32 : 4),
+                  i + 4, "real-time GI parameter out of range");
+    counts[i] = static_cast<UInt32>(value);
+  }
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).initializeRealtime(
+                         udValue<Vec3>(L, 2), udValue<Vec3>(L, 3), counts[0],
+                         counts[1], counts[2], counts[3]));
+  return 1;
+}
+int beginGIFrame(lua_State *L) {
+  udValue<GlobalIllumination>(L, 1).beginFrame();
+  return 0;
+}
+int updateGI(lua_State *L) {
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).update(
+                         static_cast<float>(luaL_optnumber(L, 2, 0.85))));
+  return 1;
+}
+int isRealtimeGI(lua_State *L) {
+  lua_pushboolean(L, udValue<GlobalIllumination>(L, 1).isRealtime());
+  return 1;
 }
 
 int setLightDirection(lua_State *L) {
@@ -187,11 +276,6 @@ int setBands(lua_State *L) {
   return 0;
 }
 
-template <class T> int newRenderer(lua_State *L) {
-  udNewOwned<T>(L, T{});
-  return 1;
-}
-
 template <class T> int drawModel(lua_State *L) {
   auto &pass = udPtr<Render3DPass>(L, 2);
   const auto &model = udPtr<Model>(L, 3);
@@ -200,46 +284,54 @@ template <class T> int drawModel(lua_State *L) {
   return 0;
 }
 
-template <class T> void registerRendererMetatable(lua_State *L) {
-  luaL_newmetatable(L, T::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "setLight", setLight<T>);
-  Binding::registerFunction(L, "drawModel", drawModel<T>);
+template <class T>
+luau::class_builder<T> registerRendererClass(luau::table &sn) {
+  auto binding = engineClass<T>(sn, T::metaTableName());
+  binding.template raw_method<setLight<T>>("setLight");
+  binding.template raw_method<drawModel<T>>("drawModel");
+  binding.template constructor<>();
+  return binding;
 }
-
 } // namespace
 
-void registerRenderer(lua_State *L) {
-  registerLight<DirectionalLight>(L, "DirectionalLight", newDirectionalLight);
-  registerLight<PointLight>(L, "PointLight", newPointLight);
-  registerLight<SpotLight>(L, "SpotLight", newSpotLight);
+void registerRenderer(luau::table &sn) {
+  registerLight<DirectionalLight>(sn, "DirectionalLight", newDirectionalLight);
+  registerLight<PointLight>(sn, "PointLight", newPointLight);
+  registerLight<SpotLight>(sn, "SpotLight", newSpotLight);
 
-  registerRendererMetatable<PBRRenderer>(L);
-  Binding::registerFunction(L, "setPointLight", setPointLight);
-  Binding::registerFunction(L, "setFillLight",
-                            setLight<PBRRenderer, &PBRRenderer::setFillLight>);
-  Binding::registerFunction(L, "clearFillLight", clearFillLight);
-  Binding::registerFunction(L, "setExposure", setExposure);
-  Binding::registerFunction(L, "setEnvironment", setEnvironment);
-  Binding::registerFunction(L, "clearEnvironment", clearEnvironment);
-  lua_pop(L, 1);
+  auto pbr = registerRendererClass<PBRRenderer>(sn);
+  pbr.raw_method<setPointLight>("setPointLight");
+  pbr.raw_method<setLight<PBRRenderer, &PBRRenderer::setFillLight>>(
+      "setFillLight");
+  pbr.raw_method<clearFillLight>("clearFillLight");
+  pbr.raw_method<setExposure>("setExposure");
+  pbr.raw_method<setAlphaCutoff>("setAlphaCutoff");
+  pbr.raw_method<setEnvironment>("setEnvironment");
+  pbr.raw_method<clearEnvironment>("clearEnvironment");
+  pbr.raw_method<setGI>("setGlobalIllumination");
+  pbr.raw_method<clearRendererGI>("clearGlobalIllumination");
 
-  registerRendererMetatable<NPRRenderer>(L);
-  Binding::registerFunction(L, "setLightDirection", setLightDirection);
-  Binding::registerFunction(L, "setShadowColor", setShadowColor);
-  Binding::registerFunction(L, "setBands", setBands);
-  lua_pop(L, 1);
+  auto npr = registerRendererClass<NPRRenderer>(sn);
+  npr.raw_method<setLightDirection>("setLightDirection");
+  npr.raw_method<setShadowColor>("setShadowColor");
+  npr.raw_method<setBands>("setBands");
 
-  pushSnNamed(L, "PBRRenderer");
-  Binding::registerFunction(L, "new", newRenderer<PBRRenderer>);
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "NPRRenderer");
-  Binding::registerFunction(L, "new", newRenderer<NPRRenderer>);
-  lua_pop(L, 1);
+  auto gi =
+      engineClass<GlobalIllumination>(sn, GlobalIllumination::metaTableName());
+  gi.constructor<>();
+  gi.raw_method<addGIModel>("addModel");
+  gi.raw_method<setLight<GlobalIllumination>>("setLight");
+  gi.raw_method<clearGILight>("clearLight");
+  gi.raw_method<setGISky>("setSkyColor");
+  gi.raw_method<bakeGI>("bake");
+  gi.raw_method<initializeRealtimeGI>("initializeRealtime");
+  gi.raw_method<beginGIFrame>("beginFrame");
+  gi.raw_method<updateGI>("update");
+  gi.raw_method<isRealtimeGI>("isRealtime");
+  gi.raw_method<clearGI>("clear");
+  gi.raw_method<isGIBaked>("isBaked");
+  gi.raw_method<sampleGI>("sampleIrradiance");
 }
-
 } // namespace sinen
 
 #endif

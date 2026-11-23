@@ -1,74 +1,14 @@
 #include "luaapi.hpp"
-#include <math/matrix.hpp>
-#include <math/quaternion.hpp>
 #include <math/transform/transform.hpp>
 
 namespace sinen {
-static int lTransformNew(lua_State *L) {
-  udNewOwned<Transform>(L, Transform());
-  return 1;
+void registerTransform(luau::table &sn) {
+  engineClass<Transform>(sn, Transform::metaTableName())
+      .constructor<>()
+      .reference_field<&Transform::position>("position")
+      .reference_field<&Transform::rotation>("rotation")
+      .reference_field<&Transform::scale>("scale")
+      .metamethod<&Transform::tableString>("__tostring")
+      .method<&Transform::getWorldMatrix>("getWorldMatrix");
 }
-static int lTransformIndex(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  if (std::strcmp(k, "position") == 0) {
-    udNewRef<Vec3>(L, &t.position);
-    return 1;
-  }
-  if (std::strcmp(k, "rotation") == 0) {
-    udNewRef<Vec3>(L, &t.rotation);
-    return 1;
-  }
-  if (std::strcmp(k, "scale") == 0) {
-    udNewRef<Vec3>(L, &t.scale);
-    return 1;
-  }
-  luaL_getmetatable(L, Transform::metaTableName());
-  lua_pushvalue(L, 2);
-  lua_rawget(L, -2);
-  return 1;
-}
-static int lTransformNewindex(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  auto &v = udValue<Vec3>(L, 3);
-  if (std::strcmp(k, "position") == 0) {
-    t.position = v;
-    return 0;
-  }
-  if (std::strcmp(k, "rotation") == 0) {
-    t.rotation = v;
-    return 0;
-  }
-  if (std::strcmp(k, "scale") == 0) {
-    t.scale = v;
-    return 0;
-  }
-  return luaLError2(L, "sn.Transform: invalid field '%s'", k);
-}
-static int lTransformTostring(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1);
-  String s = t.tableString();
-  lua_pushlstring(L, s.data(), s.size());
-  return 1;
-}
-static int lTransformGetWorldMatrix(lua_State *L) {
-  const auto &t = udValue<Transform>(L, 1);
-  udNewOwned<Mat4>(L, t.getWorldMatrix());
-  return 1;
-}
-void registerTransform(lua_State *L) {
-  luaL_newmetatable(L, Transform::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<Transform>);
-  Binding::registerFunction(L, "__index", lTransformIndex);
-  Binding::registerFunction(L, "__newindex", lTransformNewindex);
-  Binding::registerFunction(L, "__tostring", lTransformTostring);
-  Binding::registerFunction(L, "getWorldMatrix", lTransformGetWorldMatrix);
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Transform");
-  Binding::registerFunction(L, "new", lTransformNew);
-  lua_pop(L, 1);
-}
-
 } // namespace sinen

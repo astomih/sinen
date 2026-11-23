@@ -87,6 +87,9 @@ function(sinen_generate_license_header output_file)
                       "libs/msdfgen/LICENSE.txt" 0 "")
   sinen_embed_license("RapidJSON" "https://github.com/Tencent/rapidjson"
                       "libs/rapidjson/license.txt" 0 "")
+  sinen_embed_license("RenderDoc API" "https://github.com/baldurk/renderdoc"
+                      "libs/renderdoc/renderdoc_app.h" 23
+                      "MIT license for the in-application API header.")
   sinen_embed_license("Slang" "https://github.com/shader-slang/slang"
                       "plugins/shader_compiler/libs/slang/LICENSE" 0 "")
   sinen_embed_license("stb" "https://github.com/nothings/stb"

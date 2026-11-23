@@ -15,10 +15,12 @@
 #include <dxgi1_6.h>
 #include <wrl/client.h>
 
+#include <array>
 #include <vector>
 
 namespace sinen::gpu::d3d12 {
 class CommandBuffer;
+struct CommandContext;
 
 class Device : public gpu::Device {
 public:
@@ -60,6 +62,8 @@ public:
   Ptr<gpu::CommandBuffer> acquireCommandBuffer(
       const gpu::CommandBuffer::CreateInfo &createInfo) override;
   void submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) override;
+  void beginFrame() override;
+  void endFrame() override;
   Ptr<gpu::Texture>
   acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) override;
   gpu::TextureFormat getSwapchainFormat() const override;
@@ -88,6 +92,10 @@ public:
   CpuGpuDescriptor allocateSamplerDescriptor();
   D3D12_CPU_DESCRIPTOR_HANDLE allocateRtvDescriptor();
   D3D12_CPU_DESCRIPTOR_HANDLE allocateDsvDescriptor();
+  void releaseSrvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle);
+  void releaseSamplerDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle);
+  void releaseRtvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle);
+  void releaseDsvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle);
   CpuGpuDescriptor allocateTransientSrvDescriptor();
   CpuGpuDescriptor allocateTransientSamplerDescriptor();
   CpuGpuDescriptor getDefaultSrv() const { return defaultSrv; }
@@ -126,7 +134,9 @@ private:
   void createRayTracingRootSignature();
   void disableRayTracing(const char *reason);
   void markDeviceLost(const char *context, HRESULT hr);
-  void signalAndWait();
+  UINT64 signalQueue();
+  void waitForFence(UINT64 value);
+  void retireCompletedCommands();
   D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle(ID3D12DescriptorHeap *heap,
                                         UINT descriptorSize, UINT index) const;
   D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle(ID3D12DescriptorHeap *heap,
@@ -152,6 +162,14 @@ private:
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvCpuHeap;
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> samplerHeap;
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> samplerCpuHeap;
+  struct FrameContext {
+    ComPtr<ID3D12DescriptorHeap> srvHeap;
+    ComPtr<ID3D12DescriptorHeap> samplerHeap;
+    UINT64 fenceValue = 0;
+  };
+  std::array<FrameContext, FrameCount> frames;
+  UINT frameIndex = 0;
+  std::vector<std::shared_ptr<CommandContext>> commandContexts;
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
   UINT srvDescriptorSize = 0;
@@ -162,6 +180,10 @@ private:
   UINT samplerUsed = 0;
   UINT rtvUsed = 0;
   UINT dsvUsed = 0;
+  std::vector<UINT> freeSrvDescriptors;
+  std::vector<UINT> freeSamplerDescriptors;
+  std::vector<UINT> freeRtvDescriptors;
+  std::vector<UINT> freeDsvDescriptors;
   UINT transientSrvUsed = TransientSrvBase;
   UINT transientSamplerUsed = TransientSamplerBase;
   bool srvOverflowLogged = false;

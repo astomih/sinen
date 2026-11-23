@@ -75,11 +75,9 @@ static int lFontNew(lua_State *L) {
   udPushPtr<Font>(L, std::move(font));
   return 1;
 }
-static int lFontResize(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1);
-  int point = static_cast<int>(luaL_checkinteger(L, 2));
+static auto lFontResize(Ptr<Font> &font, int point) {
   font->resize(point);
-  return 0;
+  return;
 }
 static int lFontRegion(lua_State *L) {
   auto &font = udPtr<Font>(L, 1);
@@ -90,21 +88,15 @@ static int lFontRegion(lua_State *L) {
   udNewOwned<Rect>(L, font->region(StringView(text), fontSize, pivot, vec));
   return 1;
 }
-void registerFont(lua_State *L) {
+void registerFont(luau::table &sn) {
 
-  luaL_newmetatable(L, Font::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "resize", lFontResize);
-  Binding::registerFunction(L, "region", lFontRegion);
-  lua_pop(L, 1);
+  auto font = engineClass<Ptr<Font>>(sn, Font::metaTableName());
 
-  pushSnNamed(L, "Font");
-  Binding::registerFunction(L, "new", lFontNew);
-  Binding::registerInteger(L, "Bitmap",
-                         static_cast<lua_Integer>(FontMethod::Bitmap));
-  Binding::registerInteger(L, "MSDF", static_cast<lua_Integer>(FontMethod::MSDF));
-  lua_pop(L, 1);
+  font.method<lFontResize>("resize");
+  font.raw_method<lFontRegion>("region");
+
+  font.raw_static_function<lFontNew>("new");
+  font.static_value("Bitmap", FontMethod::Bitmap);
+  font.static_value("MSDF", FontMethod::MSDF);
 }
-
 } // namespace sinen

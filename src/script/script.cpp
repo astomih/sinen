@@ -16,7 +16,7 @@
 #include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
-#include "bindings/binding.hpp"
+#include "bindings/luaapi.hpp"
 #include "gpu/shader/shader_compiler_service.hpp"
 #include "native_module.hpp"
 #include "require.hpp"
@@ -43,7 +43,7 @@ namespace {
 String gFileName = "main.luau";
 String gBaseDirectory = "/";
 bool reload = true;
-std::unique_ptr<luau::debugger::Debugger> debugger;
+std::unique_ptr<::luau::debugger::Debugger> debugger;
 std::atomic<bool> debuggerConnected = false;
 bool debuggerAttached = false;
 } // namespace
@@ -95,19 +95,7 @@ int luaLRef2(lua_State *L, int idx) {
   return ref;
 }
 void luaLUnref2(lua_State *L, int idx, int r) { lua_unref(L, r); }
-void pushSnNamed(lua_State *L, const char *name) {
-  lua_getglobal(L, "sn");
-  if (!lua_istable(L, -1)) {
-    lua_pop(L, 1);
-    lua_newtable(L);
-    lua_pushvalue(L, -1);
-    lua_setglobal(L, "sn");
-  }
-  lua_newtable(L);
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -3, name);
-  lua_remove(L, -2);
-}
+
 static lua_State *gLua = nullptr;
 lua_State *getGlobalLua() { return gLua; }
 static int gSetupRef = LUA_NOREF;
@@ -195,59 +183,59 @@ int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
       Luau::compile(std::string(source.data(), source.size()), options);
   return luaLoadBytecode(L, bytecode, chunkname, fullPath);
 }
-void registerVec2(lua_State *);
-void registerVec3(lua_State *);
-void registerMat4(lua_State *);
-void registerColor(lua_State *);
-void registerAABB(lua_State *);
-void registerRay(lua_State *);
-void registerTimer(lua_State *);
-void registerCollider(lua_State *);
-void registerCamera(lua_State *);
-void registerCamera2D(lua_State *);
-void registerBuffer(lua_State *);
-void registerPivot(lua_State *);
-void registerRect(lua_State *);
-void registerTransform(lua_State *);
-void registerFont(lua_State *);
-void registerTextStyle(lua_State *);
-void registerTexture(lua_State *);
-void registerRenderTexture(lua_State *);
-void registerSound(lua_State *);
-void registerSynth(lua_State *);
-void registerShader(lua_State *);
+void registerVec2(luau::table &);
+void registerVec3(luau::table &);
+void registerMat4(luau::table &);
+void registerColor(luau::table &);
+void registerAABB(luau::table &);
+void registerRay(luau::table &);
+void registerTimer(luau::table &);
+void registerCollider(luau::table &);
+void registerCamera(luau::table &);
+void registerCamera2D(luau::table &);
+void registerBuffer(luau::table &);
+void registerPivot(luau::table &);
+void registerRect(luau::table &);
+void registerTransform(luau::table &);
+void registerFont(luau::table &);
+void registerTextStyle(luau::table &);
+void registerTexture(luau::table &);
+void registerRenderTexture(luau::table &);
+void registerSound(luau::table &);
+void registerSynth(luau::table &);
+void registerShader(luau::table &);
 void registerShaderCompilerPluginBinding(lua_State *);
-void registerShaderBundle(lua_State *);
-void registerPipeline(lua_State *);
-void registerComputeBuffer(lua_State *);
-void registerComputePipeline(lua_State *);
-void registerCompute(lua_State *);
-void registerRaytracing(lua_State *);
-void registerModel(lua_State *);
-void registerMeshBuilder(lua_State *);
-void registerTextureKey(lua_State *);
-void registerRandom(lua_State *);
-void registerWindow(lua_State *);
-void registerPhysics(lua_State *);
-void registerShaderStage(lua_State *);
-void registerShaderFormat(lua_State *);
-void registerBuiltinShader(lua_State *);
-void registerBuiltinPipeline(lua_State *);
-void registerEvent(lua_State *);
-void registerGraphics(lua_State *);
+void registerShaderBundle(luau::table &);
+void registerPipeline(luau::table &);
+void registerComputeBuffer(luau::table &);
+void registerComputePipeline(luau::table &);
+void registerCompute(luau::table &);
+void registerRaytracing(luau::table &);
+void registerModel(luau::table &);
+void registerMeshBuilder(luau::table &);
+void registerTextureKey(luau::table &);
+void registerRandom(luau::table &);
+void registerWindow(luau::table &);
+void registerPhysics(luau::table &);
+void registerShaderStage(luau::table &);
+void registerShaderFormat(luau::table &);
+void registerBuiltinShader(luau::table &);
+void registerBuiltinPipeline(luau::table &);
+void registerEvent(luau::table &);
+void registerGraphics(luau::table &);
 #ifdef SINEN_MODULE_RENDERER
-void registerRenderer(lua_State *);
+void registerRenderer(luau::table &);
 #endif
-void registerGui(lua_State *);
-void registerMouse(lua_State *);
-void registerKeyboard(lua_State *);
-void registerGamepad(lua_State *);
-void registerFilesystem(lua_State *);
-void registerScript(lua_State *);
-void registerLog(lua_State *);
-void registerPeriodic(lua_State *);
-void registerTime(lua_State *);
-void registerVideo(lua_State *);
+void registerGui(luau::table &);
+void registerMouse(luau::table &);
+void registerKeyboard(luau::table &);
+void registerGamepad(luau::table &);
+void registerFilesystem(luau::table &);
+void registerScript(luau::table &);
+void registerLog(luau::table &);
+void registerPeriodic(luau::table &);
+void registerTime(luau::table &);
+void registerVideo(luau::table &);
 
 static void requireConfigInit(luarequire_Configuration *config) {
   config->is_require_allowed = isRequireAllowed;
@@ -271,63 +259,64 @@ static void requireConfigInit(luarequire_Configuration *config) {
 static void registerAll(lua_State *L) {
   static RequireContext requireCtx{};
   luaopen_require(L, requireConfigInit, &requireCtx);
+  auto sn = luau::state_view(L).get_or_create_table("sn");
 
-  registerVec2(L);
-  registerVec3(L);
-  registerMat4(L);
-  registerColor(L);
-  registerAABB(L);
-  registerRay(L);
-  registerTimer(L);
-  registerCollider(L);
-  registerCamera(L);
-  registerCamera2D(L);
-  registerBuffer(L);
-  registerExternalFile(L);
-  registerPivot(L);
-  registerRect(L);
-  registerTransform(L);
+  registerVec2(sn);
+  registerVec3(sn);
+  registerMat4(sn);
+  registerColor(sn);
+  registerAABB(sn);
+  registerRay(sn);
+  registerTimer(sn);
+  registerCollider(sn);
+  registerCamera(sn);
+  registerCamera2D(sn);
+  registerBuffer(sn);
+  registerExternalFile(sn);
+  registerPivot(sn);
+  registerRect(sn);
+  registerTransform(sn);
 
-  registerFont(L);
-  registerTextStyle(L);
-  registerTexture(L);
-  registerRenderTexture(L);
-  registerSound(L);
-  registerSynth(L);
-  registerShader(L);
-  registerShaderBundle(L);
-  registerPipeline(L);
-  registerComputeBuffer(L);
-  registerComputePipeline(L);
-  registerRaytracing(L);
-  registerModel(L);
-  registerMeshBuilder(L);
-  registerTextureKey(L);
+  registerFont(sn);
+  registerTextStyle(sn);
+  registerTexture(sn);
+  registerRenderTexture(sn);
+  registerSound(sn);
+  registerSynth(sn);
+  registerShader(sn);
+  registerShaderBundle(sn);
+  registerPipeline(sn);
+  registerComputeBuffer(sn);
+  registerComputePipeline(sn);
+  registerRaytracing(sn);
+  registerModel(sn);
+  registerMeshBuilder(sn);
+  registerTextureKey(sn);
 
-  registerRandom(L);
-  registerWindow(L);
-  registerPhysics(L);
-  registerShaderStage(L);
-  registerShaderFormat(L);
-  registerBuiltinShader(L);
-  registerBuiltinPipeline(L);
-  registerEvent(L);
+  registerRandom(sn);
+  registerWindow(sn);
+  registerPhysics(sn);
+  registerShaderStage(sn);
+  registerShaderFormat(sn);
+  registerBuiltinShader(sn);
+  registerBuiltinPipeline(sn);
+  registerEvent(sn);
 
-  registerGraphics(L);
+  registerGraphics(sn);
 #ifdef SINEN_MODULE_RENDERER
-  registerRenderer(L);
+  registerRenderer(sn);
 #endif
-  registerCompute(L);
-  registerGui(L);
-  registerMouse(L);
-  registerKeyboard(L);
-  registerGamepad(L);
-  registerFilesystem(L);
-  registerScript(L);
-  registerLog(L);
-  registerPeriodic(L);
-  registerTime(L);
-  registerVideo(L);
+  registerCompute(sn);
+  registerGui(sn);
+  registerMouse(sn);
+  registerKeyboard(sn);
+  registerGamepad(sn);
+  registerFilesystem(sn);
+  registerScript(sn);
+  registerLog(sn);
+  registerPeriodic(sn);
+  registerTime(sn);
+  registerVideo(sn);
 }
 
 bool Script::initialize(bool isScriptDebug) {
@@ -343,8 +332,8 @@ bool Script::initialize(bool isScriptDebug) {
       Log::error("{}", msg.data());
     };
 
-    luau::debugger::log::install(logHandler, errorHandler);
-    debugger = std::make_unique<luau::debugger::Debugger>(false);
+    ::luau::debugger::log::install(logHandler, errorHandler);
+    debugger = std::make_unique<::luau::debugger::Debugger>(false);
     if (debugger->listen(58000)) {
       Log::info("Luau Debug server started on 58000");
       const UInt32 delayStep = 10; // ms
@@ -360,7 +349,7 @@ bool Script::initialize(bool isScriptDebug) {
       debugger.reset();
     }
   }
-  // bindings are implemented using Lua C API (see per-module *lua.cpp files)
+  // Engine classes and modules are registered through sinen::luau.
   gLua = lua_newstate(alloc, nullptr);
   if (!gLua) {
     debugger.reset();
@@ -872,12 +861,11 @@ static int lScriptLoadPlugin(lua_State *L) {
   }
   return 2;
 }
-void registerScript(lua_State *L) {
-  pushSnNamed(L, "Script");
-  Binding::registerFunction(L, "load", lScriptLoad);
-  Binding::registerFunction(L, "clearRequireCache", lScriptClearRequireCache);
-  Binding::registerFunction(L, "loadPlugin", lScriptLoadPlugin);
-  Binding::registerFunction(L, "loadNativeModule", lScriptLoadPlugin);
-  lua_pop(L, 1);
+void registerScript(luau::table &sn) {
+  auto script = sn.get_or_create_table("Script");
+  script.raw_function<lScriptLoad>("load");
+  script.raw_function<lScriptClearRequireCache>("clearRequireCache");
+  script.raw_function<lScriptLoadPlugin>("loadPlugin");
+  script.raw_function<lScriptLoadPlugin>("loadNativeModule");
 }
 } // namespace sinen

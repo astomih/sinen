@@ -1,3 +1,4 @@
+#include <Luau/Compiler.h>
 #include <lua.h>
 #include <lualib.h>
 
@@ -9,9 +10,13 @@
 #include <script/sinen_lua_module.h>
 
 #include "script/native_module.hpp"
+#include "script/require_alias.hpp"
 
 #include <cstring>
 #include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <memory>
 #include <string>
 
 #ifndef SINEN_TEST_NATIVE_MODULE_PATH
@@ -58,6 +63,32 @@ TEST(NativeModuleTests, LoadsModuleAndKeepsItAliveUntilStateCloses) {
   EXPECT_EQ(lua_tointeger(state, -1), 42);
   lua_settop(state, 0);
 
+  // Exercise the header-only binder across an actual DLL boundary, through
+  // the same plugin registry/require path used by application scripts.
+  lua_pushcfunction(
+      state,
+      +[](lua_State *L) -> int {
+        luaL_error(L, "unexpected fallback require");
+      },
+      "fallback require");
+  lua_setglobal(state, "require");
+  sinen::installSinenRequireAlias(state);
+  const auto bytecode = Luau::compile(R"(
+    local native = require('@sinen/plugin/native_module_fixture')
+    local c = native.Counter(5)
+    c.value = 8
+    assert(c:add(4) == 12 and native.answer() == 42)
+    assert(not pcall(function() c.value = 'invalid' end))
+    -- Keep an instance alive until lua_close, after module close is called.
+    native_instance = c
+  )");
+  ASSERT_EQ(
+      luau_load(state, "native_binding", bytecode.data(), bytecode.size(), 0),
+      LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK)
+      << (lua_tostring(state, -1) ? lua_tostring(state, -1)
+                                  : "unknown binding error");
+
   modules.close(state);
   lua_getglobal(state, "native_module_fixture_closed");
   EXPECT_TRUE(lua_toboolean(state, -1));
@@ -77,6 +108,158 @@ TEST(NativeModuleTests, ReportsLoaderErrors) {
   lua_close(state);
   modules.unload();
 }
+
+#ifdef SINEN_TEST_OCEAN_PATH
+TEST(NativeModuleTests, OceanPluginSimulatesAndWritesReusableMeshBuffers) {
+  auto &modules = sinen::nativeModuleManager();
+  const auto closeState = [&](lua_State *state) {
+    modules.close(state);
+    lua_close(state);
+    modules.unload();
+  };
+  const std::unique_ptr<lua_State, decltype(closeState)> owner(luaL_newstate(),
+                                                            closeState);
+  lua_State *state = owner.get();
+  ASSERT_NE(state, nullptr);
+  luaL_openlibs(state);
+  ASSERT_TRUE(modules.load(state, SINEN_TEST_OCEAN_PATH)) << modules.lastError();
+  lua_getfield(state, LUA_REGISTRYINDEX, SINEN_LUA_PLUGIN_REGISTRY_PREFIX "ocean");
+  lua_setglobal(state, "Ocean");
+  const auto script = Luau::compile(R"(
+    for _, spectrum in {'phillips', 'jonswap'} do
+      local o = Ocean.new({resolution = 16, wind = {spectrum = spectrum}, seed = 42})
+      local info = o:info()
+      local v, i = o:createMeshBuffers()
+      assert(info.resolution == 16 and info.vertexCount == 289)
+      assert(buffer.len(v) == 289 * 48 and buffer.len(i) == 16 * 16 * 6 * 4)
+      local before = buffer.readf32(v, 4)
+      o:update(1.25)
+      o:writeVertices(v)
+      assert(buffer.readf32(v, 4) ~= before)
+      local a, b = o:sample(-1, 5), o:sample(255, 261)
+      assert(math.abs(a.height - b.height) < 1e-6)
+      assert(a.foam >= 0 and a.foam <= 1)
+      assert(not pcall(function() o:writeVertices(buffer.create(12)) end))
+      assert(not pcall(function() o:update(0/0) end))
+      assert(not pcall(function() o:sample(math.huge, 0) end))
+      ocean_keepalive = o -- destroyed after the module's close callback
+    end
+    for _, settings in {
+      {resolution = 31}, {resolution = 8.5}, {seed = -1}, {patchSize = 0},
+      {wind = {spectrum = 'unknown'}}, {swell = {peakPeriod = 0}},
+      {depth = math.huge}, {choppiness = -1},
+    } do
+      assert(not pcall(function() Ocean.new(settings) end))
+    end
+    local calm = Ocean.new({resolution = 8, wind = {significantWaveHeight = 0},
+      swell = {significantWaveHeight = 0}})
+    local sample = calm:sample(5, 6)
+    assert(sample.height == 0 and sample.normalY == 1 and sample.foam == 0)
+  )");
+  ASSERT_EQ(luau_load(state, "ocean_plugin", script.data(), script.size(), 0), LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK) << lua_tostring(state, -1);
+  lua_gc(state, LUA_GCCOLLECT, 0);
+}
+#endif
+
+#ifdef SINEN_TEST_LUAU_TO_CPP_DIR
+TEST(NativeModuleTests, LuauToCppPluginConvertsSourceAndReportsErrors) {
+  auto &modules = sinen::nativeModuleManager();
+  const auto closeState = [&](lua_State *state) {
+    modules.close(state);
+    lua_close(state);
+    modules.unload();
+  };
+  const std::unique_ptr<lua_State, decltype(closeState)> owner(luaL_newstate(),
+                                                               closeState);
+  lua_State *state = owner.get();
+  ASSERT_NE(state, nullptr);
+  luaL_openlibs(state);
+
+  const ScopedCurrentDirectory currentDirectory(SINEN_TEST_LUAU_TO_CPP_DIR);
+  ASSERT_TRUE(modules.loadPlugin(state, "luau_to_cpp")) << modules.lastError();
+  lua_pushcfunction(
+      state,
+      +[](lua_State *L) -> int {
+        luaL_error(L, "unexpected fallback require");
+      },
+      "fallback require");
+  lua_setglobal(state, "require");
+  sinen::installSinenRequireAlias(state);
+
+  const auto script = Luau::compile(R"luau(
+    local converter = require("@sinen/plugin/luau_to_cpp")
+    local cpp, err = converter.convert("local function f(x: number): number return x end return f")
+    assert(cpp and not err)
+    assert(string.find(cpp, "inline double run(double v0)", 1, true))
+
+    local bad, diagnostic = converter.convert("local function f(x: number): number\n  return print(x)\nend\nreturn f", "bad.luau")
+    assert(not bad and string.find(diagnostic, "bad.luau:2:10:", 1, true))
+
+    local invalid, syntaxError = converter.convert("local function", "syntax.luau")
+    assert(not invalid and string.find(syntaxError, "syntax.luau:1:", 1, true))
+  )luau");
+  ASSERT_EQ(luau_load(state, "convert", script.data(), script.size(), 0), LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK) << lua_tostring(state, -1);
+}
+#endif
+
+#ifdef SINEN_TEST_FPS_DIR
+TEST(NativeModuleTests, FpsCollisionPluginMatchesLuau) {
+  auto &modules = sinen::nativeModuleManager();
+  const auto closeState = [&](lua_State *state) {
+    modules.close(state);
+    lua_close(state);
+    modules.unload();
+  };
+  const std::unique_ptr<lua_State, decltype(closeState)> owner(luaL_newstate(),
+                                                               closeState);
+  lua_State *state = owner.get();
+  ASSERT_NE(state, nullptr);
+  luaL_openlibs(state);
+
+  const ScopedCurrentDirectory currentDirectory(SINEN_TEST_FPS_DIR);
+  ASSERT_TRUE(modules.loadPlugin(state, "fps_collision"))
+      << modules.lastError();
+  lua_pushcfunction(
+      state,
+      +[](lua_State *L) -> int {
+        luaL_error(L, "unexpected fallback require");
+      },
+      "fallback require");
+  lua_setglobal(state, "require");
+  sinen::installSinenRequireAlias(state);
+
+  std::ifstream input("slab.luau", std::ios::binary);
+  ASSERT_TRUE(input);
+  const std::string source{std::istreambuf_iterator<char>(input),
+                           std::istreambuf_iterator<char>()};
+  const auto fallback = Luau::compile(source);
+  ASSERT_EQ(luau_load(state, "slab.luau", fallback.data(), fallback.size(), 0),
+            LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 1, 0), LUA_OK);
+  lua_setglobal(state, "luauSlab");
+
+  const auto compare = Luau::compile(R"(
+    local nativeSlab = require("@sinen/plugin/fps_collision").slab
+    local function same(a, b)
+      return (a == b and (a ~= 0 or 1 / a == 1 / b)) or (a ~= a and b ~= b)
+    end
+    for _, origin in {-2, -1, -0.0, 0, 1, 2, math.huge, 0 / 0} do
+      for _, direction in {-2, -1e-7, -1e-8, -0.0, 0, 1e-8, 1e-7, 2, math.huge, 0 / 0} do
+        for _, bound in {0, 1} do
+          local a, b = luauSlab(origin, direction, -bound, bound)
+          local c, d = nativeSlab(origin, direction, -bound, bound)
+          assert(same(a, c) and same(b, d), "slab result differs")
+        end
+      end
+    end
+  )");
+  ASSERT_EQ(luau_load(state, "compare slab", compare.data(), compare.size(), 0),
+            LUA_OK);
+  ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK) << lua_tostring(state, -1);
+}
+#endif
 
 TEST(NativeModuleTests, PluginLookupIsLimitedToCurrentDirectory) {
   lua_State *state = luaL_newstate();

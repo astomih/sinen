@@ -276,8 +276,14 @@ export type TextureKey = {
 	LightMap: number,
 }
 
+export type ModelLoadOptions = { maxTextureSize: number?, packedSpecular: boolean?, flipNormalY: boolean?, staticScene: boolean? }
+
 export type Model = {
-	new: (source: string | Buffer | ExternalFile) -> Model,
+	new: (source: string | Buffer | ExternalFile, options: ModelLoadOptions?) -> Model,
+	isReady: (self: Model) -> boolean,
+	getPartCount: (self: Model) -> number,
+	getMaterialCount: (self: Model) -> number,
+	getTriangleCount: (self: Model) -> number,
 	newSprite: () -> Model,
 	newBox: () -> Model,
 	getAABB: (self: Model) -> AABB,
@@ -734,6 +740,7 @@ export type Render2DPass = {
 
 export type Render3DPass = {
 	isFinished: (self: Render3DPass) -> boolean,
+	drawMesh: (self: Render3DPass, vertices: buffer, indices: buffer, transform: Transform, material: Material?) -> nil,
 	drawModel: ((self: Render3DPass, model: Model, transform: Transform) -> nil)
 		& ((self: Render3DPass, model: Model, transform: Transform, material: Material) -> nil),
 	drawModelInstanced: ((self: Render3DPass, model: Model, transforms: { Transform }) -> nil) & (
@@ -789,6 +796,27 @@ export type SpotLight = {
 
 export type Light = DirectionalLight | PointLight | SpotLight
 
+-- Diffuse GI: GPU real-time updates or CPU baking. Material inputs use linear colors.
+export type GlobalIllumination = {
+	new: () -> GlobalIllumination,
+	-- 64 GPU rays/probe/frame; 2..32 probes/axis, 1..4 diffuse hits.
+	initializeRealtime: (self: GlobalIllumination, minimum: Vec3, maximum: Vec3, countX: number?, countY: number?, countZ: number?, bounces: number?) -> boolean,
+	-- Replace geometry for the next update, retaining temporal history.
+	beginFrame: (self: GlobalIllumination) -> nil,
+	-- Submit GPU work without CPU readback. Call before drawing; history is 0..0.99.
+	update: (self: GlobalIllumination, historyWeight: number?) -> boolean,
+	isRealtime: (self: GlobalIllumination) -> boolean,
+	addModel: (self: GlobalIllumination, model: Model, transform: Transform, albedo: Color?, emission: Color?, triangleBudget: number?) -> nil,
+	setLight: (self: GlobalIllumination, light: Light) -> nil,
+	clearLight: (self: GlobalIllumination) -> nil,
+	setSkyColor: (self: GlobalIllumination, color: Color) -> nil,
+	-- Synchronous bake; 2..32 probes per axis, 32..65536 rays, 1..8 diffuse hits.
+	bake: (self: GlobalIllumination, minimum: Vec3, maximum: Vec3, countX: number?, countY: number?, countZ: number?, rays: number?, bounces: number?) -> boolean,
+	isBaked: (self: GlobalIllumination) -> boolean,
+	sampleIrradiance: (self: GlobalIllumination, position: Vec3, normal: Vec3) -> Vec3,
+	clear: (self: GlobalIllumination) -> nil,
+}
+
 export type PBRRenderer = {
 	new: () -> PBRRenderer,
 	-- Copy the supplied light into the renderer.
@@ -798,8 +826,13 @@ export type PBRRenderer = {
 	clearFillLight: (self: PBRRenderer) -> nil,
 	-- Positive exposure enables tone mapping and sRGB output for an SDR target.
 	setExposure: (self: PBRRenderer, exposure: number) -> nil,
+	-- Base-color alpha test for foliage/fences; zero disables it.
+	setAlphaCutoff: (self: PBRRenderer, cutoff: number) -> nil,
 	setEnvironment: (self: PBRRenderer, brdfLut: Texture, irradiance: Texture, prefiltered: Texture) -> nil,
 	clearEnvironment: (self: PBRRenderer) -> nil,
+	-- Attach a volume; real-time updates stay live. Replaces ambient diffuse.
+	setGlobalIllumination: (self: PBRRenderer, volume: GlobalIllumination, intensity: number?) -> nil,
+	clearGlobalIllumination: (self: PBRRenderer) -> nil,
 	drawModel: (self: PBRRenderer, pass: Render3DPass, model: Model, transform: Transform) -> nil,
 }
 
@@ -811,6 +844,16 @@ export type NPRRenderer = {
 	setShadowColor: (self: NPRRenderer, color: Color) -> nil,
 	setBands: (self: NPRRenderer, bands: number) -> nil,
 	drawModel: (self: NPRRenderer, pass: Render3DPass, model: Model, transform: Transform) -> nil,
+}
+
+export type RenderDoc = {
+	isAvailable: () -> boolean,
+	triggerCapture: (numFrames: number?) -> boolean,
+	isFrameCapturing: () -> boolean,
+	setCaptureFilePathTemplate: (path: string) -> boolean,
+	getNumCaptures: () -> number,
+	-- Zero-based index; empty string if unavailable or invalid.
+	getCaptureFilePath: (index: number) -> string,
 }
 
 export type Graphics = {
@@ -1138,10 +1181,12 @@ return {
 	BuiltinShader = {} :: BuiltinShader,
 	BuiltinPipelines = {} :: BuiltinPipelines,
 	Graphics = {} :: Graphics,
+	RenderDoc = {} :: RenderDoc,
 	DirectionalLight = {} :: DirectionalLight,
 	PointLight = {} :: PointLight,
 	SpotLight = {} :: SpotLight,
 	PBRRenderer = {} :: PBRRenderer,
+	GlobalIllumination = {} :: GlobalIllumination,
 	NPRRenderer = {} :: NPRRenderer,
 	Compute = {} :: Compute,
 	Gui = {} :: Gui,

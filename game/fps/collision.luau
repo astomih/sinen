@@ -3,15 +3,11 @@ local Art = require("./art")
 
 local Collision = {}
 
-local function slab(origin: number, direction: number, lo: number, hi: number): (number, number)
-	if math.abs(direction) < 1e-7 then
-		if origin < lo or origin > hi then
-			return math.huge, -math.huge
-		end
-		return -math.huge, math.huge
-	end
-	local a, b = (lo - origin) / direction, (hi - origin) / direction
-	return math.min(a, b), math.max(a, b)
+local slab: (number, number, number, number) -> (number, number)
+if sn.Script.loadPlugin("fps_collision") then
+	slab = require("@sinen/plugin/fps_collision").slab
+else
+	slab = require("./slab")
 end
 
 function Collision.wallDistance(solids: { Art.Box }, origin: sn.Vec3, direction: sn.Vec3, limit: number): number
@@ -31,14 +27,24 @@ function Collision.sphereDistance(origin: sn.Vec3, direction: sn.Vec3, center: s
 	local offset = center - origin
 	local projection = direction:dot(offset)
 	local discriminant = projection ^ 2 - offset:dot(offset) + radius ^ 2
-	if discriminant < 0 then return nil end
+	if discriminant < 0 then
+		return nil
+	end
 	local root = math.sqrt(discriminant)
-	if projection + root < 0 then return nil end
+	if projection + root < 0 then
+		return nil
+	end
 	return math.max(0, projection - root)
 end
 
 -- Clip each axis independently so the body slides along obstacles.
-function Collision.move(solids: { Art.Box }, feet: sn.Vec3, delta: sn.Vec3, radius: number, height: number): (sn.Vec3, boolean, boolean)
+function Collision.move(
+	solids: { Art.Box },
+	feet: sn.Vec3,
+	delta: sn.Vec3,
+	radius: number,
+	height: number
+): (sn.Vec3, boolean, boolean)
 	local x, y, z = feet.x, feet.y, feet.z
 	local goalX, goalZ, goalY = x + delta.x, z + delta.z, y + delta.y
 	for _, box in solids do
@@ -63,8 +69,12 @@ function Collision.move(solids: { Art.Box }, feet: sn.Vec3, delta: sn.Vec3, radi
 	end
 	z = goalZ
 	for _, box in solids do
-		if x + radius > box.lo.x + 1e-5 and x - radius < box.hi.x - 1e-5
-			and z + radius > box.lo.z + 1e-5 and z - radius < box.hi.z - 1e-5 then
+		if
+			x + radius > box.lo.x + 1e-5
+			and x - radius < box.hi.x - 1e-5
+			and z + radius > box.lo.z + 1e-5
+			and z - radius < box.hi.z - 1e-5
+		then
 			if delta.y <= 0 and y >= box.hi.y - 1e-5 then
 				goalY = math.max(goalY, box.hi.y)
 			elseif delta.y > 0 and y + height <= box.lo.y + 1e-5 then

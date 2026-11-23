@@ -33,15 +33,14 @@ static int lBuiltinPipelineGetCubemap(lua_State *L) {
       L, makePtr<GraphicsPipeline>(BuiltinPipeline::getCubemap()));
   return 1;
 }
-void registerBuiltinPipeline(lua_State *L) {
-  pushSnNamed(L, "BuiltinPipeline");
-  Binding::registerFunction(L, "getDefault3D", lBuiltinPipelineGetDefault3D);
-  Binding::registerFunction(L, "getInstanced3D",
-                            lBuiltinPipelineGetInstanced3D);
-  Binding::registerFunction(L, "getDefault2D", lBuiltinPipelineGetDefault2D);
-  Binding::registerFunction(L, "getFont2D", lBuiltinPipelineGetFont2D);
-  Binding::registerFunction(L, "getRect2D", lBuiltinPipelineGetRect2D);
-  Binding::registerFunction(L, "getCubemap", lBuiltinPipelineGetCubemap);
-  lua_pop(L, 1);
+void registerBuiltinPipeline(luau::table &sn) {
+  auto builtinPipeline = sn.get_or_create_table("BuiltinPipeline");
+  builtinPipeline.raw_function<lBuiltinPipelineGetDefault3D>("getDefault3D");
+  builtinPipeline.raw_function<lBuiltinPipelineGetInstanced3D>(
+      "getInstanced3D");
+  builtinPipeline.raw_function<lBuiltinPipelineGetDefault2D>("getDefault2D");
+  builtinPipeline.raw_function<lBuiltinPipelineGetFont2D>("getFont2D");
+  builtinPipeline.raw_function<lBuiltinPipelineGetRect2D>("getRect2D");
+  builtinPipeline.raw_function<lBuiltinPipelineGetCubemap>("getCubemap");
 }
 } // namespace sinen

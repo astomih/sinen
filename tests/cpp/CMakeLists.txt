@@ -1,5 +1,21 @@
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
 
+if(TARGET sinen_ocean)
+  add_executable(sinen_ocean_tests ocean_tests.cpp)
+  target_link_libraries(sinen_ocean_tests PRIVATE sinen_ocean GTest::gtest_main)
+  add_test(NAME sinen_ocean_tests COMMAND sinen_ocean_tests)
+  if(WIN32 AND TARGET sinen_graphics AND TARGET sinen_plugin_shader_compiler)
+    add_executable(sinen_ocean_render_tests ocean_render_tests.cpp)
+    target_include_directories(sinen_ocean_render_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+    target_link_libraries(sinen_ocean_render_tests PRIVATE sinen_script sinen_ocean GTest::gtest_main)
+    target_compile_definitions(sinen_ocean_render_tests PRIVATE
+      SINEN_TEST_OCEAN_SOURCE="${SINEN_SOURCE_DIR}/examples/graphics/ocean/ocean.slang")
+    add_dependencies(sinen_ocean_render_tests sinen_plugin_shader_compiler)
+    add_test(NAME sinen_ocean_render_tests COMMAND sinen_ocean_render_tests)
+    set_tests_properties(sinen_ocean_render_tests PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  endif()
+endif()
+
 add_executable(sinen_allocator_tests allocator_tests.cpp)
 target_link_libraries(sinen_allocator_tests PRIVATE sinen_core GTest::gtest_main)
 set_property(TARGET sinen_allocator_tests PROPERTY CXX_STANDARD 23)
@@ -13,7 +29,40 @@ set_property(TARGET sinen_license_report_tests PROPERTY CXX_STANDARD 23)
 
 add_test(NAME sinen_license_report_tests COMMAND sinen_license_report_tests)
 
+if(TARGET sinen_renderer)
+  add_executable(sinen_global_illumination_tests global_illumination_tests.cpp)
+  if(WIN32)
+    target_sources(sinen_global_illumination_tests PRIVATE realtime_gi_tests.cpp)
+    target_include_directories(sinen_global_illumination_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+  endif()
+  target_link_libraries(sinen_global_illumination_tests PRIVATE sinen_renderer GTest::gtest_main)
+  if(TARGET sinen_script)
+    target_link_libraries(sinen_global_illumination_tests PRIVATE sinen_script)
+  endif()
+  set_property(TARGET sinen_global_illumination_tests PROPERTY CXX_STANDARD 23)
+  add_test(NAME sinen_global_illumination_tests COMMAND sinen_global_illumination_tests)
+  if(WIN32 AND SINEN_ENABLE_WEBGPU)
+    # Dawn's D3D12 backend needs DXC at runtime. Reuse the shader compiler's
+    # downloaded package when available without installing it system-wide.
+    FetchContent_GetProperties(dxc SOURCE_DIR SINEN_GI_TEST_DXC_SOURCE)
+    if(SINEN_GI_TEST_DXC_SOURCE)
+      if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|ARM64")
+        set(SINEN_GI_TEST_DXC_ARCH arm64)
+      else()
+        set(SINEN_GI_TEST_DXC_ARCH x64)
+      endif()
+      set_tests_properties(sinen_global_illumination_tests PROPERTIES
+        ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${SINEN_GI_TEST_DXC_SOURCE}/bin/${SINEN_GI_TEST_DXC_ARCH}")
+    endif()
+  endif()
+endif()
+
 if(TARGET sinen_graphics)
+  add_executable(sinen_dds_decoder_tests dds_decoder_tests.cpp)
+  target_include_directories(sinen_dds_decoder_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+  target_link_libraries(sinen_dds_decoder_tests PRIVATE GTest::gtest_main)
+  set_property(TARGET sinen_dds_decoder_tests PROPERTY CXX_STANDARD 23)
+  add_test(NAME sinen_dds_decoder_tests COMMAND sinen_dds_decoder_tests)
   if(NOT EMSCRIPTEN)
     # Decode generated H.264 in native tests, keeping decoder code out of the engine.
     # The upstream decoder uses sem_timedwait, absent in single-threaded Wasm.
@@ -58,6 +107,27 @@ if(TARGET sinen_platform)
 endif()
 
 if(TARGET sinen_gpu)
+  if(WIN32)
+    add_executable(sinen_d3d12_frame_tests d3d12_frame_tests.cpp)
+    target_include_directories(sinen_d3d12_frame_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+    target_link_libraries(sinen_d3d12_frame_tests PRIVATE sinen_gpu GTest::gtest_main)
+    set_property(TARGET sinen_d3d12_frame_tests PROPERTY CXX_STANDARD 23)
+    add_test(NAME sinen_d3d12_frame_tests COMMAND sinen_d3d12_frame_tests)
+    set_tests_properties(sinen_d3d12_frame_tests PROPERTIES TIMEOUT 30)
+  endif()
+  if(WIN32 OR (CMAKE_SYSTEM_NAME STREQUAL "Linux"))
+    add_library(sinen_test_renderdoc SHARED renderdoc_fixture.cpp)
+    target_include_directories(sinen_test_renderdoc PRIVATE
+                               ${SINEN_SOURCE_DIR}/libs/renderdoc)
+    set_property(TARGET sinen_test_renderdoc PROPERTY CXX_STANDARD 23)
+    add_executable(sinen_renderdoc_tests renderdoc_tests.cpp)
+    target_link_libraries(sinen_renderdoc_tests PRIVATE sinen_gpu GTest::gtest_main)
+    target_compile_definitions(sinen_renderdoc_tests PRIVATE
+      SINEN_TEST_RENDERDOC_PATH="$<TARGET_FILE:sinen_test_renderdoc>")
+    set_property(TARGET sinen_renderdoc_tests PROPERTY CXX_STANDARD 23)
+    add_dependencies(sinen_renderdoc_tests sinen_test_renderdoc)
+    add_test(NAME sinen_renderdoc_tests COMMAND sinen_renderdoc_tests)
+  endif()
   add_executable(sinen_shader_bundle_tests shader_bundle_tests.cpp)
   target_link_libraries(sinen_shader_bundle_tests
                         PRIVATE sinen_gpu GTest::gtest_main)
@@ -70,6 +140,21 @@ if(TARGET sinen_gpu)
 endif()
 
 if(TARGET sinen_script)
+  add_executable(sinen_engine_binding_tests engine_binding_tests.cpp)
+  target_include_directories(sinen_engine_binding_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+  target_link_libraries(sinen_engine_binding_tests PRIVATE sinen_script GTest::gtest_main)
+  set_property(TARGET sinen_engine_binding_tests PROPERTY CXX_STANDARD 23)
+  add_test(NAME sinen_engine_binding_tests COMMAND sinen_engine_binding_tests)
+  set_tests_properties(sinen_engine_binding_tests PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+  if(WIN32)
+    add_executable(sinen_text_cache_tests text_cache_tests.cpp)
+    target_include_directories(sinen_text_cache_tests PRIVATE ${SINEN_SOURCE_DIR}/src)
+    target_link_libraries(sinen_text_cache_tests PRIVATE sinen_script GTest::gtest_main)
+    set_property(TARGET sinen_text_cache_tests PROPERTY CXX_STANDARD 23)
+    add_test(NAME sinen_text_cache_tests COMMAND sinen_text_cache_tests)
+    set_tests_properties(sinen_text_cache_tests PROPERTIES TIMEOUT 60)
+  endif()
   if(WIN32 OR EMSCRIPTEN)
     sinen_add_lua_module(sinen_test_native_module native_module_fixture.cpp)
   endif()
@@ -81,7 +166,7 @@ if(TARGET sinen_script)
   add_executable(
     sinen_luau_binding_tests
     luau_binding_tests.cpp
-    ${SINEN_SOURCE_DIR}/src/script/bindings/binding_registration.cpp
+    luau_bind_library_tests.cpp
     ${SINEN_SOURCE_DIR}/src/script/require_alias.cpp)
   if(WIN32)
     target_sources(
@@ -98,6 +183,18 @@ if(TARGET sinen_script)
         SINEN_TEST_FAILING_NATIVE_MODULE_PATH="$<TARGET_FILE:sinen_test_failing_native_module>")
     add_dependencies(sinen_luau_binding_tests sinen_test_native_module
                      sinen_test_failing_native_module)
+    if(TARGET sinen_plugin_luau_to_cpp)
+      target_compile_definitions(
+        sinen_luau_binding_tests PRIVATE
+        SINEN_TEST_LUAU_TO_CPP_DIR="$<TARGET_FILE_DIR:sinen_plugin_luau_to_cpp>")
+      add_dependencies(sinen_luau_binding_tests sinen_plugin_luau_to_cpp)
+    endif()
+    if(TARGET sinen_plugin_fps_collision)
+      target_compile_definitions(
+        sinen_luau_binding_tests PRIVATE
+        SINEN_TEST_FPS_DIR="${SINEN_SOURCE_DIR}/game/fps")
+      add_dependencies(sinen_luau_binding_tests sinen_deploy_fps_collision)
+    endif()
     if(TARGET sinen_plugin_nativefs)
       target_compile_definitions(
         sinen_luau_binding_tests
@@ -105,6 +202,11 @@ if(TARGET sinen_script)
           SINEN_TEST_NATIVEFS_PATH="$<TARGET_FILE:sinen_plugin_nativefs>"
           SINEN_TEST_SOURCE_DIR="${SINEN_SOURCE_DIR}")
       add_dependencies(sinen_luau_binding_tests sinen_plugin_nativefs)
+    endif()
+    if(TARGET sinen_plugin_ocean)
+      target_compile_definitions(sinen_luau_binding_tests PRIVATE
+        SINEN_TEST_OCEAN_PATH="$<TARGET_FILE:sinen_plugin_ocean>")
+      add_dependencies(sinen_luau_binding_tests sinen_plugin_ocean)
     endif()
     if(TARGET sinen_plugin_shader_compiler)
       target_compile_definitions(

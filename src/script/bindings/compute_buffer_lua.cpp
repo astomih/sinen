@@ -26,37 +26,28 @@ static int lComputeBufferCreate(lua_State *L) {
   return 0;
 }
 
-static int lComputeBufferUpload(lua_State *L) {
-  auto &buffer = udPtr<ComputeBuffer>(L, 1);
-  auto &data = udValue<Buffer>(L, 2);
+static auto lComputeBufferUpload(Ptr<ComputeBuffer> &buffer, Buffer &data) {
   buffer->upload(data);
-  return 0;
+  return;
 }
 
-static int lComputeBufferDownload(lua_State *L) {
-  auto &buffer = udPtr<ComputeBuffer>(L, 1);
-  udNewOwned<Buffer>(L, buffer->download());
-  return 1;
+static auto lComputeBufferDownload(Ptr<ComputeBuffer> &buffer) {
+  return buffer->download();
 }
 
-static int lComputeBufferSize(lua_State *L) {
-  auto &buffer = udPtr<ComputeBuffer>(L, 1);
-  lua_pushinteger(L, buffer->size());
-  return 1;
+static auto lComputeBufferSize(Ptr<ComputeBuffer> &buffer) {
+  return buffer->size();
 }
 
-void registerComputeBuffer(lua_State *L) {
-  luaL_newmetatable(L, ComputeBuffer::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "create", lComputeBufferCreate);
-  Binding::registerFunction(L, "upload", lComputeBufferUpload);
-  Binding::registerFunction(L, "download", lComputeBufferDownload);
-  Binding::registerFunction(L, "size", lComputeBufferSize);
-  lua_pop(L, 1);
+void registerComputeBuffer(luau::table &sn) {
+  auto computeBuffer =
+      engineClass<Ptr<ComputeBuffer>>(sn, ComputeBuffer::metaTableName());
 
-  pushSnNamed(L, "ComputeBuffer");
-  Binding::registerFunction(L, "new", lComputeBufferNew);
-  lua_pop(L, 1);
+  computeBuffer.raw_method<lComputeBufferCreate>("create");
+  computeBuffer.method<lComputeBufferUpload>("upload");
+  computeBuffer.method<lComputeBufferDownload>("download");
+  computeBuffer.method<lComputeBufferSize>("size");
+
+  computeBuffer.raw_static_function<lComputeBufferNew>("new");
 }
 } // namespace sinen

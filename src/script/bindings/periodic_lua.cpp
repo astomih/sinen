@@ -3,22 +3,15 @@
 #include <math/periodic.hpp>
 
 namespace sinen {
-static int lPeriodicSin01(lua_State *L) {
-  float period = static_cast<float>(luaL_checknumber(L, 1));
-  float t = static_cast<float>(luaL_checknumber(L, 2));
-  lua_pushnumber(L, Periodic::sineWave(period, t));
-  return 1;
+static auto lPeriodicSin01(float period, float t) {
+  return Periodic::sineWave(period, t);
 }
-static int lPeriodicCos01(lua_State *L) {
-  float period = static_cast<float>(luaL_checknumber(L, 1));
-  float t = static_cast<float>(luaL_checknumber(L, 2));
-  lua_pushnumber(L, Periodic::cosWave(period, t));
-  return 1;
+static auto lPeriodicCos01(float period, float t) {
+  return Periodic::cosWave(period, t);
 }
-void registerPeriodic(lua_State *L) {
-  pushSnNamed(L, "Periodic");
-  Binding::registerFunction(L, "sin0_1", lPeriodicSin01);
-  Binding::registerFunction(L, "cos0_1", lPeriodicCos01);
-  lua_pop(L, 1);
+void registerPeriodic(luau::table &sn) {
+  auto periodic = sn.get_or_create_table("Periodic");
+  periodic.function<lPeriodicSin01>("sin0_1");
+  periodic.function<lPeriodicCos01>("cos0_1");
 }
 } // namespace sinen

@@ -141,10 +141,9 @@ static int lShaderBundleDumpJson(lua_State *L) {
   return 1;
 }
 
-void registerShaderBundle(lua_State *L) {
-  pushSnNamed(L, "ShaderBundle");
-  Binding::registerFunction(L, "pack", lShaderBundlePack);
-  Binding::registerFunction(L, "dumpJson", lShaderBundleDumpJson);
-  lua_pop(L, 1);
+void registerShaderBundle(luau::table &sn) {
+  auto shaderBundle = sn.get_or_create_table("ShaderBundle");
+  shaderBundle.raw_function<lShaderBundlePack>("pack");
+  shaderBundle.raw_function<lShaderBundleDumpJson>("dumpJson");
 }
 } // namespace sinen

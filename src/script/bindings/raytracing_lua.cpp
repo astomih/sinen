@@ -130,14 +130,12 @@ bool requireRayQuerySupport(lua_State *L, const char *functionName) {
 }
 } // namespace
 
-static int lRaytracingIsSupported(lua_State *L) {
-  lua_pushboolean(L, Graphics::getDevice()->supportsRayTracing());
-  return 1;
+static auto lRaytracingIsSupported() {
+  return Graphics::getDevice()->supportsRayTracing();
 }
 
-static int lRaytracingIsRayQuerySupported(lua_State *L) {
-  lua_pushboolean(L, Graphics::getDevice()->supportsRayQuery());
-  return 1;
+static auto lRaytracingIsRayQuerySupported() {
+  return Graphics::getDevice()->supportsRayQuery();
 }
 
 static int lRaytracingSetComputeAccelerationStructure(lua_State *L) {
@@ -499,77 +497,61 @@ static int lRaytracingDispatch(lua_State *L) {
   return 0;
 }
 
-void registerRaytracing(lua_State *L) {
-  luaL_newmetatable(L, RaytracingAccelerationStructure::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "getDeviceAddress",
-                            lRaytracingAccelerationStructureGetDeviceAddress);
-  lua_pop(L, 1);
+void registerRaytracing(luau::table &sn) {
+  auto raytracingAccelerationStructure =
+      engineClass<Ptr<RaytracingAccelerationStructure>>(
+          sn, RaytracingAccelerationStructure::metaTableName());
 
-  luaL_newmetatable(L, RaytracingPipeline::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "addShader", lRaytracingPipelineAddShader);
-  Binding::registerFunction(L, "addHitGroup", lRaytracingPipelineAddHitGroup);
-  Binding::registerFunction(L, "setMaxPayloadSize",
-                            lRaytracingPipelineSetMaxPayloadSize);
-  Binding::registerFunction(L, "setMaxAttributeSize",
-                            lRaytracingPipelineSetMaxAttributeSize);
-  Binding::registerFunction(L, "setMaxRecursionDepth",
-                            lRaytracingPipelineSetMaxRecursionDepth);
-  Binding::registerFunction(L, "build", lRaytracingPipelineBuild);
-  Binding::registerFunction(L, "isReady", lRaytracingPipelineIsReady);
-  Binding::registerFunction(L, "getShaderGroupHandleSize",
-                            lRaytracingPipelineGetShaderGroupHandleSize);
-  Binding::registerFunction(L, "getShaderGroupHandles",
-                            lRaytracingPipelineGetShaderGroupHandles);
-  lua_pop(L, 1);
+  raytracingAccelerationStructure
+      .raw_method<lRaytracingAccelerationStructureGetDeviceAddress>(
+          "getDeviceAddress");
 
-  pushSnNamed(L, "Raytracing");
-  Binding::registerFunction(L, "isDeviceSupported", lRaytracingIsSupported);
-  Binding::registerFunction(L, "isSupported", lRaytracingIsSupported);
-  Binding::registerFunction(L, "isRayQuerySupported",
-                            lRaytracingIsRayQuerySupported);
-  Binding::registerFunction(L, "createBottomLevel",
-                            lRaytracingCreateBottomLevel);
-  Binding::registerFunction(L, "createTopLevel", lRaytracingCreateTopLevel);
-  Binding::registerFunction(L, "dispatch", lRaytracingDispatch);
-  Binding::registerFunction(L, "setComputeAccelerationStructure",
-                            lRaytracingSetComputeAccelerationStructure);
-  Binding::registerFunction(L, "resetComputeAccelerationStructure",
-                            lRaytracingResetComputeAccelerationStructure);
-  Binding::registerFunction(L, "resetAllComputeAccelerationStructures",
-                            lRaytracingResetAllComputeAccelerationStructures);
-  Binding::registerFunction(L, "setGraphicsAccelerationStructure",
-                            lRaytracingSetGraphicsAccelerationStructure);
-  Binding::registerFunction(L, "resetGraphicsAccelerationStructure",
-                            lRaytracingResetGraphicsAccelerationStructure);
-  Binding::registerFunction(L, "resetAllGraphicsAccelerationStructures",
-                            lRaytracingResetAllGraphicsAccelerationStructures);
+  auto raytracingPipeline = engineClass<Ptr<RaytracingPipeline>>(
+      sn, RaytracingPipeline::metaTableName());
 
-  lua_newtable(L);
-  Binding::registerFunction(L, "new", lRaytracingPipelineNew);
-  lua_setfield(L, -2, "Pipeline");
+  raytracingPipeline.raw_method<lRaytracingPipelineAddShader>("addShader");
+  raytracingPipeline.raw_method<lRaytracingPipelineAddHitGroup>("addHitGroup");
+  raytracingPipeline.raw_method<lRaytracingPipelineSetMaxPayloadSize>(
+      "setMaxPayloadSize");
+  raytracingPipeline.raw_method<lRaytracingPipelineSetMaxAttributeSize>(
+      "setMaxAttributeSize");
+  raytracingPipeline.raw_method<lRaytracingPipelineSetMaxRecursionDepth>(
+      "setMaxRecursionDepth");
+  raytracingPipeline.raw_method<lRaytracingPipelineBuild>("build");
+  raytracingPipeline.raw_method<lRaytracingPipelineIsReady>("isReady");
+  raytracingPipeline.raw_method<lRaytracingPipelineGetShaderGroupHandleSize>(
+      "getShaderGroupHandleSize");
+  raytracingPipeline.raw_method<lRaytracingPipelineGetShaderGroupHandles>(
+      "getShaderGroupHandles");
 
-  lua_newtable(L);
-  Binding::registerInteger(L, "None",
-                         static_cast<lua_Integer>(static_cast<UInt32>(
-                             gpu::RayTracingBuildFlags::None)));
-  Binding::registerInteger(L, "AllowUpdate",
-                         static_cast<lua_Integer>(static_cast<UInt32>(
-                             gpu::RayTracingBuildFlags::AllowUpdate)));
-  Binding::registerInteger(L, "PreferFastTrace",
-                         static_cast<lua_Integer>(static_cast<UInt32>(
-                             gpu::RayTracingBuildFlags::PreferFastTrace)));
-  Binding::registerInteger(L, "PreferFastBuild",
-                         static_cast<lua_Integer>(static_cast<UInt32>(
-                             gpu::RayTracingBuildFlags::PreferFastBuild)));
-  Binding::registerInteger(L, "MinimizeMemory",
-                         static_cast<lua_Integer>(static_cast<UInt32>(
-                             gpu::RayTracingBuildFlags::MinimizeMemory)));
-  lua_setfield(L, -2, "BuildFlags");
+  auto raytracing = sn.get_or_create_table("Raytracing");
+  raytracing.function<lRaytracingIsSupported>("isDeviceSupported");
+  raytracing.function<lRaytracingIsSupported>("isSupported");
+  raytracing.function<lRaytracingIsRayQuerySupported>("isRayQuerySupported");
+  raytracing.raw_function<lRaytracingCreateBottomLevel>("createBottomLevel");
+  raytracing.raw_function<lRaytracingCreateTopLevel>("createTopLevel");
+  raytracing.raw_function<lRaytracingDispatch>("dispatch");
+  raytracing.raw_function<lRaytracingSetComputeAccelerationStructure>(
+      "setComputeAccelerationStructure");
+  raytracing.raw_function<lRaytracingResetComputeAccelerationStructure>(
+      "resetComputeAccelerationStructure");
+  raytracing.raw_function<lRaytracingResetAllComputeAccelerationStructures>(
+      "resetAllComputeAccelerationStructures");
+  raytracing.raw_function<lRaytracingSetGraphicsAccelerationStructure>(
+      "setGraphicsAccelerationStructure");
+  raytracing.raw_function<lRaytracingResetGraphicsAccelerationStructure>(
+      "resetGraphicsAccelerationStructure");
+  raytracing.raw_function<lRaytracingResetAllGraphicsAccelerationStructures>(
+      "resetAllGraphicsAccelerationStructures");
 
-  lua_pop(L, 1);
+  raytracing.get_or_create_table("Pipeline")
+      .raw_function<lRaytracingPipelineNew>("new");
+
+  auto flags = raytracing.get_or_create_table("BuildFlags");
+  flags.value("None", gpu::RayTracingBuildFlags::None);
+  flags.value("AllowUpdate", gpu::RayTracingBuildFlags::AllowUpdate);
+  flags.value("PreferFastTrace", gpu::RayTracingBuildFlags::PreferFastTrace);
+  flags.value("PreferFastBuild", gpu::RayTracingBuildFlags::PreferFastBuild);
+  flags.value("MinimizeMemory", gpu::RayTracingBuildFlags::MinimizeMemory);
 }
 } // namespace sinen

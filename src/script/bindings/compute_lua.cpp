@@ -8,16 +8,14 @@
 #include <graphics/graphics.hpp>
 
 namespace sinen {
-static int lComputeSetComputePipeline(lua_State *L) {
-  auto &pipeline = udPtr<ComputePipeline>(L, 1);
+static auto lComputeSetComputePipeline(Ptr<ComputePipeline> &pipeline) {
   Compute::setComputePipeline(*pipeline);
-  return 0;
+  return;
 }
 
-static int lComputeResetComputePipeline(lua_State *L) {
-  (void)L;
+static auto lComputeResetComputePipeline() {
   Compute::resetComputePipeline();
-  return 0;
+  return;
 }
 
 static int lComputeSetUniformBuffer(lua_State *L) {
@@ -45,10 +43,9 @@ static int lComputeResetStorageBuffer(lua_State *L) {
   return 0;
 }
 
-static int lComputeResetAllStorageBuffers(lua_State *L) {
-  (void)L;
+static auto lComputeResetAllStorageBuffers() {
   Compute::resetAllStorageBuffers();
-  return 0;
+  return;
 }
 
 static int lComputeDispatch(lua_State *L) {
@@ -59,19 +56,14 @@ static int lComputeDispatch(lua_State *L) {
   return 0;
 }
 
-void registerCompute(lua_State *L) {
-  pushSnNamed(L, "Compute");
-  Binding::registerFunction(L, "setComputePipeline",
-                            lComputeSetComputePipeline);
-  Binding::registerFunction(L, "resetComputePipeline",
-                            lComputeResetComputePipeline);
-  Binding::registerFunction(L, "setUniformBuffer", lComputeSetUniformBuffer);
-  Binding::registerFunction(L, "setStorageBuffer", lComputeSetStorageBuffer);
-  Binding::registerFunction(L, "resetStorageBuffer",
-                            lComputeResetStorageBuffer);
-  Binding::registerFunction(L, "resetAllStorageBuffers",
-                            lComputeResetAllStorageBuffers);
-  Binding::registerFunction(L, "dispatch", lComputeDispatch);
-  lua_pop(L, 1);
+void registerCompute(luau::table &sn) {
+  auto compute = sn.get_or_create_table("Compute");
+  compute.function<lComputeSetComputePipeline>("setComputePipeline");
+  compute.function<lComputeResetComputePipeline>("resetComputePipeline");
+  compute.raw_function<lComputeSetUniformBuffer>("setUniformBuffer");
+  compute.raw_function<lComputeSetStorageBuffer>("setStorageBuffer");
+  compute.raw_function<lComputeResetStorageBuffer>("resetStorageBuffer");
+  compute.function<lComputeResetAllStorageBuffers>("resetAllStorageBuffers");
+  compute.raw_function<lComputeDispatch>("dispatch");
 }
 } // namespace sinen

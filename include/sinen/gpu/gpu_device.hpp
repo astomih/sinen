@@ -56,6 +56,10 @@ public:
   virtual Ptr<CommandBuffer>
   acquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) = 0;
   virtual void submitCommandBuffer(Ptr<CommandBuffer> commandBuffer) = 0;
+  // Bracket a rendering frame. Backends may recycle completed frame storage
+  // here instead of draining the queue after each submission.
+  virtual void beginFrame() {}
+  virtual void endFrame() { waitForGpuIdle(); }
   virtual Ptr<Texture>
   acquireSwapchainTexture(Ptr<CommandBuffer> commandBuffer) = 0;
   virtual TextureFormat getSwapchainFormat() const = 0;

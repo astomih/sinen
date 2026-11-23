@@ -3,6 +3,7 @@
 #include <core/allocator/global_allocator.hpp>
 #include <core/profiler.hpp>
 #include <gpu/gpu.hpp>
+#include <gpu/renderdoc.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/graphics.hpp>
@@ -15,6 +16,9 @@
 #include <platform/window/window.hpp>
 
 #include <cctype>
+#include <cmath>
+#include <cstring>
+#include <limits>
 
 namespace sinen {
 static String normalizedBackendName(const char *name) {
@@ -36,12 +40,10 @@ static int lGraphicsDrawRect(lua_State *L) {
   Graphics::drawRect(rect, color);
   return 0;
 }
-static int lGraphicsDrawText(lua_State *L) {
-  const char *text = luaL_checkstring(L, 1);
-  auto &style = udValue<TextStyle>(L, 2);
-  auto &transform = udValue<TextTransform>(L, 3);
+static auto lGraphicsDrawText(const char *text, TextStyle &style,
+                              TextTransform &transform) {
   Graphics::drawText(StringView(text), style, transform);
-  return 0;
+  return;
 }
 static int lGraphicsDrawImage(lua_State *L) {
   auto &tex = udPtr<Texture>(L, 1);
@@ -54,16 +56,13 @@ static int lGraphicsDrawImage(lua_State *L) {
   Graphics::drawImage(tex, rect);
   return 0;
 }
-static int lGraphicsDrawCubemap(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1);
+static auto lGraphicsDrawCubemap(Ptr<Texture> &tex) {
   Graphics::drawCubemap(tex);
-  return 0;
+  return;
 }
-static int lGraphicsDrawModel(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1);
-  auto &t = udValue<Transform>(L, 2);
+static auto lGraphicsDrawModel(Ptr<Model> &m, Transform &t) {
   Graphics::drawModel(*m, t);
-  return 0;
+  return;
 }
 static int lGraphicsDrawModelInstanced(lua_State *L) {
   auto &m = udPtr<Model>(L, 1);
@@ -88,15 +87,13 @@ static int lGraphicsBegin2D(lua_State *L) {
   Graphics::begin2D();
   return 0;
 }
-static int lGraphicsBegin3D(lua_State *L) {
-  auto &cam = udValue<Camera3D>(L, 1);
+static auto lGraphicsBegin3D(Camera3D &cam) {
   Graphics::begin3D(cam);
-  return 0;
+  return;
 }
-static int lGraphicsFinish(lua_State *L) {
-  (void)L;
+static auto lGraphicsFinish() {
   Graphics::finish();
-  return 0;
+  return;
 }
 static int lGraphicsBegin2DPass(lua_State *L) {
   Ptr<Render2DPass> pass;
@@ -151,10 +148,8 @@ static int lGraphicsEndPass(lua_State *L) {
   return 0;
 }
 
-static int lMaterialNew(lua_State *L) {
-  auto &pipeline = udPtr<GraphicsPipeline>(L, 1);
-  udPushPtr<Material>(L, makePtr<Material>(GlobalAllocator::get(), pipeline));
-  return 1;
+static auto lMaterialNew(Ptr<GraphicsPipeline> &pipeline) {
+  return makePtr<Material>(GlobalAllocator::get(), pipeline);
 }
 static int lMaterialSetUniformBuffer(lua_State *L) {
   auto &material = udPtr<Material>(L, 1);
@@ -204,23 +199,18 @@ static int lMaterialResetAllTexture(lua_State *L) {
   return 0;
 }
 
-static void registerMaterial(lua_State *L) {
-  luaL_newmetatable(L, Material::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "setUniformBuffer", lMaterialSetUniformBuffer);
-  Binding::registerFunction(L, "resetUniformBuffer",
-                            lMaterialResetUniformBuffer);
-  Binding::registerFunction(L, "resetAllUniformBuffers",
-                            lMaterialResetAllUniformBuffers);
-  Binding::registerFunction(L, "setTexture", lMaterialSetTexture);
-  Binding::registerFunction(L, "resetTexture", lMaterialResetTexture);
-  Binding::registerFunction(L, "resetAllTexture", lMaterialResetAllTexture);
-  lua_pop(L, 1);
+static void registerMaterial(luau::table &sn) {
+  auto material = engineClass<Ptr<Material>>(sn, Material::metaTableName());
 
-  pushSnNamed(L, "Material");
-  Binding::registerFunction(L, "new", lMaterialNew);
-  lua_pop(L, 1);
+  material.raw_method<lMaterialSetUniformBuffer>("setUniformBuffer");
+  material.raw_method<lMaterialResetUniformBuffer>("resetUniformBuffer");
+  material.raw_method<lMaterialResetAllUniformBuffers>(
+      "resetAllUniformBuffers");
+  material.raw_method<lMaterialSetTexture>("setTexture");
+  material.raw_method<lMaterialResetTexture>("resetTexture");
+  material.raw_method<lMaterialResetAllTexture>("resetAllTexture");
+
+  material.static_function<lMaterialNew>("new");
 }
 
 template <class T> static int lRenderPassIsFinished(lua_State *L) {
@@ -338,6 +328,53 @@ static int lRender3DPassDrawModel(lua_State *L) {
   }
   return 0;
 }
+static int lRender3DPassDrawMesh(lua_State *L) {
+  auto &pass = udPtr<Render3DPass>(L, 1);
+  size_t vertexBytes = 0, indexBytes = 0;
+  const auto *vertices =
+      static_cast<const char *>(luaL_checkbuffer(L, 2, &vertexBytes));
+  const auto *indices =
+      static_cast<const char *>(luaL_checkbuffer(L, 3, &indexBytes));
+  auto &transform = udValue<Transform>(L, 4);
+  // Wire layout: 12 float32 values (position, normal, UV, RGBA), uint32
+  // indices.
+  static_assert(sizeof(Vertex) == 12 * sizeof(float));
+  static_assert(offsetof(Vertex, normal) == 3 * sizeof(float));
+  static_assert(offsetof(Vertex, uv) == 6 * sizeof(float));
+  static_assert(offsetof(Vertex, color) == 8 * sizeof(float));
+  if (vertexBytes == 0 || vertexBytes % sizeof(Vertex) != 0 ||
+      indexBytes == 0 || indexBytes % (3 * sizeof(UInt32)) != 0 ||
+      vertexBytes > std::numeric_limits<UInt32>::max() ||
+      indexBytes > std::numeric_limits<UInt32>::max()) {
+    return luaLError2(
+        L, "drawMesh expects float32 vertex records and uint32 triangles");
+  }
+  Mesh mesh;
+  auto data = mesh.data();
+  data->vertices.resize(vertexBytes / sizeof(Vertex));
+  data->indices.resize(indexBytes / sizeof(UInt32));
+  std::memcpy(data->vertices.data(), vertices, vertexBytes);
+  std::memcpy(data->indices.data(), indices, indexBytes);
+  for (const auto index : data->indices) {
+    if (index >= data->vertices.size()) {
+      return luaLError2(L, "drawMesh index is outside the vertex buffer");
+    }
+  }
+  for (size_t offset = 0; offset < vertexBytes; offset += sizeof(float)) {
+    float value;
+    std::memcpy(&value, vertices + offset, sizeof(value));
+    if (!std::isfinite(value)) {
+      return luaLError2(L, "drawMesh vertices must be finite");
+    }
+  }
+  if (!lua_isnoneornil(L, 5)) {
+    pass->drawMesh(mesh, transform, *udPtr<Material>(L, 5));
+  } else {
+    pass->drawMesh(mesh, transform);
+  }
+  return 0;
+}
+
 static int lRender3DPassDrawModelInstanced(lua_State *L) {
   auto &model = udPtr<Model>(L, 2);
   luaL_checktype(L, 3, LUA_TTABLE);
@@ -358,49 +395,44 @@ static int lRender3DPassDrawModelInstanced(lua_State *L) {
   return 0;
 }
 
-template <class T> static void registerRenderPassCommon(lua_State *L) {
-  Binding::registerFunction(L, "isFinished", lRenderPassIsFinished<T>);
-  Binding::registerFunction(L, "setGraphicsPipeline",
-                            lRenderPassSetGraphicsPipeline<T>);
-  Binding::registerFunction(L, "resetGraphicsPipeline",
-                            lRenderPassResetGraphicsPipeline<T>);
-  Binding::registerFunction(L, "setUniformBuffer",
-                            lRenderPassSetUniformBuffer<T>);
-  Binding::registerFunction(L, "setTexture", lRenderPassSetTexture<T>);
-  Binding::registerFunction(L, "resetTexture", lRenderPassResetTexture<T>);
-  Binding::registerFunction(L, "resetAllTexture",
-                            lRenderPassResetAllTexture<T>);
+template <class T>
+static void registerRenderPassCommon(luau::class_builder<Ptr<T>> &binding) {
+  binding.template raw_method<lRenderPassIsFinished<T>>("isFinished");
+  binding.template raw_method<lRenderPassSetGraphicsPipeline<T>>(
+      "setGraphicsPipeline");
+  binding.template raw_method<lRenderPassResetGraphicsPipeline<T>>(
+      "resetGraphicsPipeline");
+  binding.template raw_method<lRenderPassSetUniformBuffer<T>>(
+      "setUniformBuffer");
+  binding.template raw_method<lRenderPassSetTexture<T>>("setTexture");
+  binding.template raw_method<lRenderPassResetTexture<T>>("resetTexture");
+  binding.template raw_method<lRenderPassResetAllTexture<T>>("resetAllTexture");
 }
 
-static void registerRenderPasses(lua_State *L) {
-  luaL_newmetatable(L, Render2DPass::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  registerRenderPassCommon<Render2DPass>(L);
-  Binding::registerFunction(L, "windowToCurrent", lRender2DPassWindowToCurrent);
-  Binding::registerFunction(L, "drawRect", lRender2DPassDrawRect);
-  Binding::registerFunction(L, "drawImage", lRender2DPassDrawImage);
-  Binding::registerFunction(L, "drawText", lRender2DPassDrawText);
-  lua_pop(L, 1);
+static void registerRenderPasses(luau::table &sn) {
+  auto render2DPass =
+      engineClass<Ptr<Render2DPass>>(sn, Render2DPass::metaTableName());
 
-  luaL_newmetatable(L, Render3DPass::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  registerRenderPassCommon<Render3DPass>(L);
-  Binding::registerFunction(L, "drawCubemap", lRender3DPassDrawCubemap);
-  Binding::registerFunction(L, "drawModel", lRender3DPassDrawModel);
-  Binding::registerFunction(L, "drawModelInstanced",
-                            lRender3DPassDrawModelInstanced);
-  lua_pop(L, 1);
+  registerRenderPassCommon<Render2DPass>(render2DPass);
+  render2DPass.raw_method<lRender2DPassWindowToCurrent>("windowToCurrent");
+  render2DPass.raw_method<lRender2DPassDrawRect>("drawRect");
+  render2DPass.raw_method<lRender2DPassDrawImage>("drawImage");
+  render2DPass.raw_method<lRender2DPassDrawText>("drawText");
+
+  auto render3DPass =
+      engineClass<Ptr<Render3DPass>>(sn, Render3DPass::metaTableName());
+
+  registerRenderPassCommon<Render3DPass>(render3DPass);
+  render3DPass.raw_method<lRender3DPassDrawCubemap>("drawCubemap");
+  render3DPass.raw_method<lRender3DPassDrawModel>("drawModel");
+  render3DPass.raw_method<lRender3DPassDrawMesh>("drawMesh");
+  render3DPass.raw_method<lRender3DPassDrawModelInstanced>(
+      "drawModelInstanced");
 }
-static int lGraphicsGetClearColor(lua_State *L) {
-  udNewOwned<Color>(L, Graphics::getClearColor());
-  return 1;
-}
-static int lGraphicsSetClearColor(lua_State *L) {
-  auto &c = udValue<Color>(L, 1);
+static auto lGraphicsGetClearColor() { return Graphics::getClearColor(); }
+static auto lGraphicsSetClearColor(Color &c) {
   Graphics::setClearColor(c);
-  return 0;
+  return;
 }
 static int lGraphicsSetMSAASampleCount(lua_State *L) {
   UInt32 sampleCount = static_cast<UInt32>(luaL_checkinteger(L, 1));
@@ -412,19 +444,16 @@ static int lGraphicsSetMSAASampleCount(lua_State *L) {
   Graphics::setMSAASampleCount(sampleCount);
   return 0;
 }
-static int lGraphicsGetMSAASampleCount(lua_State *L) {
-  lua_pushinteger(L, Graphics::getMSAASampleCount());
-  return 1;
+static auto lGraphicsGetMSAASampleCount() {
+  return Graphics::getMSAASampleCount();
 }
-static int lGraphicsSetGraphicsPipeline(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1);
+static auto lGraphicsSetGraphicsPipeline(Ptr<GraphicsPipeline> &p) {
   Graphics::setGraphicsPipeline(*p);
-  return 0;
+  return;
 }
-static int lGraphicsResetGraphicsPipeline(lua_State *L) {
-  (void)L;
+static auto lGraphicsResetGraphicsPipeline() {
   Graphics::resetGraphicsPipeline();
-  return 0;
+  return;
 }
 static int lGraphicsSetTexture(lua_State *L) {
   auto &t = udPtr<Texture>(L, 2);
@@ -447,10 +476,9 @@ static int lGraphicsResetTexture(lua_State *L) {
   }
   return 0;
 }
-static int lGraphicsResetAllTexture(lua_State *L) {
-  (void)L;
+static auto lGraphicsResetAllTexture() {
   Graphics::resetAllTexture();
-  return 0;
+  return;
 }
 static int lGraphicsSetUniformBuffer(lua_State *L) {
   auto &b = udValue<Buffer>(L, 2);
@@ -463,63 +491,90 @@ static int lGraphicsSetUniformBuffer(lua_State *L) {
   }
   return 0;
 }
-static int lGraphicsBeginRenderTarget(lua_State *L) {
-  auto &rt = udPtr<RenderTexture>(L, 1);
+static auto lGraphicsBeginRenderTarget(Ptr<RenderTexture> &rt) {
   Graphics::beginRenderTarget(*rt);
-  return 0;
+  return;
 }
-static int lGraphicsEndRenderTarget(lua_State *L) {
-  (void)L;
+static auto lGraphicsEndRenderTarget() {
   Graphics::endRenderTarget();
-  return 0;
+  return;
 }
-static int lGraphicsReadbackTexture(lua_State *L) {
-  auto &rt = udPtr<RenderTexture>(L, 1);
-  auto &out = udPtr<Texture>(L, 2);
-  lua_pushboolean(L, Graphics::readbackTexture(*rt, out));
-  return 1;
+static auto lGraphicsReadbackTexture(Ptr<RenderTexture> &rt,
+                                     Ptr<Texture> &out) {
+  return Graphics::readbackTexture(*rt, out);
 }
 static int lGraphicsGetBackendName(lua_State *L) {
   const auto name = Graphics::getBackendName();
   lua_pushstring(L, name.c_str());
   return 1;
 }
-void registerGraphics(lua_State *L) {
-  registerMaterial(L);
-  registerRenderPasses(L);
-  pushSnNamed(L, "Graphics");
-  Binding::registerFunction(L, "drawRect", lGraphicsDrawRect);
-  Binding::registerFunction(L, "drawText", lGraphicsDrawText);
-  Binding::registerFunction(L, "drawImage", lGraphicsDrawImage);
-  Binding::registerFunction(L, "drawCubemap", lGraphicsDrawCubemap);
-  Binding::registerFunction(L, "drawModel", lGraphicsDrawModel);
-  Binding::registerFunction(L, "drawModelInstanced",
-                            lGraphicsDrawModelInstanced);
-  Binding::registerFunction(L, "begin2D", lGraphicsBegin2D);
-  Binding::registerFunction(L, "begin3D", lGraphicsBegin3D);
-  Binding::registerFunction(L, "finish", lGraphicsFinish);
-  Binding::registerFunction(L, "begin2DPass", lGraphicsBegin2DPass);
-  Binding::registerFunction(L, "begin3DPass", lGraphicsBegin3DPass);
-  Binding::registerFunction(L, "endPass", lGraphicsEndPass);
-  Binding::registerFunction(L, "getClearColor", lGraphicsGetClearColor);
-  Binding::registerFunction(L, "setClearColor", lGraphicsSetClearColor);
-  Binding::registerFunction(L, "setMSAASampleCount",
-                            lGraphicsSetMSAASampleCount);
-  Binding::registerFunction(L, "getMSAASampleCount",
-                            lGraphicsGetMSAASampleCount);
-  Binding::registerFunction(L, "setGraphicsPipeline",
-                            lGraphicsSetGraphicsPipeline);
-  Binding::registerFunction(L, "resetGraphicsPipeline",
-                            lGraphicsResetGraphicsPipeline);
-  Binding::registerFunction(L, "setTexture", lGraphicsSetTexture);
-  Binding::registerFunction(L, "resetTexture", lGraphicsResetTexture);
-  Binding::registerFunction(L, "resetAllTexture", lGraphicsResetAllTexture);
-  Binding::registerFunction(L, "setUniformBuffer", lGraphicsSetUniformBuffer);
-  Binding::registerFunction(L, "beginRenderTarget", lGraphicsBeginRenderTarget);
-  Binding::registerFunction(L, "endRenderTarget", lGraphicsEndRenderTarget);
-  Binding::registerFunction(L, "readbackTexture", lGraphicsReadbackTexture);
-  Binding::registerFunction(L, "getBackendName", lGraphicsGetBackendName);
-  lua_pop(L, 1);
+static auto lRenderDocIsAvailable() { return RenderDoc::isAvailable(); }
+static int lRenderDocTriggerCapture(lua_State *L) {
+  const int frames = luaL_optinteger(L, 1, 1);
+  if (frames <= 0) {
+    luaL_error(L, "capture frame count must be positive");
+    return 0;
+  }
+  lua_pushboolean(L, RenderDoc::triggerCapture(static_cast<UInt32>(frames)));
+  return 1;
 }
+static auto lRenderDocIsFrameCapturing() {
+  return RenderDoc::isFrameCapturing();
+}
+static int lRenderDocSetCaptureFilePathTemplate(lua_State *L) {
+  lua_pushboolean(
+      L, RenderDoc::setCaptureFilePathTemplate(luaL_checkstring(L, 1)));
+  return 1;
+}
+static auto lRenderDocGetNumCaptures() { return RenderDoc::getNumCaptures(); }
+static int lRenderDocGetCaptureFilePath(lua_State *L) {
+  const int index = luaL_checkinteger(L, 1);
+  if (index < 0) {
+    luaL_error(L, "capture index must be non-negative");
+    return 0;
+  }
+  const auto path = RenderDoc::getCaptureFilePath(static_cast<UInt32>(index));
+  lua_pushlstring(L, path.data(), path.size());
+  return 1;
+}
+void registerGraphics(luau::table &sn) {
+  auto renderDoc = sn.get_or_create_table("RenderDoc");
+  renderDoc.function<lRenderDocIsAvailable>("isAvailable");
+  renderDoc.raw_function<lRenderDocTriggerCapture>("triggerCapture");
+  renderDoc.function<lRenderDocIsFrameCapturing>("isFrameCapturing");
+  renderDoc.raw_function<lRenderDocSetCaptureFilePathTemplate>(
+      "setCaptureFilePathTemplate");
+  renderDoc.function<lRenderDocGetNumCaptures>("getNumCaptures");
+  renderDoc.raw_function<lRenderDocGetCaptureFilePath>("getCaptureFilePath");
 
+  registerMaterial(sn);
+  registerRenderPasses(sn);
+  auto graphics = sn.get_or_create_table("Graphics");
+  graphics.raw_function<lGraphicsDrawRect>("drawRect");
+  graphics.function<lGraphicsDrawText>("drawText");
+  graphics.raw_function<lGraphicsDrawImage>("drawImage");
+  graphics.function<lGraphicsDrawCubemap>("drawCubemap");
+  graphics.function<lGraphicsDrawModel>("drawModel");
+  graphics.raw_function<lGraphicsDrawModelInstanced>("drawModelInstanced");
+  graphics.raw_function<lGraphicsBegin2D>("begin2D");
+  graphics.function<lGraphicsBegin3D>("begin3D");
+  graphics.function<lGraphicsFinish>("finish");
+  graphics.raw_function<lGraphicsBegin2DPass>("begin2DPass");
+  graphics.raw_function<lGraphicsBegin3DPass>("begin3DPass");
+  graphics.raw_function<lGraphicsEndPass>("endPass");
+  graphics.function<lGraphicsGetClearColor>("getClearColor");
+  graphics.function<lGraphicsSetClearColor>("setClearColor");
+  graphics.raw_function<lGraphicsSetMSAASampleCount>("setMSAASampleCount");
+  graphics.function<lGraphicsGetMSAASampleCount>("getMSAASampleCount");
+  graphics.function<lGraphicsSetGraphicsPipeline>("setGraphicsPipeline");
+  graphics.function<lGraphicsResetGraphicsPipeline>("resetGraphicsPipeline");
+  graphics.raw_function<lGraphicsSetTexture>("setTexture");
+  graphics.raw_function<lGraphicsResetTexture>("resetTexture");
+  graphics.function<lGraphicsResetAllTexture>("resetAllTexture");
+  graphics.raw_function<lGraphicsSetUniformBuffer>("setUniformBuffer");
+  graphics.function<lGraphicsBeginRenderTarget>("beginRenderTarget");
+  graphics.function<lGraphicsEndRenderTarget>("endRenderTarget");
+  graphics.function<lGraphicsReadbackTexture>("readbackTexture");
+  graphics.raw_function<lGraphicsGetBackendName>("getBackendName");
+}
 } // namespace sinen

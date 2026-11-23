@@ -301,6 +301,10 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/.venv/
+/site/
+/docs/site/
+/.cache/
 
 # Cake - Uncomment if you are using it
 # tools/**
@@ -372,6 +376,7 @@ build/msvc2026-debug/*
 !build/msvc2026-debug/.gitkeep
 build/msvc2026-release/*
 !build/msvc2026-release/.gitkeep
+build/windows-release/*
 
 build/android/arm64-v8a_26_Release/
 build/android/arm64-v8a_28_Release/
@@ -392,6 +397,8 @@ build/emscripten/*
 build/clang/*
 !build/clang/.gitkeep
 *.dll
+/game/fps/fps_collision.so
+/game/fps/fps_collision.dylib
 *.temp
 imgui.ini
 

@@ -1,0 +1,52 @@
+[project]
+site_name = "Sinen ドキュメント"
+site_url = "https://astomih.github.io/sinen/"
+repo_url = "https://github.com/astomih/sinen"
+repo_name = "astomih/sinen"
+nav = [
+    { "ホーム" = "home.md" },
+    { "チュートリアル" = "tutorial.md" },
+    { "Luau API" = "luau_api.md" },
+    { "ネイティブモジュール" = "native_modules.md" },
+    { "C++ / Luau バインディング" = "luau_bind.md" },
+    { "リファレンス" = [
+        { "メモリ管理" = "memory.md" },
+        { "シェーダーバンドル形式" = "shader_bundle_format.md" },
+        { "RenderDoc" = "renderdoc.md" },
+    ] },
+]
+
+[project.theme]
+variant = "modern"
+language = "ja"
+custom_dir = "docs_theme"
+logo = "logo/logo.svg"
+favicon = "icon/icon.ico"
+features = ["navigation.tabs", "navigation.top", "content.code.copy"]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "indigo"
+accent = "teal"
+toggle.icon = "material/weather-night"
+toggle.name = "ダークモードに切り替え"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "indigo"
+accent = "teal"
+toggle.icon = "material/weather-sunny"
+toggle.name = "ライトモードに切り替え"
+
+[project.plugins.search]
+
+[project.plugins.redirects.redirect_maps]
+"ja/memory.md" = "memory.md"
+"ja/shader_bundle_format.md" = "shader_bundle_format.md"
+"ja/home.md" = "home.md"
+"ja/tutorial.md" = "tutorial.md"
+"ja/luau_api.md" = "luau_api.md"
+"ja/native_modules.md" = "native_modules.md"
+"ja/luau_bind.md" = "luau_bind.md"

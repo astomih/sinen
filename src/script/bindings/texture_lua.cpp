@@ -144,10 +144,8 @@ static int lTextureUpdatePixels(lua_State *L) {
   lua_pushboolean(L, tex->loadPixels(buf, width, height, format, channels));
   return 1;
 }
-static int lTextureToPngBuffer(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1);
-  udNewOwned<Buffer>(L, tex->toPngBuffer());
-  return 1;
+static auto lTextureToPngBuffer(Ptr<Texture> &tex) {
+  return tex->toPngBuffer();
 }
 static int lTextureToExrBuffer(lua_State *L) {
   auto &tex = udPtr<Texture>(L, 1);
@@ -155,49 +153,33 @@ static int lTextureToExrBuffer(lua_State *L) {
   udNewOwned<Buffer>(L, tex->toExrBuffer(saveAsFp16));
   return 1;
 }
-static int lTextureFill(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1);
-  auto &c = udValue<Color>(L, 2);
+static auto lTextureFill(Ptr<Texture> &tex, Color &c) {
   tex->fill(c);
-  return 0;
+  return;
 }
-static int lTextureCopy(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1);
-  udPushPtr<Texture>(L, tex->copy());
-  return 1;
-}
-static int lTextureSize(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1);
-  udNewOwned<Vec2>(L, tex->size());
-  return 1;
-}
-static int lTextureTostring(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1);
+static auto lTextureCopy(Ptr<Texture> &tex) { return tex->copy(); }
+static auto lTextureSize(Ptr<Texture> &tex) { return tex->size(); }
+static auto lTextureTostring(Ptr<Texture> &tex) {
   String s = tex->tableString();
-  lua_pushlstring(L, s.data(), s.size());
-  return 1;
+  return s;
 }
-void registerTexture(lua_State *L) {
-  luaL_newmetatable(L, Texture::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "updatePixels", lTextureUpdatePixels);
-  Binding::registerFunction(L, "toPngBuffer", lTextureToPngBuffer);
-  Binding::registerFunction(L, "toExrBuffer", lTextureToExrBuffer);
-  Binding::registerFunction(L, "fill", lTextureFill);
-  Binding::registerFunction(L, "copy", lTextureCopy);
-  Binding::registerFunction(L, "size", lTextureSize);
-  Binding::registerFunction(L, "__tostring", lTextureTostring);
-  lua_pop(L, 1);
+void registerTexture(luau::table &sn) {
+  auto texture = engineClass<Ptr<Texture>>(sn, Texture::metaTableName());
 
-  pushSnNamed(L, "Texture");
-  Binding::registerFunction(L, "new", lTextureNew);
-  Binding::registerFunction(L, "newCubemap", lTextureNewCubemap);
-  Binding::registerFunction(L, "newIrradianceCubemap",
-                            lTextureNewIrradianceCubemap);
-  Binding::registerFunction(L, "newPrefilteredCubemap",
-                            lTextureNewPrefilteredCubemap);
-  Binding::registerFunction(L, "newBRDFLUT", lTextureNewBRDFLUT);
-  lua_pop(L, 1);
+  texture.raw_method<lTextureUpdatePixels>("updatePixels");
+  texture.method<lTextureToPngBuffer>("toPngBuffer");
+  texture.raw_method<lTextureToExrBuffer>("toExrBuffer");
+  texture.method<lTextureFill>("fill");
+  texture.method<lTextureCopy>("copy");
+  texture.method<lTextureSize>("size");
+  texture.metamethod<lTextureTostring>("__tostring");
+
+  texture.raw_static_function<lTextureNew>("new");
+  texture.raw_static_function<lTextureNewCubemap>("newCubemap");
+  texture.raw_static_function<lTextureNewIrradianceCubemap>(
+      "newIrradianceCubemap");
+  texture.raw_static_function<lTextureNewPrefilteredCubemap>(
+      "newPrefilteredCubemap");
+  texture.raw_static_function<lTextureNewBRDFLUT>("newBRDFLUT");
 }
 } // namespace sinen

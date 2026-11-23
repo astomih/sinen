@@ -13,34 +13,28 @@ static int lLogInfo(lua_State *L) {
   lua_pop(L, 1);
   return 0;
 }
-static int lLogVerbose(lua_State *L) {
-  const char *s = luaL_checkstring(L, 1);
+static auto lLogVerbose(const char *s) {
   Log::verbose("{}", s);
-  return 0;
+  return;
 }
-static int lLogError(lua_State *L) {
-  const char *s = luaL_checkstring(L, 1);
+static auto lLogError(const char *s) {
   Log::error("{}", s);
-  return 0;
+  return;
 }
-static int lLogWarn(lua_State *L) {
-  const char *s = luaL_checkstring(L, 1);
+static auto lLogWarn(const char *s) {
   Log::warn("{}", s);
-  return 0;
+  return;
 }
-static int lLogCritical(lua_State *L) {
-  const char *s = luaL_checkstring(L, 1);
+static auto lLogCritical(const char *s) {
   Log::critical("{}", s);
-  return 0;
+  return;
 }
-void registerLog(lua_State *L) {
-  pushSnNamed(L, "Log");
-  Binding::registerFunction(L, "verbose", lLogVerbose);
-  Binding::registerFunction(L, "info", lLogInfo);
-  Binding::registerFunction(L, "error", lLogError);
-  Binding::registerFunction(L, "warn", lLogWarn);
-  Binding::registerFunction(L, "critical", lLogCritical);
-  lua_pop(L, 1);
+void registerLog(luau::table &sn) {
+  auto log = sn.get_or_create_table("Log");
+  log.function<lLogVerbose>("verbose");
+  log.raw_function<lLogInfo>("info");
+  log.function<lLogError>("error");
+  log.function<lLogWarn>("warn");
+  log.function<lLogCritical>("critical");
 }
-
 } // namespace sinen

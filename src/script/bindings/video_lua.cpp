@@ -1,6 +1,5 @@
 #include "luaapi.hpp"
 
-#include "binding.hpp"
 #include <graphics/video/video.hpp>
 
 #include <core/buffer/buffer.hpp>
@@ -24,10 +23,7 @@ VideoPixelFormat pixelFormatFromString(StringView value) {
 }
 } // namespace
 
-static int lVideoWriterNew(lua_State *L) {
-  udPushPtr<VideoWriter>(L, VideoWriter::create());
-  return 1;
-}
+static auto lVideoWriterNew() { return VideoWriter::create(); }
 
 static int lVideoWriterOpen(lua_State *L) {
   auto &writer = udPtr<VideoWriter>(L, 1);
@@ -75,51 +71,38 @@ static int lVideoWriterAddEncodedFrame(lua_State *L) {
   return 1;
 }
 
-static int lVideoWriterClose(lua_State *L) {
-  auto &writer = udPtr<VideoWriter>(L, 1);
-  lua_pushboolean(L, writer->close());
-  return 1;
+static auto lVideoWriterClose(Ptr<VideoWriter> &writer) {
+  return writer->close();
 }
 
-static int lVideoWriterFrameCount(lua_State *L) {
-  auto &writer = udPtr<VideoWriter>(L, 1);
-  lua_pushinteger(L, writer->frameCount());
-  return 1;
+static auto lVideoWriterFrameCount(Ptr<VideoWriter> &writer) {
+  return writer->frameCount();
 }
 
-static int lVideoWriterLastError(lua_State *L) {
-  auto &writer = udPtr<VideoWriter>(L, 1);
+static auto lVideoWriterLastError(Ptr<VideoWriter> &writer) {
   auto error = writer->lastError();
-  lua_pushlstring(L, error.data(), error.size());
-  return 1;
+  return error;
 }
 
-static int lVideoReaderNew(lua_State *L) {
-  udPushPtr<VideoReader>(L, VideoReader::create());
-  return 1;
+static auto lVideoReaderNew() { return VideoReader::create(); }
+
+static auto lVideoReaderOpen(Ptr<VideoReader> &reader, const char *path) {
+  return reader->open(path);
 }
 
-static int lVideoReaderOpen(lua_State *L) {
-  auto &reader = udPtr<VideoReader>(L, 1);
-  const char *path = luaL_checkstring(L, 2);
-  lua_pushboolean(L, reader->open(path));
-  return 1;
-}
-
-static int lVideoReaderClose(lua_State *L) {
-  auto &reader = udPtr<VideoReader>(L, 1);
+static auto lVideoReaderClose(Ptr<VideoReader> &reader) {
   reader->close();
-  return 0;
+  return;
 }
 
 static int lVideoReaderInfo(lua_State *L) {
   auto &reader = udPtr<VideoReader>(L, 1);
   const auto &info = reader->videoInfo();
   lua_newtable(L);
-  Binding::registerInteger(L, "width", info.width);
-  Binding::registerInteger(L, "height", info.height);
-  Binding::registerInteger(L, "fps", info.fps);
-  Binding::registerInteger(L, "frameCount", info.frameCount);
+  luau::table(L, -1).value("width", info.width);
+  luau::table(L, -1).value("height", info.height);
+  luau::table(L, -1).value("fps", info.fps);
+  luau::table(L, -1).value("frameCount", info.frameCount);
   return 1;
 }
 
@@ -148,42 +131,42 @@ static int lVideoReaderReadFrame(lua_State *L) {
   auto buffer = makeBuffer(frame.pixels.size(), BufferType::Binary);
   std::memcpy(buffer.data(), frame.pixels.data(), frame.pixels.size());
   lua_newtable(L);
-  Binding::registerInteger(L, "width", frame.width);
-  Binding::registerInteger(L, "height", frame.height);
-  Binding::registerInteger(L, "channels", frame.channels);
+  luau::table(L, -1).value("width", frame.width);
+  luau::table(L, -1).value("height", frame.height);
+  luau::table(L, -1).value("channels", frame.channels);
   udNewOwned<Buffer>(L, std::move(buffer));
   lua_setfield(L, -2, "pixels");
   return 1;
 }
 
-static int lVideoReaderLastError(lua_State *L) {
-  auto &reader = udPtr<VideoReader>(L, 1);
+static auto lVideoReaderLastError(Ptr<VideoReader> &reader) {
   auto error = reader->lastError();
-  lua_pushlstring(L, error.data(), error.size());
-  return 1;
+  return error;
 }
 
-void registerVideo(lua_State *L) {
-  Binding writer(L);
-  writer.beginClass(VideoWriter::metaTableName(), "VideoWriter",
-                    lVideoWriterNew);
-  writer.registerFunction("open", lVideoWriterOpen);
-  writer.registerFunction("addFrame", lVideoWriterAddFrame);
-  writer.registerFunction("addEncodedFrame", lVideoWriterAddEncodedFrame);
-  writer.registerFunction("close", lVideoWriterClose);
-  writer.registerFunction("frameCount", lVideoWriterFrameCount);
-  writer.registerFunction("lastError", lVideoWriterLastError);
-  writer.endClass();
+void registerVideo(luau::table &sn) {
+  auto videoWriter =
+      engineClass<Ptr<VideoWriter>>(sn, VideoWriter::metaTableName());
 
-  Binding reader(L);
-  reader.beginClass(VideoReader::metaTableName(), "VideoReader",
-                    lVideoReaderNew);
-  reader.registerFunction("open", lVideoReaderOpen);
-  reader.registerFunction("close", lVideoReaderClose);
-  reader.registerFunction("info", lVideoReaderInfo);
-  reader.registerFunction("readEncodedFrame", lVideoReaderReadEncodedFrame);
-  reader.registerFunction("readFrame", lVideoReaderReadFrame);
-  reader.registerFunction("lastError", lVideoReaderLastError);
-  reader.endClass();
+  videoWriter.static_function<lVideoWriterNew>("new");
+
+  videoWriter.raw_method<lVideoWriterOpen>("open");
+  videoWriter.raw_method<lVideoWriterAddFrame>("addFrame");
+  videoWriter.raw_method<lVideoWriterAddEncodedFrame>("addEncodedFrame");
+  videoWriter.method<lVideoWriterClose>("close");
+  videoWriter.method<lVideoWriterFrameCount>("frameCount");
+  videoWriter.method<lVideoWriterLastError>("lastError");
+
+  auto videoReader =
+      engineClass<Ptr<VideoReader>>(sn, VideoReader::metaTableName());
+
+  videoReader.static_function<lVideoReaderNew>("new");
+
+  videoReader.method<lVideoReaderOpen>("open");
+  videoReader.method<lVideoReaderClose>("close");
+  videoReader.raw_method<lVideoReaderInfo>("info");
+  videoReader.raw_method<lVideoReaderReadEncodedFrame>("readEncodedFrame");
+  videoReader.raw_method<lVideoReaderReadFrame>("readFrame");
+  videoReader.method<lVideoReaderLastError>("lastError");
 }
 } // namespace sinen

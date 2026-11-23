@@ -17,6 +17,8 @@
 
 #include <SDL3/SDL.h>
 
+#include "text_model_cache.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -67,6 +69,7 @@ static Hashmap<UInt32, Ptr<gpu::AccelerationStructure>>
     currentAccelerationStructureBindings;
 static Model box = Model();
 static Model sprite = Model();
+static TextModelCache textModelCache;
 
 // Functions
 static void prepareRenderPassFrame();
@@ -342,6 +345,7 @@ static void releaseBackendResources() {
   fontSampler.reset();
   box = Model();
   sprite = Model();
+  textModelCache.clear();
   BuiltinPipeline::shutdown();
   BuiltinShader::shutdown();
   if (device) {
@@ -443,6 +447,10 @@ static GPUBackendAPI nextBackendAPI(GPUBackendAPI api) {
 
 void Graphics::render() {
   ZoneScopedN("Graphics::render");
+  {
+    ZoneScopedN("GPU begin frame");
+    device->beginFrame();
+  }
   isRenderFrameActive = false;
   {
     ZoneScopedN("preDraw");
@@ -560,8 +568,8 @@ void Graphics::render() {
     device->submitCommandBuffer(commandBuffer);
   }
   {
-    ZoneScopedN("GPU wait idle");
-    device->waitForGpuIdle();
+    ZoneScopedN("GPU end frame");
+    device->endFrame();
   }
   isRenderFrameActive = false;
 }
@@ -1046,8 +1054,8 @@ void Graphics::drawText(StringView text, const TextStyle &style,
     return;
   }
 
-  Model model;
-  model.loadFromVertexArray(textData.mesh);
+  const auto model =
+      textModelCache.acquire(textData.mesh, currentCommandBuffer);
   const auto scale = style.fontSize / static_cast<float>(font->size());
   const auto meshScale = scale * 0.5f;
   Vec2 textPosition = transform.position;
@@ -1104,7 +1112,7 @@ void Graphics::drawText(StringView text, const TextStyle &style,
       Vec4(atlasSize.x, atlasSize.y, textData.distanceFieldRange, 0.0f)};
   currentCommandBuffer->pushFragmentUniformData(1, &params, sizeof(params));
 
-  drawBase2D(transforms, model, fontSampler);
+  drawBase2D(transforms, *model, fontSampler);
 }
 void Graphics::drawTexts(const Array<TextBatchItem> &items,
                          const TextStyle &style) {
@@ -1208,7 +1216,10 @@ void Graphics::drawTexts(const Array<TextBatchItem> &items,
 
   currentPipeline = BuiltinPipeline::getFont2D();
   Model model;
-  model.loadFromVertexArray(Mesh(combinedData));
+  const Mesh combinedMesh(combinedData);
+  if (!model.loadTransientFromVertexArray(combinedMesh, currentCommandBuffer)) {
+    model.loadFromVertexArray(combinedMesh, false);
+  }
   setTexture(0, textData.texture);
   const Vec2 atlasSize = textData.texture->size();
   const FontFragmentParams params{
@@ -1231,7 +1242,27 @@ void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {
   setTexture(0, cubemap);
   drawBaseCubemap(box);
 }
+void Graphics::drawMesh(const Mesh &mesh, const Transform &transform) {
+  if (!currentCommandBuffer || mesh.data()->vertices.empty() ||
+      mesh.data()->indices.empty()) {
+    return;
+  }
+  Model model;
+  if (!model.loadTransientFromVertexArray(mesh, currentCommandBuffer)) {
+    model.loadFromVertexArray(mesh, false);
+  }
+  drawModel(model, transform);
+}
+
 void Graphics::drawModel(const Model &model, const Transform &transform) {
+  if (!model.getParts().empty()) {
+    const auto bindings = currentTextureBindings;
+    for (const auto &part : model.getParts()) {
+      currentTextureBindings = bindings;
+      drawModel(*part, transform);
+    }
+    return;
+  }
   if (!isModelReadyForDraw(model)) {
     return;
   }
@@ -1256,6 +1287,14 @@ void Graphics::drawModel(const Model &model, const Transform &transform) {
 }
 void Graphics::drawModelInstanced(const Model &model,
                                   const Array<Transform> &transforms) {
+  if (!model.getParts().empty()) {
+    const auto bindings = currentTextureBindings;
+    for (const auto &part : model.getParts()) {
+      currentTextureBindings = bindings;
+      drawModelInstanced(*part, transforms);
+    }
+    return;
+  }
   if (transforms.empty() || !isModelReadyForDraw(model))
     return;
 
@@ -1754,7 +1793,14 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
 
   const UInt32 srcTightBytesPerRow = width * srcBytesPerPixel;
   const UInt32 dstTightBytesPerRow = width * dstBytesPerPixel;
-  const UInt32 downloadBytesPerRow = alignTo(srcTightBytesPerRow, 256);
+  const auto backend = device->getBackendAPI();
+  const bool paddedRows = backend == GPUBackendAPI::WebGPU
+#ifdef SINEN_PLATFORM_WINDOWS
+                          || backend == GPUBackendAPI::D3D12
+#endif
+      ;
+  const UInt32 downloadBytesPerRow =
+      paddedRows ? alignTo(srcTightBytesPerRow, 256) : srcTightBytesPerRow;
   const size_t dataSize = static_cast<size_t>(dstTightBytesPerRow) * height;
   const size_t downloadSize = static_cast<size_t>(downloadBytesPerRow) * height;
   gpu::TransferBuffer::CreateInfo downloadInfo{};

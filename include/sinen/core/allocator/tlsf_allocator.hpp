@@ -7,7 +7,7 @@
 namespace sinen {
 class TLSFAllocator : public Allocator {
 public:
-  TLSFAllocator(const std::size_t &size);
+  TLSFAllocator(const std::size_t &size, bool allowOverflow = false);
   ~TLSFAllocator() override;
   void *do_allocate(std::size_t bytes, std::size_t alignment) override;
   void do_deallocate(void *p, std::size_t size, std::size_t alignment) override;
@@ -19,6 +19,8 @@ private:
   mutable std::mutex mtx;
   void *mem;
   void *tlsf;
+  std::size_t poolSize;
+  bool allowOverflow;
 };
 
 } // namespace sinen

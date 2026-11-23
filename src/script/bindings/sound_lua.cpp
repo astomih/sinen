@@ -49,29 +49,21 @@ static int lSoundSetLooping(lua_State *L) {
   s->setLooping(looping);
   return 0;
 }
-static int lSoundSetVolume(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  float v = static_cast<float>(luaL_checknumber(L, 2));
+static auto lSoundSetVolume(Ptr<Sound> &s, float v) {
   s->setVolume(v);
-  return 0;
+  return;
 }
-static int lSoundSetPitch(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  float v = static_cast<float>(luaL_checknumber(L, 2));
+static auto lSoundSetPitch(Ptr<Sound> &s, float v) {
   s->setPitch(v);
-  return 0;
+  return;
 }
-static int lSoundSetPosition(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  auto &p = udValue<Vec3>(L, 2);
+static auto lSoundSetPosition(Ptr<Sound> &s, Vec3 &p) {
   s->setPosition(p);
-  return 0;
+  return;
 }
-static int lSoundSetDirection(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  auto &d = udValue<Vec3>(L, 2);
+static auto lSoundSetDirection(Ptr<Sound> &s, Vec3 &d) {
   s->setDirection(d);
-  return 0;
+  return;
 }
 static int lSoundIsPlaying(lua_State *L) {
   lua_pushboolean(L, udPtr<Sound>(L, 1)->isPlaying());
@@ -97,28 +89,24 @@ static int lSoundGetDirection(lua_State *L) {
   udNewOwned<Vec3>(L, udPtr<Sound>(L, 1)->getDirection());
   return 1;
 }
-void registerSound(lua_State *L) {
-  luaL_newmetatable(L, Sound::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "play", lSoundPlay);
-  Binding::registerFunction(L, "restart", lSoundRestart);
-  Binding::registerFunction(L, "stop", lSoundStop);
-  Binding::registerFunction(L, "setLooping", lSoundSetLooping);
-  Binding::registerFunction(L, "setVolume", lSoundSetVolume);
-  Binding::registerFunction(L, "setPitch", lSoundSetPitch);
-  Binding::registerFunction(L, "setPosition", lSoundSetPosition);
-  Binding::registerFunction(L, "setDirection", lSoundSetDirection);
-  Binding::registerFunction(L, "isPlaying", lSoundIsPlaying);
-  Binding::registerFunction(L, "isLooping", lSoundIsLooping);
-  Binding::registerFunction(L, "getVolume", lSoundGetVolume);
-  Binding::registerFunction(L, "getPitch", lSoundGetPitch);
-  Binding::registerFunction(L, "getPosition", lSoundGetPosition);
-  Binding::registerFunction(L, "getDirection", lSoundGetDirection);
-  lua_pop(L, 1);
+void registerSound(luau::table &sn) {
+  auto sound = engineClass<Ptr<Sound>>(sn, Sound::metaTableName());
 
-  pushSnNamed(L, "Sound");
-  Binding::registerFunction(L, "new", lSoundNew);
-  lua_pop(L, 1);
+  sound.raw_method<lSoundPlay>("play");
+  sound.raw_method<lSoundRestart>("restart");
+  sound.raw_method<lSoundStop>("stop");
+  sound.raw_method<lSoundSetLooping>("setLooping");
+  sound.method<lSoundSetVolume>("setVolume");
+  sound.method<lSoundSetPitch>("setPitch");
+  sound.method<lSoundSetPosition>("setPosition");
+  sound.method<lSoundSetDirection>("setDirection");
+  sound.raw_method<lSoundIsPlaying>("isPlaying");
+  sound.raw_method<lSoundIsLooping>("isLooping");
+  sound.raw_method<lSoundGetVolume>("getVolume");
+  sound.raw_method<lSoundGetPitch>("getPitch");
+  sound.raw_method<lSoundGetPosition>("getPosition");
+  sound.raw_method<lSoundGetDirection>("getDirection");
+
+  sound.raw_static_function<lSoundNew>("new");
 }
 } // namespace sinen

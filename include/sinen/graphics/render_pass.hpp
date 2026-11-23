@@ -112,6 +112,9 @@ public:
   void drawModel(const Model &model, const Transform &transform);
   void drawModel(const Model &model, const Transform &transform,
                  const Material &material);
+  void drawMesh(const Mesh &mesh, const Transform &transform);
+  void drawMesh(const Mesh &mesh, const Transform &transform,
+                const Material &material);
   void drawModelInstanced(const Model &model,
                           const Array<Transform> &transforms);
   void drawModelInstanced(const Model &model,

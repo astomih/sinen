@@ -24,6 +24,13 @@ public:
 
   inline const CreateInfo &getCreateInfo() const { return createInfo; }
 
+  // Optional, command-buffer-local streaming storage. Data is copied now and
+  // remains valid through GPU completion; callers must not cache the buffer.
+  virtual Ptr<Buffer> createTransientBuffer(const Buffer::CreateInfo &,
+                                            const void *) {
+    return nullptr;
+  }
+
   virtual Ptr<CopyPass> beginCopyPass() = 0;
   virtual void endCopyPass(Ptr<CopyPass> copyPass) = 0;
 

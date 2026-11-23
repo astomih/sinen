@@ -1,12 +1,10 @@
-# 22 Path Tracer
+# 22 パストレーサー
 
-This sample renders a small Cornell-box style scene through the Luau `sn.Raytracing` API.
-The default resolution and sample count are intentionally conservative so the
-single dispatch stays below Windows TDR limits on typical developer GPUs.
+このサンプルは Luau の `sn.Raytracing` API を使い、小さなコーネルボックス風のシーンを描画します。既定の解像度とサンプル数は、一般的な開発用 GPU で単一のディスパッチが Windows の TDR 制限を超えないよう控えめに設定しています。
 
-- `main.luau` builds a procedural triangle scene, creates BLAS/TLAS, dispatches hardware ray tracing, and displays the rendered storage-buffer result.
-- `path_tracer.slang` traces primary, reflection, and shadow rays, reads triangle/material records from ray tracing storage buffers, and writes the final RGBA image.
+- `main.luau` は三角形のシーンを手続き的に構築し、BLAS/TLAS を生成してハードウェアレイトレーシングを実行し、ストレージバッファの描画結果を表示します。
+- `path_tracer.slang` は一次レイ、反射レイ、シャドウレイを追跡し、レイトレーシング用ストレージバッファから三角形とマテリアルを読み取って、最終的な RGBA 画像を書き込みます。
 
-Ray tracing shader resources use SPIR-V set 4 / DX space 4. Acceleration structures start at `vk::binding(0, 4)` / `register(t0, space4)`, and storage buffers start after the acceleration-structure block at `vk::binding(8, 4)` / `register(u0, space4)`.
+レイトレーシング用のシェーダーリソースは SPIR-V の set 4 / DX の space 4 を使います。アクセラレーション構造は `vk::binding(0, 4)` / `register(t0, space4)` から、ストレージバッファはその領域の後にある `vk::binding(8, 4)` / `register(u0, space4)` から始まります。
 
-The sample requires a desktop backend/device with D3D12 DXR or Vulkan KHR ray tracing support.
+D3D12 DXR または Vulkan KHR レイトレーシングに対応したデスクトップのバックエンドとデバイスが必要です。

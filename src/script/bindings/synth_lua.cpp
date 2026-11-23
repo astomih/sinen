@@ -3,10 +3,7 @@
 #include <core/logger/log.hpp>
 
 namespace sinen {
-static int lSynthNew(lua_State *L) {
-  udPushPtr<Synth>(L, Synth::create());
-  return 1;
-}
+static auto lSynthNew() { return Synth::create(); }
 static int lSynthPlay(lua_State *L) {
   udPtr<Synth>(L, 1)->play();
   return 0;
@@ -15,57 +12,38 @@ static int lSynthStop(lua_State *L) {
   udPtr<Synth>(L, 1)->stop();
   return 0;
 }
-static int lSynthSetPattern(lua_State *L) {
-  auto &s = udPtr<Synth>(L, 1);
-  const char *p = luaL_checkstring(L, 2);
+static auto lSynthSetPattern(Ptr<Synth> &s, const char *p) {
   s->setPattern(StringView(p));
-  return 0;
+  return;
 }
-static int lSynthSetBpm(lua_State *L) {
-  auto &s = udPtr<Synth>(L, 1);
-  float v = static_cast<float>(luaL_checknumber(L, 2));
+static auto lSynthSetBpm(Ptr<Synth> &s, float v) {
   s->setBpm(v);
-  return 0;
+  return;
 }
-static int lSynthSetStepBeats(lua_State *L) {
-  auto &s = udPtr<Synth>(L, 1);
-  float v = static_cast<float>(luaL_checknumber(L, 2));
+static auto lSynthSetStepBeats(Ptr<Synth> &s, float v) {
   s->setStepBeats(v);
-  return 0;
+  return;
 }
-static int lSynthSetMasterGain(lua_State *L) {
-  auto &s = udPtr<Synth>(L, 1);
-  float v = static_cast<float>(luaL_checknumber(L, 2));
+static auto lSynthSetMasterGain(Ptr<Synth> &s, float v) {
   s->setMasterGain(v);
-  return 0;
+  return;
 }
-static int lSynthSetADSR(lua_State *L) {
-  auto &s = udPtr<Synth>(L, 1);
-  float a = static_cast<float>(luaL_checknumber(L, 2));
-  float d = static_cast<float>(luaL_checknumber(L, 3));
-  float su = static_cast<float>(luaL_checknumber(L, 4));
-  float r = static_cast<float>(luaL_checknumber(L, 5));
+static auto lSynthSetADSR(Ptr<Synth> &s, float a, float d, float su, float r) {
   s->setADSR(a, d, su, r);
-  return 0;
+  return;
 }
 
-void registerSynth(lua_State *L) {
-  luaL_newmetatable(L, Synth::metaTableName());
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
+void registerSynth(luau::table &sn) {
+  auto synth = engineClass<Ptr<Synth>>(sn, Synth::metaTableName());
 
-  Binding::registerFunction(L, "play", lSynthPlay);
-  Binding::registerFunction(L, "stop", lSynthStop);
-  Binding::registerFunction(L, "setPattern", lSynthSetPattern);
-  Binding::registerFunction(L, "setBpm", lSynthSetBpm);
-  Binding::registerFunction(L, "setStepBeats", lSynthSetStepBeats);
-  Binding::registerFunction(L, "setMasterGain", lSynthSetMasterGain);
-  Binding::registerFunction(L, "setADSR", lSynthSetADSR);
+  synth.raw_method<lSynthPlay>("play");
+  synth.raw_method<lSynthStop>("stop");
+  synth.method<lSynthSetPattern>("setPattern");
+  synth.method<lSynthSetBpm>("setBpm");
+  synth.method<lSynthSetStepBeats>("setStepBeats");
+  synth.method<lSynthSetMasterGain>("setMasterGain");
+  synth.method<lSynthSetADSR>("setADSR");
 
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Synth");
-  Binding::registerFunction(L, "new", lSynthNew);
-  lua_pop(L, 1);
+  synth.static_function<lSynthNew>("new");
 }
 } // namespace sinen

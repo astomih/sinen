@@ -5,8 +5,8 @@
 #include "d3d12_convert.hpp"
 #include "d3d12_device.hpp"
 
-#include <core/profiler.hpp>
 #include <SDL3/SDL.h>
+#include <core/profiler.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -58,21 +58,22 @@ UINT bytesPerPixel(TextureFormat format) {
 } // namespace
 
 CommandBuffer::CommandBuffer(const CreateInfo &createInfo, Ptr<Device> device,
-                             ComPtr<ID3D12CommandAllocator> allocator,
-                             ComPtr<ID3D12GraphicsCommandList> commandList)
-    : gpu::CommandBuffer(createInfo), device(device), allocator(allocator),
-      commandList(commandList) {}
+                             const std::shared_ptr<CommandContext> &context)
+    : gpu::CommandBuffer(createInfo), device(device), context(context),
+      commandList(context->list) {}
 
-CommandBuffer::~CommandBuffer() {
-  for (auto &page : uniformPages) {
-    page.resource->Unmap(0, nullptr);
+CommandContext::~CommandContext() {
+  for (auto &page : pages) {
+    if (page.mapped) {
+      page.resource->Unmap(0, nullptr);
+    }
   }
 }
 
 void CommandBuffer::close() {
-  if (!closed) {
+  if (!context->closed) {
     commandList->Close();
-    closed = true;
+    context->closed = true;
   }
 }
 
@@ -155,21 +156,56 @@ void CommandBuffer::endRenderPass(Ptr<gpu::RenderPass> renderPass) {
 
 D3D12_GPU_VIRTUAL_ADDRESS CommandBuffer::uploadUniform(const void *data,
                                                        size_t size) {
-  if (!data || size == 0) {
-    return 0;
-  }
   ZoneScopedN("D3D12 uniform upload");
+  ComPtr<ID3D12Resource> resource;
+  UINT64 offset = 0;
+  return uploadData(data, size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT,
+                    resource, offset)
+             ? resource->GetGPUVirtualAddress() + offset
+             : 0;
+}
+
+Ptr<gpu::Buffer>
+CommandBuffer::createTransientBuffer(const gpu::Buffer::CreateInfo &info,
+                                     const void *data) {
+  ZoneScopedN("D3D12 transient upload");
+  if (info.usage != gpu::BufferUsage::Vertex &&
+      info.usage != gpu::BufferUsage::Index) {
+    return nullptr;
+  }
+  ComPtr<ID3D12Resource> resource;
+  UINT64 offset = 0;
+  if (!uploadData(data, info.size, 16, resource, offset)) {
+    return nullptr;
+  }
+  return makePtr<Buffer>(info.allocator, info, device, resource,
+                         D3D12_RESOURCE_STATE_GENERIC_READ, offset, true);
+}
+
+bool CommandBuffer::uploadData(const void *data, Size size, UINT64 alignment,
+                               ComPtr<ID3D12Resource> &resource,
+                               UINT64 &offset) {
+  if (!data || size == 0 || context->closed || context->fenceValue != 0) {
+    return false;
+  }
   constexpr UINT64 pageSize = 1024 * 1024;
-  constexpr UINT64 alignment = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
   if (size > UINT64_MAX - (alignment - 1)) {
-    return 0;
+    return false;
   }
   const UINT64 uploadSize = alignTo(static_cast<UINT64>(size), alignment);
-  // Each submission waits for completion before this command buffer is
-  // released, so its persistently mapped pages stay alive for every draw.
-  if (uniformPages.empty() ||
-      uploadSize > uniformPages.back().capacity - uniformPages.back().used) {
-    UniformPage page;
+  // A context is reset only after its fence completes and its recording wrapper
+  // is released. Reuse all of its persistently mapped pages before growing.
+  while (context->pageIndex < context->pages.size()) {
+    auto &page = context->pages[context->pageIndex];
+    offset = alignTo(page.used, alignment);
+    if (offset <= page.capacity && uploadSize <= page.capacity - offset) {
+      break;
+    }
+    ++context->pageIndex;
+  }
+  if (context->pageIndex == context->pages.size()) {
+    ZoneScopedN("D3D12 upload page create");
+    CommandContext::UploadPage page;
     page.capacity = (std::max)(pageSize, uploadSize);
     auto heap = heapProperties(D3D12_HEAP_TYPE_UPLOAD);
     auto desc = bufferDesc(page.capacity);
@@ -179,7 +215,7 @@ D3D12_GPU_VIRTUAL_ADDRESS CommandBuffer::uploadUniform(const void *data,
     if (FAILED(hr)) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                    "D3D12: uniform upload allocation failed");
-      return 0;
+      return false;
     }
     void *mapped = nullptr;
     const D3D12_RANGE readRange{0, 0};
@@ -187,16 +223,17 @@ D3D12_GPU_VIRTUAL_ADDRESS CommandBuffer::uploadUniform(const void *data,
     if (FAILED(hr) || !mapped) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                    "D3D12: uniform upload mapping failed");
-      return 0;
+      return false;
     }
     page.mapped = static_cast<std::byte *>(mapped);
-    uniformPages.push_back(std::move(page));
+    context->pages.push_back(std::move(page));
+    offset = 0;
   }
-  auto &page = uniformPages.back();
-  const UINT64 offset = page.used;
+  auto &page = context->pages[context->pageIndex];
   std::memcpy(page.mapped + offset, data, size);
-  page.used += uploadSize;
-  return page.resource->GetGPUVirtualAddress() + offset;
+  page.used = offset + uploadSize;
+  resource = page.resource;
+  return true;
 }
 
 void CommandBuffer::pushVertexUniformData(UInt32 slot, const void *data,
@@ -258,7 +295,7 @@ void CopyPass::downloadBuffer(const BufferRegion &src,
   commandBuffer->getDevice()->transition(list, source.get(),
                                          D3D12_RESOURCE_STATE_COPY_SOURCE);
   list->CopyBufferRegion(target->getNative(), dst.offset, source->getNative(),
-                         src.offset, src.size);
+                         source->getOffset() + src.offset, src.size);
 }
 
 void CopyPass::uploadTexture(const TextureTransferInfo &src,
@@ -326,6 +363,39 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
                           &box);
   device->transition(list, target.get(),
                      D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+}
+
+bool CopyPass::copyBufferToTexture(const BufferRegion &src,
+                                   const TextureRegion &dst,
+                                   UInt32 bytesPerRow) {
+  if (!validBufferTextureCopy(src, dst, bytesPerRow))
+    return false;
+  auto source = downCast<Buffer>(src.buffer);
+  auto target = downCast<Texture>(dst.texture);
+  if (!source || !target)
+    return false;
+  auto device = commandBuffer->getDevice();
+  auto list = commandBuffer->getNative();
+  commandBuffer->keepAlive(source->getNative());
+  commandBuffer->keepAlive(target->getNative());
+  D3D12_TEXTURE_COPY_LOCATION from{};
+  from.pResource = source->getNative();
+  from.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+  from.PlacedFootprint.Offset = source->getOffset() + src.offset;
+  from.PlacedFootprint.Footprint = {target->getNative()->GetDesc().Format,
+                                    dst.width, dst.height, 1, bytesPerRow};
+  D3D12_TEXTURE_COPY_LOCATION to{};
+  to.pResource = target->getNative();
+  to.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+  to.SubresourceIndex =
+      dst.mipLevel + dst.layer * target->getCreateInfo().numLevels;
+  device->transition(list, source.get(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+  device->transition(list, target.get(), D3D12_RESOURCE_STATE_COPY_DEST);
+  list->CopyTextureRegion(&to, dst.x, dst.y, dst.z, &from, nullptr);
+  device->transition(list, source.get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+  device->transition(list, target.get(),
+                     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+  return true;
 }
 
 void CopyPass::downloadTexture(const TextureRegion &src,
@@ -429,6 +499,8 @@ void RenderPass::resolveTargets() {
 void RenderPass::bindGraphicsPipeline(
     Ptr<gpu::GraphicsPipeline> graphicsPipeline) {
   pipeline = downCast<GraphicsPipeline>(graphicsPipeline);
+  commandBuffer->keepAlive(pipeline->getNative());
+  commandBuffer->keepAlive(pipeline->getRootSignature());
   auto list = commandBuffer->getNative();
   list->SetGraphicsRootSignature(pipeline->getRootSignature());
   list->SetPipelineState(pipeline->getNative());
@@ -475,8 +547,7 @@ void RenderPass::bindVertexBuffers(UInt32 slot,
     commandBuffer->getDevice()->transition(
         commandBuffer->getNative(), buffer.get(),
         D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-    views[i].BufferLocation =
-        buffer->getNative()->GetGPUVirtualAddress() + bindings[i].offset;
+    views[i].BufferLocation = buffer->getDeviceAddress() + bindings[i].offset;
     views[i].SizeInBytes = buffer->getCreateInfo().size - bindings[i].offset;
     const auto &vb = vertexBuffers[slot + i];
     views[i].StrideInBytes = vb.pitch;
@@ -496,11 +567,31 @@ void RenderPass::bindIndexBuffer(const BufferBinding &binding,
                                          buffer.get(),
                                          D3D12_RESOURCE_STATE_INDEX_BUFFER);
   D3D12_INDEX_BUFFER_VIEW view{};
-  view.BufferLocation =
-      buffer->getNative()->GetGPUVirtualAddress() + binding.offset;
+  view.BufferLocation = buffer->getDeviceAddress() + binding.offset;
   view.SizeInBytes = buffer->getCreateInfo().size - binding.offset;
   view.Format = convert::indexFormatFrom(indexElementSize);
   commandBuffer->getNative()->IASetIndexBuffer(&view);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE
+CommandBuffer::samplerTable(const std::vector<Ptr<gpu::Sampler>> &samplers) {
+  for (const auto &cached : samplerTables)
+    if (cached.samplers == samplers)
+      return cached.handle;
+  D3D12_GPU_DESCRIPTOR_HANDLE first{};
+  for (size_t i = 0; i < samplers.size(); ++i) {
+    const auto descriptor = device->allocateTransientSamplerDescriptor();
+    if (i == 0)
+      first = descriptor.gpu;
+    const auto source = samplers[i] ? downCast<Sampler>(samplers[i])->getCpu()
+                                    : device->getDefaultSampler().cpu;
+    device->getNative()->CopyDescriptorsSimple(
+        1, descriptor.cpu, source, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+  }
+  // Retain source samplers so their CPU descriptor slots cannot be recycled
+  // into different samplers while this command buffer's cache is in use.
+  samplerTables.push_back({samplers, first});
+  return first;
 }
 
 void RenderPass::bindFragmentSamplers(
@@ -509,16 +600,13 @@ void RenderPass::bindFragmentSamplers(
       std::max<UInt32>(1, startSlot + static_cast<UInt32>(bindings.size()));
   auto device = commandBuffer->getDevice();
   CpuGpuDescriptor firstSrv{};
-  CpuGpuDescriptor firstSampler{};
+  std::vector<Ptr<gpu::Sampler>> samplers(count);
   for (UInt32 i = 0; i < count; ++i) {
     auto srv = device->allocateTransientSrvDescriptor();
-    auto sampler = device->allocateTransientSamplerDescriptor();
     if (i == 0) {
       firstSrv = srv;
-      firstSampler = sampler;
     }
     CpuGpuDescriptor srcSrv = device->getDefaultSrv();
-    CpuGpuDescriptor srcSampler = device->getDefaultSampler();
     if (i >= startSlot && i < startSlot + bindings.size()) {
       const auto &binding = bindings[i - startSlot];
       if (binding.texture) {
@@ -529,21 +617,17 @@ void RenderPass::bindFragmentSamplers(
         srcSrv = {texture->getSrvCpu(), {}};
       }
       if (binding.sampler) {
-        auto samplerObj = downCast<Sampler>(binding.sampler);
-        srcSampler = {samplerObj->getCpu(), {}};
+        samplers[i] = binding.sampler;
       }
     }
     device->getNative()->CopyDescriptorsSimple(
         1, srv.cpu, srcSrv.cpu, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    device->getNative()->CopyDescriptorsSimple(
-        1, sampler.cpu, srcSampler.cpu, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
   }
+  const auto firstSampler = commandBuffer->samplerTable(samplers);
   commandBuffer->getNative()->SetGraphicsRootDescriptorTable(4, firstSrv.gpu);
-  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(5,
-                                                             firstSampler.gpu);
+  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(5, firstSampler);
   commandBuffer->getNative()->SetGraphicsRootDescriptorTable(10, firstSrv.gpu);
-  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(11,
-                                                             firstSampler.gpu);
+  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(11, firstSampler);
 }
 
 void RenderPass::bindFragmentSampler(UInt32 startSlot,
@@ -670,6 +754,8 @@ void ComputePass::bindComputePipeline(
                  "D3D12: null compute pipeline binding");
     return;
   }
+  commandBuffer->keepAlive(pipeline->getNative());
+  commandBuffer->keepAlive(pipeline->getRootSignature());
   auto list = commandBuffer->getNative();
   list->SetComputeRootSignature(pipeline->getRootSignature());
   list->SetPipelineState(pipeline->getNative());

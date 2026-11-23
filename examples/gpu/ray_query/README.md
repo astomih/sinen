@@ -1,8 +1,8 @@
-# 21 Ray Query
+# 21 レイクエリ
 
-This sample builds BLAS/TLAS through the Luau `sn.Raytracing` API, binds the TLAS to a compute shader, and traces inline rays with `RayQuery`.
+このサンプルは Luau の `sn.Raytracing` API で BLAS/TLAS を構築し、TLAS をコンピュートシェーダーへ渡して `RayQuery` でインラインのレイ追跡を行います。
 
-- `main.luau` creates the acceleration structures, dispatches a compute pipeline, and displays the storage-buffer result as a texture.
-- `ray_query.slang` uses the compute `RWByteAddressBuffer` output at SPIR-V `set 0` / DX `space0`, and `RaytracingAccelerationStructure` at SPIR-V `set 6` / DX `space6`.
+- `main.luau` はアクセラレーション構造を生成し、コンピュートパイプラインを実行して、ストレージバッファの結果をテクスチャとして表示します。
+- `ray_query.slang` は、SPIR-V `set 0` / DX `space0` にコンピュート出力の `RWByteAddressBuffer` を、SPIR-V `set 6` / DX `space6` に `RaytracingAccelerationStructure` を使います。
 
-The sample requires a desktop backend/device with ray query support.
+レイクエリに対応したデスクトップのバックエンドとデバイスが必要です。

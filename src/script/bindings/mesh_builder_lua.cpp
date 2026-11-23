@@ -23,10 +23,7 @@ UInt32 checkOneBasedIndex(lua_State *L, int idx, UInt32 count) {
 }
 } // namespace
 
-static int lMeshBuilderNew(lua_State *L) {
-  udNewOwned<MeshBuilder>(L, MeshBuilder{});
-  return 1;
-}
+static auto lMeshBuilderNew() { return MeshBuilder{}; }
 
 static int lMeshBuilderClear(lua_State *L) {
   udValue<MeshBuilder>(L, 1).clear();
@@ -133,12 +130,10 @@ static int lMeshBuilderRecalculateNormals(lua_State *L) {
   return 0;
 }
 
-static int lMeshBuilderToModel(lua_State *L) {
-  auto &b = udValue<MeshBuilder>(L, 1);
+static auto lMeshBuilderToModel(MeshBuilder &b) {
   auto model = makePtr<Model>();
   model->loadFromVertexArray(b.toMesh());
-  udPushPtr<Model>(L, model);
-  return 1;
+  return model;
 }
 
 static int lMeshBuilderVertexCount(lua_State *L) {
@@ -151,29 +146,23 @@ static int lMeshBuilderIndexCount(lua_State *L) {
   return 1;
 }
 
-void registerMeshBuilder(lua_State *L) {
-  luaL_newmetatable(L, MeshBuilder::metaTableName());
-  Binding::registerFunction(L, "__gc", udGc<MeshBuilder>);
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  Binding::registerFunction(L, "clear", lMeshBuilderClear);
-  Binding::registerFunction(L, "vertex", lMeshBuilderVertex);
-  Binding::registerFunction(L, "triangle", lMeshBuilderTriangle);
-  Binding::registerFunction(L, "quad", lMeshBuilderQuad);
-  Binding::registerFunction(L, "addPlane", lMeshBuilderAddPlane);
-  Binding::registerFunction(L, "addBox", lMeshBuilderAddBox);
-  Binding::registerFunction(L, "addSphere", lMeshBuilderAddSphere);
-  Binding::registerFunction(L, "addCylinder", lMeshBuilderAddCylinder);
-  Binding::registerFunction(L, "addCone", lMeshBuilderAddCone);
-  Binding::registerFunction(L, "recalculateNormals",
-                            lMeshBuilderRecalculateNormals);
-  Binding::registerFunction(L, "toModel", lMeshBuilderToModel);
-  Binding::registerFunction(L, "vertexCount", lMeshBuilderVertexCount);
-  Binding::registerFunction(L, "indexCount", lMeshBuilderIndexCount);
-  lua_pop(L, 1);
+void registerMeshBuilder(luau::table &sn) {
+  auto meshBuilder = engineClass<MeshBuilder>(sn, MeshBuilder::metaTableName());
 
-  pushSnNamed(L, "MeshBuilder");
-  Binding::registerFunction(L, "new", lMeshBuilderNew);
-  lua_pop(L, 1);
+  meshBuilder.raw_method<lMeshBuilderClear>("clear");
+  meshBuilder.raw_method<lMeshBuilderVertex>("vertex");
+  meshBuilder.raw_method<lMeshBuilderTriangle>("triangle");
+  meshBuilder.raw_method<lMeshBuilderQuad>("quad");
+  meshBuilder.raw_method<lMeshBuilderAddPlane>("addPlane");
+  meshBuilder.raw_method<lMeshBuilderAddBox>("addBox");
+  meshBuilder.raw_method<lMeshBuilderAddSphere>("addSphere");
+  meshBuilder.raw_method<lMeshBuilderAddCylinder>("addCylinder");
+  meshBuilder.raw_method<lMeshBuilderAddCone>("addCone");
+  meshBuilder.raw_method<lMeshBuilderRecalculateNormals>("recalculateNormals");
+  meshBuilder.method<lMeshBuilderToModel>("toModel");
+  meshBuilder.raw_method<lMeshBuilderVertexCount>("vertexCount");
+  meshBuilder.raw_method<lMeshBuilderIndexCount>("indexCount");
+
+  meshBuilder.static_function<lMeshBuilderNew>("new");
 }
 } // namespace sinen

@@ -2,14 +2,12 @@
 #include <core/event/event.hpp>
 
 namespace sinen {
-static int lEventQuit(lua_State *L) {
-  (void)L;
+static auto lEventQuit() {
   Event::quit();
-  return 0;
+  return;
 }
-void registerEvent(lua_State *L) {
-  pushSnNamed(L, "Event");
-  Binding::registerFunction(L, "quit", lEventQuit);
-  lua_pop(L, 1);
+void registerEvent(luau::table &sn) {
+  auto event = sn.get_or_create_table("Event");
+  event.function<lEventQuit>("quit");
 }
 } // namespace sinen

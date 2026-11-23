@@ -1,10 +1,12 @@
 # Sinen
-Sinen is a creative coding framework for Luau/Slang
-<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/docs/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
-# Hello World
+Sinen は Luau と Slang を使うクリエイティブコーディング向けのフレームワークです。
 
-``` luau
+<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/docs/docs/logo/logo_bg_white.png" width="480" alt="Sinen のロゴ"></a></p>
+
+## 最初のプログラム
+
+```luau
 local sn = require("@sinen")
 local font: sn.Font = sn.Font.new(32)
 
@@ -15,20 +17,30 @@ function draw()
 		sn.TextTransform.new(sn.Window.center(), 0.0, sn.Pivot.Center)
 	)
 end
-
 ```
 
-![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
+![最初のプログラムの実行画面](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 
-# Games
+## ゲーム
 
-Open the repository in VS Code, select **Games** in **Run and Debug**, and press **F5**. If the debug executable has not been built yet, run the `generate_msvc2026` and `build_msvc2026` tasks first. Use the mouse, arrow keys, or a gamepad to choose a game. From a game's menu, press **Q** to return to the selector (**B** also works in RIDGELINE).
+リポジトリを VS Code で開き、**実行とデバッグ**から **Games** を選択して **F5** を押します。Debug 実行ファイルがまだない場合は、先に `generate_msvc2026` と `build_msvc2026` のタスクを実行してください。マウス、矢印キー、またはゲームパッドでゲームを選べます。ゲームのメニューでは **Q** でセレクターに戻ります（RIDGELINE では **B** も使えます）。
 
-[FOUNDRY](game/fps/README.md) is a single-player PBR FPS set in an industrial drone bay.
+[FOUNDRY](game/fps/README.md) は工業施設のドローン格納庫を舞台にした、シングルプレイの PBR FPS です。
 
-[RIDGELINE](game/racing/README.md) is a PBR circuit racer with analog gamepad controls.
+[RIDGELINE](game/racing/README.md) はアナログゲームパッド操作に対応した PBR サーキットレースです。
 
-# Documents
+## ドキュメント
 
-[![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
-[https://astomih.github.io/sinen](https://astomih.github.io/sinen)
+[![ドキュメントのビルド](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)
+
+[Sinen ドキュメント](https://astomih.github.io/sinen)
+
+ローカルでプレビューするには、Python の仮想環境を有効にし（CI は Python 3.13）、リポジトリのルートから以下を実行します。
+
+```sh
+cd docs
+python -m pip install -r requirements-docs.txt
+zensical serve
+```
+
+静的サイトを `docs/site/` に生成するには、`docs/` で `zensical build --clean` を実行します。GitHub Pages には GitHub Actions から公開します。初回設定時は **Settings → Pages → Source** を **GitHub Actions** に設定してください。

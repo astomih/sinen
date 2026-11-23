@@ -1,6 +1,7 @@
+#include "dds_decoder.hpp"
 #include <cassert>
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <vector>
 
@@ -18,9 +19,11 @@
 #include <platform/io/asset_reader.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <SDL3/SDL.h>
 #include <ktx.h>
 #include <stb_image.h>
+#include <stb_image_resize2.h>
 #include <stb_image_write.h>
 #include <tinyexr.h>
 
@@ -196,6 +199,22 @@ static bool decodeKtx2(const uint8_t *bytes, size_t size,
 
 static bool decodeImage2D(const uint8_t *bytes, size_t size,
                           AsyncTexture2DState &out) {
+  if (size >= 4 && std::memcmp(bytes, "DDS ", 4) == 0) {
+    detail::DdsImage image;
+    if (!detail::decodeDds(bytes, size, image))
+      return false;
+    out.channels = image.channels;
+    out.format = image.channels == 1   ? gpu::TextureFormat::R8_UNORM
+                 : image.channels == 2 ? gpu::TextureFormat::R8G8_UNORM
+                                       : gpu::TextureFormat::R8G8B8A8_UNORM;
+    for (auto &mip : image.mips)
+      out.mips.push_back({std::move(mip.pixels), mip.width, mip.height});
+    out.width = out.mips[0].width;
+    out.height = out.mips[0].height;
+    out.pixels = out.mips[0].pixels;
+    out.ok = true;
+    return true;
+  }
   int width = 0, height = 0, bpp = 0;
   unsigned char *decoded = stbi_load_from_memory(bytes, static_cast<int>(size),
                                                  &width, &height, &bpp, 0);
@@ -343,6 +362,38 @@ static Buffer emptyBinaryBuffer() {
   return Buffer(BufferType::Binary, Ptr<void>(), 0);
 }
 } // namespace
+
+static void limitTexture(AsyncTexture2DState &state, uint32_t maximum) {
+  if (!maximum || !state.ok)
+    return;
+  if (!state.mips.empty()) {
+    while (state.mips.size() > 1 &&
+           std::max(state.mips[0].width, state.mips[0].height) > maximum)
+      state.mips.erase(state.mips.begin());
+    state.width = state.mips[0].width;
+    state.height = state.mips[0].height;
+    state.pixels = state.mips[0].pixels;
+  }
+  if (std::max(state.width, state.height) <= maximum)
+    return;
+  const double scale = double(maximum) / std::max(state.width, state.height);
+  const auto w = std::max(1u, uint32_t(state.width * scale));
+  const auto h = std::max(1u, uint32_t(state.height * scale));
+  std::vector<uint8_t> resized(size_t(w) * h * state.channels);
+  const auto layout = state.channels == 1   ? STBIR_1CHANNEL
+                      : state.channels == 2 ? STBIR_2CHANNEL
+                                            : STBIR_4CHANNEL;
+  if (!stbir_resize_uint8_linear(state.pixels.data(), state.width, state.height,
+                                 0, resized.data(), w, h, 0, layout)) {
+    state.ok = false;
+    return;
+  }
+  state.width = w;
+  state.height = h;
+  state.pixels = std::move(resized);
+  state.mips.clear();
+}
+
 Texture::Texture() { texture = nullptr; }
 Texture::Texture(int width, int height) {
   Array<uint8_t> pixels(width * height * 4, 0);
@@ -365,7 +416,8 @@ Ptr<Texture> Texture::create(int width, int height) {
 
 Texture::~Texture() {}
 
-bool Texture::load(StringView fileName) {
+bool Texture::load(StringView fileName, uint32_t maxDimension) {
+  transparencyKnown = false;
   this->loading = true;
   this->pendingWidth = 0;
   this->pendingHeight = 0;
@@ -377,16 +429,15 @@ bool Texture::load(StringView fileName) {
   state->debugName = "Texture::load(" + String(fileName) + ")";
   this->async = state;
 
-  const String path = fileName.data();
-  state->future = globalThreadPool().submit([state, path] {
+  const String path(fileName);
+  state->future = globalThreadPool().submit([state, path, maxDimension] {
     ZoneScopedN("Texture::load decode");
     auto str = AssetReader::readAsString(path);
-    if (decodeKtx2(reinterpret_cast<const uint8_t *>(str.data()), str.size(),
-                   *state)) {
-      return;
-    }
-    decodeImage2D(reinterpret_cast<const uint8_t *>(str.data()), str.size(),
-                  *state);
+    if (!decodeKtx2(reinterpret_cast<const uint8_t *>(str.data()), str.size(),
+                    *state))
+      decodeImage2D(reinterpret_cast<const uint8_t *>(str.data()), str.size(),
+                    *state);
+    limitTexture(*state, maxDimension);
   });
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
@@ -419,7 +470,8 @@ bool Texture::load(StringView fileName) {
       });
   return true;
 }
-bool Texture::load(const Buffer &buffer) {
+bool Texture::load(const Buffer &buffer, uint32_t maxDimension) {
+  transparencyKnown = false;
   this->texture.reset();
   this->loading = true;
   this->pendingWidth = 0;
@@ -433,14 +485,13 @@ bool Texture::load(const Buffer &buffer) {
   this->async = state;
 
   const Buffer buf = buffer;
-  state->future = globalThreadPool().submit([state, buf] {
+  state->future = globalThreadPool().submit([state, buf, maxDimension] {
     ZoneScopedN("Texture::load(buffer) decode");
-    if (decodeKtx2(reinterpret_cast<const uint8_t *>(buf.data()), buf.size(),
-                   *state)) {
-      return;
-    }
-    decodeImage2D(reinterpret_cast<const uint8_t *>(buf.data()), buf.size(),
-                  *state);
+    if (!decodeKtx2(reinterpret_cast<const uint8_t *>(buf.data()), buf.size(),
+                    *state))
+      decodeImage2D(reinterpret_cast<const uint8_t *>(buf.data()), buf.size(),
+                    *state);
+    limitTexture(*state, maxDimension);
   });
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
@@ -475,6 +526,7 @@ bool Texture::load(const Buffer &buffer) {
 }
 
 bool Texture::loadFromMemory(Array<char> &buffer) {
+  transparencyKnown = false;
   this->loading = true;
   this->pendingWidth = 0;
   this->pendingHeight = 0;
@@ -605,6 +657,7 @@ bool Texture::updatePixels(const void *newPixels, uint32_t width,
 
 void Texture::setPixelData(const void *pPixels, uint32_t width, uint32_t height,
                            gpu::TextureFormat format, int channels) {
+  transparencyKnown = false;
   const int expectedChannels = channelsForFormat(format);
   if (!pPixels || width == 0 || height == 0 || channels <= 0 ||
       expectedChannels == 0 || expectedChannels != channels) {
@@ -679,9 +732,9 @@ void Texture::setFloatCubemapData(
     for (uint32_t y = 0; y < faceSize; ++y) {
       const float *srcRow =
           faces[face].data() + static_cast<size_t>(y) * faceSize * 4u;
-      float *dstRow = atlas.data() +
-                      (static_cast<size_t>(face * faceSize + y) * faceSize) *
-                          4u;
+      float *dstRow =
+          atlas.data() +
+          (static_cast<size_t>(face * faceSize + y) * faceSize) * 4u;
       std::memcpy(dstRow, srcRow,
                   static_cast<size_t>(faceSize) * 4u * sizeof(float));
     }
@@ -752,9 +805,9 @@ Buffer Texture::toExrBuffer(bool saveAsFp16) const {
 
   unsigned char *exrData = nullptr;
   const char *err = nullptr;
-  const int size = SaveEXRToMemory(
-      exrPixels.data(), static_cast<int>(exrWidth), static_cast<int>(exrHeight),
-      exrChannels, saveAsFp16 ? 1 : 0, &exrData, &err);
+  const int size = SaveEXRToMemory(exrPixels.data(), static_cast<int>(exrWidth),
+                                   static_cast<int>(exrHeight), exrChannels,
+                                   saveAsFp16 ? 1 : 0, &exrData, &err);
   if (size <= 0 || !exrData) {
     if (err) {
       Log::error("Texture::toExrBuffer failed: {}", err);
@@ -769,7 +822,54 @@ Buffer Texture::toExrBuffer(bool saveAsFp16) const {
   return buffer;
 }
 
+Color Texture::averageColor(bool linearizeSrgb) const {
+  if (pixels.empty() || !pixelWidth || !pixelHeight || !pixelChannels)
+    return Color(1.0f);
+  double r = 0, g = 0, b = 0, alpha = 0, count = 0;
+  const auto dx = std::max(1u, pixelWidth / 64),
+             dy = std::max(1u, pixelHeight / 64);
+  auto channel = [linearizeSrgb](uint8_t v) {
+    const double f = double(v) / 255;
+    return !linearizeSrgb ? f
+           : f <= 0.04045 ? f / 12.92
+                          : std::pow((f + 0.055) / 1.055, 2.4);
+  };
+  for (uint32_t y = 0; y < pixelHeight; y += dy)
+    for (uint32_t x = 0; x < pixelWidth; x += dx) {
+      const auto *p =
+          pixels.data() + (size_t(y) * pixelWidth + x) * pixelChannels;
+      const double a = pixelChannels == 4 ? double(p[3]) / 255 : 1;
+      const bool bgra = pixelFormat == gpu::TextureFormat::B8G8R8A8_UNORM;
+      r += channel(p[bgra ? 2 : 0]) * a;
+      g += channel(p[pixelChannels >= 2 ? 1 : 0]) * a;
+      b += channel(p[pixelChannels >= 3 ? (bgra ? 0 : 2) : 0]) * a;
+      alpha += a;
+      ++count;
+    }
+  if (alpha == 0)
+    return Color(0, 0, 0, 0);
+  return Color(float(r / alpha), float(g / alpha), float(b / alpha),
+               float(alpha / count));
+}
+
+bool Texture::hasTransparency() const {
+  if (loading)
+    return false;
+  if (!transparencyKnown) {
+    transparentPixels = false;
+    if (pixelChannels == 4)
+      for (size_t i = 3; i < pixels.size(); i += 4)
+        if (pixels[i] != 255) {
+          transparentPixels = true;
+          break;
+        }
+    transparencyKnown = true;
+  }
+  return transparentPixels;
+}
+
 void Texture::fill(const Color &color) {
+  transparencyKnown = false;
   if (texture) {
 
     auto w = texture->getCreateInfo().width;

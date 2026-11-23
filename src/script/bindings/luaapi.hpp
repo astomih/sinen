@@ -12,103 +12,56 @@
 
 #include <utility>
 
-#include "binding.hpp"
+#include <script/luau_bind.hpp>
+
+// The engine's allocator-aware string uses the same Luau representation.
+namespace sinen::luau {
+template <> struct stack<sinen::String> : stack<std::string_view> {
+  static sinen::String get(lua_State *L, int index) {
+    return sinen::String(stack<std::string_view>::get(L, index));
+  }
+};
+} // namespace sinen::luau
 
 namespace sinen {
-template <class T> struct UdBox {
-  bool owned = true;
-  T *ptr = nullptr;
-  alignas(T) std::byte storage[sizeof(T)];
-};
-
-static void *luaLTestudata2(lua_State *L, int idx, const char *tname) {
-  void *p = lua_touserdata(L, idx);
-  if (!p) {
-    return nullptr;
-  }
-  if (!lua_getmetatable(L, idx)) {
-    return nullptr;
-  }
-  luaL_getmetatable(L, tname);
-  bool ok = lua_rawequal(L, -1, -2) != 0;
-  lua_pop(L, 2);
-  return ok ? p : nullptr;
-}
-
+// Raw C API handlers share the typed binder's userdata representation.
 template <class T> static T &udValue(lua_State *L, int idx) {
-  auto *ud =
-      static_cast<UdBox<T> *>(luaL_checkudata(L, idx, T::metaTableName()));
-  return *ud->ptr;
+  return luau::stack<std::reference_wrapper<T>>::get(L, idx).get();
 }
 template <class T> static T *udValueOrNull(lua_State *L, int idx) {
-  auto *ud =
-      static_cast<UdBox<T> *>(luaLTestudata2(L, idx, T::metaTableName()));
-  return ud ? ud->ptr : nullptr;
+  return luau::stack<T>::matches(L, idx) ? &udValue<T>(L, idx) : nullptr;
 }
-template <class T> static int udGc(lua_State *L) {
-  auto *ud = static_cast<UdBox<T> *>(lua_touserdata(L, 1));
-  if (ud && ud->owned && ud->ptr) {
-    ud->ptr->~T();
-    ud->ptr = nullptr;
-  }
-  return 0;
+template <class T> static void udNewOwned(lua_State *L, T value) {
+  luau::stack<T>::push(L, std::move(value));
 }
-template <class T> static void udBoxDtor(lua_State *, void *p) {
-  auto *ud = static_cast<UdBox<T> *>(p);
-  if (ud && ud->owned && ud->ptr) {
-    ud->ptr->~T();
-    ud->ptr = nullptr;
-  }
-  if (ud) {
-    ud->~UdBox<T>();
-  }
-}
-template <class T> static UdBox<T> *udNewOwned(lua_State *L, T value) {
-  void *mem = lua_newuserdatadtor(L, sizeof(UdBox<T>), udBoxDtor<T>);
-  auto *ud = new (mem) UdBox<T>();
-  ud->owned = true;
-  ud->ptr = new (ud->storage) T(std::move(value));
-  luaL_getmetatable(L, T::metaTableName());
-  lua_setmetatable(L, -2);
-  return ud;
-}
-template <class T> static UdBox<T> *udNewRef(lua_State *L, T *ref) {
-  void *mem = lua_newuserdatadtor(L, sizeof(UdBox<T>), udBoxDtor<T>);
-  auto *ud = new (mem) UdBox<T>();
-  ud->owned = false;
-  ud->ptr = ref;
-  luaL_getmetatable(L, T::metaTableName());
-  lua_setmetatable(L, -2);
-  return ud;
-}
-
 template <class T> static Ptr<T> &udPtr(lua_State *L, int idx) {
-  return *static_cast<Ptr<T> *>(luaL_checkudata(L, idx, T::metaTableName()));
-}
-template <class T> static void udPtrGc(lua_State *, void *p) {
-  Ptr<T> *ud = static_cast<Ptr<T> *>(p);
-  if (ud) {
-    ud->~Ptr<T>();
-  }
+  return udValue<Ptr<T>>(L, idx);
 }
 template <class T> static void udPushPtr(lua_State *L, Ptr<T> value) {
-  void *mem = lua_newuserdatadtor(L, sizeof(Ptr<T>), udPtrGc<T>);
-  new (mem) Ptr<T>(std::move(value));
-  luaL_getmetatable(L, T::metaTableName());
-  lua_setmetatable(L, -2);
+  luau::stack<Ptr<T>>::push(L, std::move(value));
 }
 
-static void pushSn(lua_State *L) { lua_getglobal(L, "sn"); }
-static void ensureSn(lua_State *L) {
-  lua_getglobal(L, "sn");
-  if (!lua_istable(L, -1)) {
-    lua_pop(L, 1);
-    lua_newtable(L);
-    lua_pushvalue(L, -1);
-    lua_setglobal(L, "sn");
-  }
+static void *luaLTestudata2(lua_State *L, int idx, const char *name) {
+  if (lua_type(L, idx) != LUA_TUSERDATA || !lua_getmetatable(L, idx))
+    return nullptr;
+  luaL_getmetatable(L, name);
+  const bool matches = lua_rawequal(L, -1, -2) != 0;
+  lua_pop(L, 2);
+  return matches ? lua_touserdata(L, idx) : nullptr;
 }
-void pushSnNamed(lua_State *L, const char *name);
+
+// Preserve named metatable aliases used by raw handlers while registering
+// ordinary classes entirely through table/class_builder handles.
+template <class T>
+static luau::class_builder<T> engineClass(luau::table &sn,
+                                          const char *metaName) {
+  const char *name = metaName;
+  if (std::string_view(name).substr(0, 3) == "sn.")
+    name += 3;
+  auto binding = sn.class_<T>(name);
+  binding.metatable_name(metaName);
+  return binding;
+}
 
 static int luaPCallLogged(lua_State *L, int nargs, int nresults) {
   if (lua_pcall(L, nargs, nresults, 0) == LUA_OK) {

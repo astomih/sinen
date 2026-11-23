@@ -2,19 +2,34 @@
 
 #ifdef SINEN_PLATFORM_WINDOWS
 
+#include "d3d12_device.hpp"
+
 #include <cstring>
 
 namespace sinen::gpu::d3d12 {
 Buffer::Buffer(const CreateInfo &createInfo, Ptr<Device> device,
-               ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES state)
-    : gpu::Buffer(createInfo), device(device), resource(resource),
-      state(state) {}
+               ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES state,
+               UINT64 offset, bool upload)
+    : gpu::Buffer(createInfo), device(device), resource(resource), state(state),
+      offset(offset), upload(upload) {}
 
 Texture::Texture(const CreateInfo &createInfo, Ptr<Device> device,
                  ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES state,
                  bool swapchainTexture)
     : gpu::Texture(createInfo), device(device), resource(resource),
       state(state), swapchainTexture(swapchainTexture) {}
+
+Texture::~Texture() {
+  if (auto owner = device.lock()) {
+    // These are CPU staging descriptors. GPU-visible copies and the native
+    // resource are retained by the submitted command context until completion.
+    owner->releaseSrvDescriptor(srv.cpu);
+    owner->releaseDsvDescriptor(dsv);
+    if (!swapchainTexture) {
+      owner->releaseRtvDescriptor(rtv);
+    }
+  }
+}
 
 TransferBuffer::TransferBuffer(const CreateInfo &createInfo, Ptr<Device> device,
                                ComPtr<ID3D12Resource> resource)
@@ -56,6 +71,12 @@ void TransferBuffer::unmap() {
 Sampler::Sampler(const CreateInfo &createInfo, Ptr<Device> device,
                  CpuGpuDescriptor descriptor)
     : gpu::Sampler(createInfo), device(device), descriptor(descriptor) {}
+
+Sampler::~Sampler() {
+  if (auto owner = device.lock()) {
+    owner->releaseSamplerDescriptor(descriptor.cpu);
+  }
+}
 
 Shader::Shader(const CreateInfo &createInfo, Array<uint8_t> bytecode)
     : gpu::Shader(createInfo), bytecode(std::move(bytecode)) {}

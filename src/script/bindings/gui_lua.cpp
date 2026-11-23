@@ -5,10 +5,9 @@
 #include <platform/window/window.hpp>
 
 namespace sinen {
-static int lGuiSetFont(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1);
+static auto lGuiSetFont(Ptr<Font> &font) {
   Gui::setFont(font);
-  return 0;
+  return;
 }
 
 static int lGuiSetFontSize(lua_State *L) {
@@ -16,14 +15,10 @@ static int lGuiSetFontSize(lua_State *L) {
   return 0;
 }
 
-static int lGuiSetThemeColor(lua_State *L) {
-  auto &background = udValue<Color>(L, 1);
-  auto &hover = udValue<Color>(L, 2);
-  auto &active = udValue<Color>(L, 3);
-  auto &text = udValue<Color>(L, 4);
-  auto &accent = udValue<Color>(L, 5);
+static auto lGuiSetThemeColor(Color &background, Color &hover, Color &active,
+                              Color &text, Color &accent) {
   Gui::setThemeColor(background, hover, active, text, accent);
-  return 0;
+  return;
 }
 
 static int lGuiLabel(lua_State *L) {
@@ -39,11 +34,8 @@ static int lGuiLabel(lua_State *L) {
   return 0;
 }
 
-static int lGuiButton(lua_State *L) {
-  const char *text = luaL_checkstring(L, 1);
-  auto &rect = udValue<Rect>(L, 2);
-  lua_pushboolean(L, Gui::button(StringView(text), rect));
-  return 1;
+static auto lGuiButton(const char *text, Rect &rect) {
+  return Gui::button(StringView(text), rect);
 }
 
 static int lGuiCheckbox(lua_State *L) {
@@ -54,14 +46,9 @@ static int lGuiCheckbox(lua_State *L) {
   return 1;
 }
 
-static int lGuiSliderFloat(lua_State *L) {
-  const char *text = luaL_checkstring(L, 1);
-  const float value = static_cast<float>(luaL_checknumber(L, 2));
-  const float min = static_cast<float>(luaL_checknumber(L, 3));
-  const float max = static_cast<float>(luaL_checknumber(L, 4));
-  auto &rect = udValue<Rect>(L, 5);
-  lua_pushnumber(L, Gui::sliderFloat(StringView(text), value, min, max, rect));
-  return 1;
+static auto lGuiSliderFloat(const char *text, const float value,
+                            const float min, const float max, Rect &rect) {
+  return Gui::sliderFloat(StringView(text), value, min, max, rect);
 }
 
 static int lGuiScrollVertical(lua_State *L) {
@@ -74,16 +61,15 @@ static int lGuiScrollVertical(lua_State *L) {
   return 1;
 }
 
-void registerGui(lua_State *L) {
-  pushSnNamed(L, "Gui");
-  Binding::registerFunction(L, "setFont", lGuiSetFont);
-  Binding::registerFunction(L, "setFontSize", lGuiSetFontSize);
-  Binding::registerFunction(L, "setThemeColor", lGuiSetThemeColor);
-  Binding::registerFunction(L, "label", lGuiLabel);
-  Binding::registerFunction(L, "button", lGuiButton);
-  Binding::registerFunction(L, "checkbox", lGuiCheckbox);
-  Binding::registerFunction(L, "sliderFloat", lGuiSliderFloat);
-  Binding::registerFunction(L, "scrollVertical", lGuiScrollVertical);
-  lua_pop(L, 1);
+void registerGui(luau::table &sn) {
+  auto gui = sn.get_or_create_table("Gui");
+  gui.function<lGuiSetFont>("setFont");
+  gui.raw_function<lGuiSetFontSize>("setFontSize");
+  gui.function<lGuiSetThemeColor>("setThemeColor");
+  gui.raw_function<lGuiLabel>("label");
+  gui.function<lGuiButton>("button");
+  gui.raw_function<lGuiCheckbox>("checkbox");
+  gui.function<lGuiSliderFloat>("sliderFloat");
+  gui.raw_function<lGuiScrollVertical>("scrollVertical");
 }
 } // namespace sinen

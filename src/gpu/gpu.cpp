@@ -6,6 +6,7 @@
 #include <emscripten.h>
 #endif
 #include <gpu/gpu.hpp>
+#include <gpu/renderdoc.hpp>
 
 #ifdef SINEN_ENABLE_WEBGPU
 #include "backend/webgpu/webgpu_backend.hpp"
@@ -23,6 +24,7 @@
 namespace sinen::gpu {
 Ptr<Backend> RHI::createBackend(Allocator *allocator,
                                 const GPUBackendAPI &api) {
+  RenderDoc::initialize();
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
 #ifdef SINEN_ENABLE_WEBGPU
   if (api == GPUBackendAPI::WebGPU) {

@@ -2,18 +2,9 @@
 #include <platform/input/mouse.hpp>
 
 namespace sinen {
-static int lMouseGetPositionOnScene(lua_State *L) {
-  udNewOwned<Vec2>(L, Mouse::getPositionOnScene());
-  return 1;
-}
-static int lMouseGetPosition(lua_State *L) {
-  udNewOwned<Vec2>(L, Mouse::getPosition());
-  return 1;
-}
-static int lMouseGetDelta(lua_State *L) {
-  udNewOwned<Vec2>(L, Mouse::getDelta());
-  return 1;
-}
+static auto lMouseGetPositionOnScene() { return Mouse::getPositionOnScene(); }
+static auto lMouseGetPosition() { return Mouse::getPosition(); }
+static auto lMouseGetDelta() { return Mouse::getDelta(); }
 static int lMouseIsPressed(lua_State *L) {
   auto b = static_cast<Mouse::Code>(luaL_checkinteger(L, 1));
   lua_pushboolean(L, Mouse::isPressed(b));
@@ -29,20 +20,15 @@ static int lMouseIsDown(lua_State *L) {
   lua_pushboolean(L, Mouse::isDown(b));
   return 1;
 }
-static int lMouseSetPosition(lua_State *L) {
-  auto &p = udValue<Vec2>(L, 1);
+static auto lMouseSetPosition(Vec2 &p) {
   Mouse::setPosition(p);
-  return 0;
+  return;
 }
-static int lMouseSetPositionOnScene(lua_State *L) {
-  auto &p = udValue<Vec2>(L, 1);
+static auto lMouseSetPositionOnScene(Vec2 &p) {
   Mouse::setPositionOnScene(p);
-  return 0;
+  return;
 }
-static int lMouseGetScrollWheel(lua_State *L) {
-  udNewOwned<Vec2>(L, Mouse::getScrollWheel());
-  return 1;
-}
+static auto lMouseGetScrollWheel() { return Mouse::getScrollWheel(); }
 static int lMouseHideCursor(lua_State *L) {
   bool hide = lua_toboolean(L, 1) != 0;
   Mouse::hideCursor(hide);
@@ -53,29 +39,25 @@ static int lMouseSetRelative(lua_State *L) {
   Mouse::setRelative(rel);
   return 0;
 }
-static int lMouseIsRelative(lua_State *L) {
-  lua_pushboolean(L, Mouse::isRelative());
-  return 1;
-}
-void registerMouse(lua_State *L) {
-  pushSnNamed(L, "Mouse");
-  Binding::registerFunction(L, "setRelative", lMouseSetRelative);
-  Binding::registerFunction(L, "isRelative", lMouseIsRelative);
-  Binding::registerFunction(L, "getPositionOnScene", lMouseGetPositionOnScene);
-  Binding::registerFunction(L, "getPosition", lMouseGetPosition);
-  Binding::registerFunction(L, "getDelta", lMouseGetDelta);
-  Binding::registerFunction(L, "isPressed", lMouseIsPressed);
-  Binding::registerFunction(L, "isReleased", lMouseIsReleased);
-  Binding::registerFunction(L, "isDown", lMouseIsDown);
-  Binding::registerFunction(L, "setPosition", lMouseSetPosition);
-  Binding::registerFunction(L, "setPositionOnScene", lMouseSetPositionOnScene);
-  Binding::registerFunction(L, "getScrollWheel", lMouseGetScrollWheel);
-  Binding::registerFunction(L, "hideCursor", lMouseHideCursor);
-  Binding::registerInteger(L, "LEFT", static_cast<int>(Mouse::LEFT));
-  Binding::registerInteger(L, "RIGHT", static_cast<int>(Mouse::RIGHT));
-  Binding::registerInteger(L, "MIDDLE", static_cast<int>(Mouse::MIDDLE));
-  Binding::registerInteger(L, "X1", static_cast<int>(Mouse::X1));
-  Binding::registerInteger(L, "X2", static_cast<int>(Mouse::X2));
-  lua_pop(L, 1);
+static auto lMouseIsRelative() { return Mouse::isRelative(); }
+void registerMouse(luau::table &sn) {
+  auto mouse = sn.get_or_create_table("Mouse");
+  mouse.raw_function<lMouseSetRelative>("setRelative");
+  mouse.function<lMouseIsRelative>("isRelative");
+  mouse.function<lMouseGetPositionOnScene>("getPositionOnScene");
+  mouse.function<lMouseGetPosition>("getPosition");
+  mouse.function<lMouseGetDelta>("getDelta");
+  mouse.raw_function<lMouseIsPressed>("isPressed");
+  mouse.raw_function<lMouseIsReleased>("isReleased");
+  mouse.raw_function<lMouseIsDown>("isDown");
+  mouse.function<lMouseSetPosition>("setPosition");
+  mouse.function<lMouseSetPositionOnScene>("setPositionOnScene");
+  mouse.function<lMouseGetScrollWheel>("getScrollWheel");
+  mouse.raw_function<lMouseHideCursor>("hideCursor");
+  mouse.value("LEFT", static_cast<int>(Mouse::LEFT));
+  mouse.value("RIGHT", static_cast<int>(Mouse::RIGHT));
+  mouse.value("MIDDLE", static_cast<int>(Mouse::MIDDLE));
+  mouse.value("X1", static_cast<int>(Mouse::X1));
+  mouse.value("X2", static_cast<int>(Mouse::X2));
 }
 } // namespace sinen

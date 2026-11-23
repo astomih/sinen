@@ -1,6 +1,7 @@
 #include <renderer/renderer.hpp>
 
 #include <core/logger/log.hpp>
+#include <core/profiler.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/graphics.hpp>
 
@@ -121,6 +122,9 @@ void PBRRenderer::setPointLight(const Vec3 &position, float intensity,
 void PBRRenderer::setFillLight(const Light &value) { fillLight = value; }
 void PBRRenderer::clearFillLight() { fillLight.reset(); }
 void PBRRenderer::setExposure(float value) { exposure = std::max(0.0f, value); }
+void PBRRenderer::setAlphaCutoff(float value) {
+  alphaCutoff = std::isfinite(value) ? std::clamp(value, 0.0f, 1.0f) : 0.0f;
+}
 
 void PBRRenderer::setEnvironment(const Environment &value) {
   environment = value;
@@ -128,8 +132,47 @@ void PBRRenderer::setEnvironment(const Environment &value) {
 
 void PBRRenderer::clearEnvironment() { environment = {}; }
 
+void PBRRenderer::setGlobalIllumination(const GlobalIllumination &volume,
+                                        float intensity) {
+  giTexture = volume.getTexture();
+  giMinimum = volume.getMinimum();
+  giExtent = volume.getMaximum() - giMinimum;
+  giCounts = volume.getProbeCounts();
+  giIntensity = std::isfinite(intensity) ? std::max(intensity, 0.0f) : 0.0f;
+}
+void PBRRenderer::clearGlobalIllumination() { giTexture.reset(); }
+
 void PBRRenderer::drawModel(Render3DPass &pass, const Model &model,
                             const Transform &transform) {
+  ZoneScopedN("PBRRenderer::drawModel");
+  if (!model.getParts().empty()) {
+    auto camera = pass.getCamera();
+    const auto world = Mat4::transpose(transform.getWorldMatrix());
+    for (const auto &part : model.getParts()) {
+      const auto &b = part->getAABB();
+      AABB bounds;
+      for (int i = 0; i < 8; ++i) {
+        const auto p = Vec3::transform(Vec3(i & 1 ? b.max.x : b.min.x,
+                                            i & 2 ? b.max.y : b.min.y,
+                                            i & 4 ? b.max.z : b.min.z),
+                                       world);
+        if (i == 0)
+          bounds.min = bounds.max = p;
+        else {
+          bounds.min =
+              Vec3(std::min(bounds.min.x, p.x), std::min(bounds.min.y, p.y),
+                   std::min(bounds.min.z, p.z));
+          bounds.max =
+              Vec3(std::max(bounds.max.x, p.x), std::max(bounds.max.y, p.y),
+                   std::max(bounds.max.z, p.z));
+        }
+      }
+      if (camera.isAABBInFrustum(bounds)) {
+        drawModel(pass, *part, transform);
+      }
+    }
+    return;
+  }
   if (!model.vertexBuffer || !model.indexBuffer) {
     return;
   }
@@ -163,6 +206,7 @@ void PBRRenderer::drawModel(Render3DPass &pass, const Model &model,
   bindTexture(material, 4, model, TextureKey::LightMap, white);
 
   float maxMip = 0.0f;
+  material.setTexture(useIBL ? 8 : 5, giTexture ? giTexture : white);
   if (useIBL) {
     material.setTexture(5, environment.brdfLut);
     material.setTexture(6, environment.irradiance);
@@ -175,16 +219,42 @@ void PBRRenderer::drawModel(Render3DPass &pass, const Model &model,
   const auto &cameraPosition = pass.getCamera().getPosition();
   const bool useNormalMap = hasTexture(model.getTexture(TextureKey::Normal),
                                        gpu::TextureType::Texture2D);
+  const auto &surface = model.getSurfaceProperties();
+  auto cutoff = std::max(alphaCutoff, surface.alphaCutoff);
+  const auto base = model.getTexture(TextureKey::BaseColor);
+  if (surface.autoAlphaMask && base && base->hasTransparency())
+    cutoff = std::max(cutoff, 0.5f);
+  const auto normal = model.getTexture(TextureKey::Normal);
+  const bool normalRG =
+      useNormalMap && normal->getRaw()->getCreateInfo().format ==
+                          gpu::TextureFormat::R8G8_UNORM;
   const struct {
     float cameraPositionAndMaxMip[4];
     float settings[4];
     LightUniform light;
     LightUniform fillLight;
+    float giMinimumAndIntensity[4];
+    float giInverseExtent[4];
+    float giProbeCounts[4];
+    float materialSettings[4];
+    float surfaceFactors[4];
+    float emissiveFactor[4];
   } lighting = {
       {cameraPosition.x, cameraPosition.y, cameraPosition.z, maxMip},
-      {useNormalMap ? 1.0f : 0.0f, exposure, fillLight ? 1.0f : 0.0f},
+      {useNormalMap ? 1.0f : 0.0f, exposure, fillLight ? 1.0f : 0.0f,
+       giTexture ? 1.0f : 0.0f},
       makeLightUniform(light),
       fillLight ? makeLightUniform(*fillLight) : LightUniform{},
+      {giMinimum.x, giMinimum.y, giMinimum.z, giIntensity},
+      {giExtent.x > 0 ? 1.0f / giExtent.x : 0.0f,
+       giExtent.y > 0 ? 1.0f / giExtent.y : 0.0f,
+       giExtent.z > 0 ? 1.0f / giExtent.z : 0.0f, 0.0f},
+      {giCounts.x, giCounts.y, giCounts.z, 0.0f},
+      {cutoff, surface.normalY, normalRG ? 1.0f : 0.0f, 0.0f},
+      {surface.constantMetallicRoughness ? 1.0f : surface.roughnessFactor,
+       surface.constantMetallicRoughness ? 1.0f : surface.metallicFactor, 0, 0},
+      {surface.emissiveFactor.r, surface.emissiveFactor.g,
+       surface.emissiveFactor.b, 0},
   };
   material.setUniformBuffer(0, uniformBuffer(lighting));
   material.setUniformBuffer(1, uniformBuffer(transform.getWorldMatrix()));
@@ -209,6 +279,11 @@ void NPRRenderer::setBands(UInt32 value) { bands = std::max(2u, value); }
 
 void NPRRenderer::drawModel(Render3DPass &pass, const Model &model,
                             const Transform &transform) {
+  if (!model.getParts().empty()) {
+    for (const auto &part : model.getParts())
+      drawModel(pass, *part, transform);
+    return;
+  }
   if (!model.vertexBuffer || !model.indexBuffer ||
       !preparePipeline(pipeline, renderer_npr_frag_snb,
                        renderer_npr_frag_snb_len)) {

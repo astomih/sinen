@@ -21,6 +21,11 @@ type BundleTask = {
 
 local sourceTasks: { SourceTask } = {
 	{
+		src = "renderer_gi.slang",
+		out = "renderer_gi.comp",
+		stage = sn.ShaderStage.Compute,
+	},
+	{
 		src = "shader.slang",
 		out = "shader.frag",
 		stage = sn.ShaderStage.Fragment,

@@ -37,16 +37,11 @@ static int lFilesystemReadText(lua_State *L) {
                   static_cast<size_t>(buffer->size()));
   return 1;
 }
-static int lFilesystemExists(lua_State *L) {
-  const char *path = luaL_checkstring(L, 1);
-  lua_pushboolean(L, Filesystem::exists(StringView(path)));
-  return 1;
+static auto lFilesystemExists(const char *path) {
+  return Filesystem::exists(StringView(path));
 }
-static int lFilesystemWrite(lua_State *L) {
-  const char *path = luaL_checkstring(L, 1);
-  const auto &buffer = udValue<Buffer>(L, 2);
-  lua_pushboolean(L, Filesystem::write(StringView(path), buffer));
-  return 1;
+static auto lFilesystemWrite(const char *path, const Buffer &buffer) {
+  return Filesystem::write(StringView(path), buffer);
 }
 static int lFilesystemWriteText(lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
@@ -59,21 +54,18 @@ static int lFilesystemWriteText(lua_State *L) {
   lua_pushboolean(L, Filesystem::write(StringView(path), buffer));
   return 1;
 }
-static int lFilesystemGetUserDirectory(lua_State *L) {
+static auto lFilesystemGetUserDirectory() {
   auto path = Filesystem::getUserDirectory();
-  lua_pushlstring(L, path.data(), path.size());
-  return 1;
+  return path;
 }
-void registerFilesystem(lua_State *L) {
-  pushSnNamed(L, "Filesystem");
-  Binding::registerFunction(L, "enumerateDirectory",
-                            lFilesystemEnumerateDirectory);
-  Binding::registerFunction(L, "read", lFilesystemRead);
-  Binding::registerFunction(L, "readText", lFilesystemReadText);
-  Binding::registerFunction(L, "exists", lFilesystemExists);
-  Binding::registerFunction(L, "write", lFilesystemWrite);
-  Binding::registerFunction(L, "writeText", lFilesystemWriteText);
-  Binding::registerFunction(L, "getUserDirectory", lFilesystemGetUserDirectory);
-  lua_pop(L, 1);
+void registerFilesystem(luau::table &sn) {
+  auto filesystem = sn.get_or_create_table("Filesystem");
+  filesystem.raw_function<lFilesystemEnumerateDirectory>("enumerateDirectory");
+  filesystem.raw_function<lFilesystemRead>("read");
+  filesystem.raw_function<lFilesystemReadText>("readText");
+  filesystem.function<lFilesystemExists>("exists");
+  filesystem.function<lFilesystemWrite>("write");
+  filesystem.raw_function<lFilesystemWriteText>("writeText");
+  filesystem.function<lFilesystemGetUserDirectory>("getUserDirectory");
 }
 } // namespace sinen

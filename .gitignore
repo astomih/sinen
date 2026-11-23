@@ -376,6 +376,7 @@ build/msvc2026-debug/*
 !build/msvc2026-debug/.gitkeep
 build/msvc2026-release/*
 !build/msvc2026-release/.gitkeep
+build/windows-release/*
 
 build/android/arm64-v8a_26_Release/
 build/android/arm64-v8a_28_Release/

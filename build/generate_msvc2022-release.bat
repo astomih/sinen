@@ -1,2 +1,5 @@
+@echo off
 call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
-cmake %~dp0.. -B %~dp0msvc2022-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DSINEN_ENABLE_NATIVE_WEBGPU_DAWN=OFF
+if errorlevel 1 exit /b %errorlevel%
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0xmake_configure.ps1" -Profile msvc2022-release
+exit /b %errorlevel%

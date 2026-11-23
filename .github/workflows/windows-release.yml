@@ -27,6 +27,11 @@ jobs:
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: '3.1.2'
+
       - name: Install Vulkan SDK
         shell: pwsh
         run: |
@@ -53,23 +58,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            build/windows-release/_deps
-            build/windows-release/plugins/shader_compiler/libs/slang/slang-*-windows-*
-            build/windows-release/plugins/shader_compiler/libs/slang/slang-tint-windows-x64
-            build/windows-release/plugins/shader_compiler/libs/slang/webgpu_dawn-windows-x64
-          key: ${{ runner.os }}-windows-release-deps-v1-${{ hashFiles('CMakeLists.txt', 'cmake/**', '.gitmodules', 'libs/WebGPU-distribution/wgpu-native/wgpu-native-git-tag.txt', 'plugins/shader_compiler/libs/slang/CMakeLists.txt') }}
+            build/windows-release/vendor/_deps
+            build/windows-release/vendor/plugins/shader_compiler/libs/slang/slang-*-windows-*
+            build/windows-release/vendor/plugins/shader_compiler/libs/slang/slang-tint-windows-x64
+            build/windows-release/vendor/plugins/shader_compiler/libs/slang/webgpu_dawn-windows-x64
+          key: ${{ runner.os }}-windows-release-deps-v2-${{ hashFiles('xmake.lua', 'cmake/vendor/**', '.gitmodules', 'plugins/shader_compiler/libs/slang/CMakeLists.txt') }}
           restore-keys: |
-            ${{ runner.os }}-windows-release-deps-v1-
+            ${{ runner.os }}-windows-release-deps-v2-
 
       - name: Configure
         shell: pwsh
         run: |
-          cmake -S . -B build/windows-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DSINEN_ENABLE_NATIVE_WEBGPU_DAWN=OFF
+          ./build/xmake_configure.ps1 -Profile windows-release
 
       - name: Build
         shell: pwsh
         run: |
-          cmake --build build/windows-release --parallel
+          ./build/xmake_build.ps1 -Profile windows-release
 
       - name: Package
         shell: pwsh
@@ -103,7 +108,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: slang-host-generators
-          path: build/windows-release/generators/Release/bin/*.exe
+          path: build/windows-release/vendor/generators/Release/bin/*.exe
 
   build_android:
     name: Build Android
@@ -131,6 +136,11 @@ jobs:
           java-version: "17"
           cache: gradle
           cache-dependency-path: build/android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: '3.1.2'
 
       - name: Install Android Build Tools
         shell: pwsh
@@ -172,11 +182,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            build/android/arm64-v8a_28_Release/_deps
-            build/android/arm64-v8a_28_Release/plugins/shader_compiler/libs/slang
-          key: ${{ runner.os }}-android-release-deps-v1-${{ hashFiles('CMakeLists.txt', 'cmake/**', '.gitmodules', 'plugins/shader_compiler/libs/slang/CMakeLists.txt') }}
+            build/android/arm64-v8a_28_Release/vendor/_deps
+            build/android/arm64-v8a_28_Release/vendor/plugins/shader_compiler/libs/slang
+          key: ${{ runner.os }}-android-release-deps-v2-${{ hashFiles('xmake.lua', 'cmake/vendor/**', '.gitmodules', 'plugins/shader_compiler/libs/slang/CMakeLists.txt') }}
           restore-keys: |
-            ${{ runner.os }}-android-release-deps-v1-
+            ${{ runner.os }}-android-release-deps-v2-
 
       - name: Configure Android
         shell: cmd
@@ -263,62 +273,34 @@ jobs:
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v14
 
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: '3.1.2'
+
       - name: Restore Dependency Cache
         uses: actions/cache@v4
         with:
           path: |
-            build/emscripten/_deps
-            build/emscripten/libs
-          key: ${{ runner.os }}-emscripten-release-deps-v1-${{ hashFiles('CMakeLists.txt', 'cmake/**', '.gitmodules', 'libs/WebGPU-distribution/emscripten/emscripten-git-tag.txt') }}
+            build/emscripten/vendor/_deps
+            build/emscripten/vendor/libs
+          key: ${{ runner.os }}-emscripten-release-deps-v2-${{ hashFiles('xmake.lua', 'cmake/vendor/**', '.gitmodules') }}
           restore-keys: |
-            ${{ runner.os }}-emscripten-release-deps-v1-
+            ${{ runner.os }}-emscripten-release-deps-v2-
 
       - name: Configure
-        shell: bash
+        shell: pwsh
+        env:
+          SINEN_EMSCRIPTEN_PRELOAD_DIR: ${{ github.workspace }}/examples
         run: |
-          set -o pipefail
-
-          emcmake cmake \
-            -S . \
-            -B build/emscripten \
-            -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_EXECUTABLE_SUFFIX=.html \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DSINEN_PLUGIN_SHADER_COMPILER=OFF \
-            -DSINEN_ENABLE_TRACY=OFF \
-            -DSINEN_EMSCRIPTEN_ASYNCIFY=ON \
-            -DSINEN_EMSCRIPTEN_ASSERTIONS=ON \
-            -DSINEN_EMSCRIPTEN_DEBUG_RUNTIME=OFF \
-            -DSINEN_EMSCRIPTEN_EXCEPTIONS=ON \
-            -DSINEN_EMSCRIPTEN_PRELOAD_DIR="${GITHUB_WORKSPACE}/examples" \
-            -DSINEN_EMSCRIPTEN_PRELOAD_MOUNT=/ \
-            -DASSIMP_BUILD_ZLIB=ON \
-            -DASSIMP_BUILD_TESTS=OFF \
-            -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \
-            -DASSIMP_INSTALL=OFF \
-            -DKTX_FEATURE_JS=OFF \
-            -DKTX_FEATURE_TESTS=OFF \
-            -DKTX_FEATURE_TOOLS=OFF \
-            -DKTX_FEATURE_LOADTEST_APPS=OFF \
-            -DSDL_TEST_LIBRARY=OFF \
-            -DSDL_TESTS=OFF \
-            -DSDL_EXAMPLES=OFF \
-            -DSDL_INSTALL=OFF \
-            -DENABLE_INSTALL=OFF \
-            2>&1 | tee build/emscripten-configure.log
-
-      - name: Upload Emscripten Configure Log
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: emscripten-configure-log
-          path: build/emscripten-configure.log
+          ./build/xmake_configure.ps1 -Profile emscripten
 
       - name: Build
-        shell: bash
+        shell: pwsh
+        env:
+          SINEN_EMSCRIPTEN_PRELOAD_DIR: ${{ github.workspace }}/examples
         run: |
-          cmake --build build/emscripten --parallel
+          ./build/xmake_build.ps1 -Profile emscripten
 
       - name: Package WebGPU Site
         shell: bash

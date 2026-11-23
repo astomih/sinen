@@ -30,7 +30,7 @@ jobs:
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: '3.1.2'
+          xmake-version: latest
 
       - name: Install Vulkan SDK
         shell: pwsh
@@ -143,7 +143,7 @@ jobs:
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: '3.1.2'
+          xmake-version: latest
 
       - name: Install Android Build Tools
         shell: pwsh
@@ -279,7 +279,7 @@ jobs:
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: '3.1.2'
+          xmake-version: latest
 
       - name: Configure
         shell: bash

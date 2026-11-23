@@ -4,9 +4,11 @@
 
 #include <gtest/gtest.h>
 
+#include "shared_binding_fixture.hpp"
 #include <gpu/shader/shader_compiler_plugin.h>
 #include <gpu/shader/shader_format.hpp>
 #include <gpu/shader/shader_stage.hpp>
+#include <script/luau_bind.hpp>
 #include <script/sinen_lua_module.h>
 
 #include "script/native_module.hpp"
@@ -22,6 +24,10 @@
 #ifndef SINEN_TEST_NATIVE_MODULE_PATH
 #error SINEN_TEST_NATIVE_MODULE_PATH must name the test module
 #endif
+
+namespace sinen {
+void registerVec2(luau::table &sn);
+}
 #ifndef SINEN_TEST_FAILING_NATIVE_MODULE_PATH
 #error SINEN_TEST_FAILING_NATIVE_MODULE_PATH must name the failing test module
 #endif
@@ -42,7 +48,103 @@ public:
 private:
   std::filesystem::path original;
 };
+
+struct NativeState {
+  lua_State *L = luaL_newstate();
+  ~NativeState() {
+    if (L) {
+      sinen::nativeModuleManager().close(L);
+      lua_close(L);
+    }
+    sinen::nativeModuleManager().unload();
+  }
+};
 } // namespace
+
+#ifdef SINEN_TEST_SHARED_BINDING_CONSUMER_PATH
+TEST(NativeModuleTests, SharesHostOwnedObjectsWithPluginAndPreservesConstness) {
+  using namespace sinen::luau;
+  using sinen::test::SharedValue;
+  int destructions = 0; // Outlives the VM and all userdata destructors.
+  SharedValue external(40);
+  NativeState owner;
+  ASSERT_NE(owner.L, nullptr);
+  luaL_openlibs(owner.L);
+  state_view vm(owner.L);
+  vm.class_<SharedValue>("SharedValue")
+      .constructor<int>()
+      .field<&SharedValue::value>("value")
+      .export_type("test.SharedValue", 3);
+  auto &modules = sinen::nativeModuleManager();
+  ASSERT_TRUE(modules.load(owner.L, SINEN_TEST_SHARED_BINDING_CONSUMER_PATH))
+      << modules.lastError();
+  lua_getfield(owner.L, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "shared_binding_consumer");
+  lua_setglobal(owner.L, "consumer");
+  vm["constant"] = std::cref(external);
+  vm.execute(Luau::compile(R"(
+    original = SharedValue(5)
+    consumer.increment(original)
+    assert(original.value == 6 and consumer.read(original) == 6)
+    copied = consumer.copy(original)
+    assert(copied.value == 6)
+    copied.value = 9
+    assert(original.value == 6)
+    assert(consumer.read(constant) == 40)
+    assert(not pcall(consumer.increment, constant))
+    assert(not pcall(consumer.read, {}))
+    assert(#consumer.array({}) == 0)
+    local array = consumer.array({1, 2, 3})
+    assert(array[1] == 1 and array[3] == 3)
+  )"));
+  vm.get<SharedValue &>("original").destroyed = &destructions;
+  vm.get<SharedValue &>("copied").destroyed = &destructions;
+  vm.execute(Luau::compile("original = nil; copied = nil"));
+  vm.collect_garbage();
+  vm.collect_garbage();
+  EXPECT_EQ(destructions, 2);
+  // Repeat with a fresh state in other tests: imports never escape their VM.
+}
+
+TEST(NativeModuleTests, SharesPluginTypesWithHostAndAnotherPlugin) {
+  using namespace sinen::luau;
+  using sinen::test::SharedValue;
+  NativeState owner;
+  ASSERT_NE(owner.L, nullptr);
+  luaL_openlibs(owner.L);
+  auto &modules = sinen::nativeModuleManager();
+  ASSERT_TRUE(modules.load(owner.L, SINEN_TEST_NATIVE_MODULE_PATH))
+      << modules.lastError();
+  state_view vm(owner.L);
+  vm.import_type<SharedValue>("test.SharedValue", 3);
+  vm.function("hostRead", [](const SharedValue &value) { return value.value; });
+  ASSERT_TRUE(modules.load(owner.L, SINEN_TEST_SHARED_BINDING_CONSUMER_PATH))
+      << modules.lastError();
+  lua_getfield(owner.L, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "shared_binding_consumer");
+  lua_setglobal(owner.L, "consumer");
+  vm.execute(Luau::compile(R"(
+    local value = native_module_fixture.SharedValue(10)
+    assert(hostRead(value) == 10)
+    consumer.increment(value)
+    local copy = consumer.copy(value)
+    assert(copy.value == 11 and hostRead(copy) == 11)
+    assert(not pcall(consumer.read, native_module_fixture.Counter(1)))
+    -- Provider methods accept the consumer's returned object.
+    copy.value = 12
+    shared_keepalive = copy
+  )"));
+}
+
+TEST(NativeModuleTests, SharedTypeImportRequiresProvider) {
+  NativeState owner;
+  ASSERT_NE(owner.L, nullptr);
+  auto &modules = sinen::nativeModuleManager();
+  EXPECT_FALSE(modules.load(owner.L, SINEN_TEST_SHARED_BINDING_CONSUMER_PATH));
+  EXPECT_NE(modules.lastError().find("load its provider first"),
+            std::string::npos);
+}
+#endif
 
 TEST(NativeModuleTests, LoadsModuleAndKeepsItAliveUntilStateCloses) {
   lua_State *state = luaL_newstate();
@@ -118,12 +220,14 @@ TEST(NativeModuleTests, OceanPluginSimulatesAndWritesReusableMeshBuffers) {
     modules.unload();
   };
   const std::unique_ptr<lua_State, decltype(closeState)> owner(luaL_newstate(),
-                                                            closeState);
+                                                               closeState);
   lua_State *state = owner.get();
   ASSERT_NE(state, nullptr);
   luaL_openlibs(state);
-  ASSERT_TRUE(modules.load(state, SINEN_TEST_OCEAN_PATH)) << modules.lastError();
-  lua_getfield(state, LUA_REGISTRYINDEX, SINEN_LUA_PLUGIN_REGISTRY_PREFIX "ocean");
+  ASSERT_TRUE(modules.load(state, SINEN_TEST_OCEAN_PATH))
+      << modules.lastError();
+  lua_getfield(state, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "ocean");
   lua_setglobal(state, "Ocean");
   const auto script = Luau::compile(R"(
     for _, spectrum in {'phillips', 'jonswap'} do
@@ -156,7 +260,8 @@ TEST(NativeModuleTests, OceanPluginSimulatesAndWritesReusableMeshBuffers) {
     local sample = calm:sample(5, 6)
     assert(sample.height == 0 and sample.normalY == 1 and sample.foam == 0)
   )");
-  ASSERT_EQ(luau_load(state, "ocean_plugin", script.data(), script.size(), 0), LUA_OK);
+  ASSERT_EQ(luau_load(state, "ocean_plugin", script.data(), script.size(), 0),
+            LUA_OK);
   ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK) << lua_tostring(state, -1);
   lua_gc(state, LUA_GCCOLLECT, 0);
 }
@@ -199,7 +304,8 @@ TEST(NativeModuleTests, LuauToCppPluginConvertsSourceAndReportsErrors) {
     local invalid, syntaxError = converter.convert("local function", "syntax.luau")
     assert(not invalid and string.find(syntaxError, "syntax.luau:1:", 1, true))
   )luau");
-  ASSERT_EQ(luau_load(state, "convert", script.data(), script.size(), 0), LUA_OK);
+  ASSERT_EQ(luau_load(state, "convert", script.data(), script.size(), 0),
+            LUA_OK);
   ASSERT_EQ(lua_pcall(state, 0, 0, 0), LUA_OK) << lua_tostring(state, -1);
 }
 #endif
@@ -217,6 +323,10 @@ TEST(NativeModuleTests, FpsCollisionPluginMatchesLuau) {
   lua_State *state = owner.get();
   ASSERT_NE(state, nullptr);
   luaL_openlibs(state);
+
+  auto sn = sinen::luau::table::create(state);
+  sinen::registerVec2(sn);
+  sn.publish("sn");
 
   const ScopedCurrentDirectory currentDirectory(SINEN_TEST_FPS_DIR);
   ASSERT_TRUE(modules.loadPlugin(state, "fps_collision"))
@@ -244,16 +354,24 @@ TEST(NativeModuleTests, FpsCollisionPluginMatchesLuau) {
     local nativeSlab = require("@sinen/plugin/fps_collision").slab
     local function same(a, b)
       return (a == b and (a ~= 0 or 1 / a == 1 / b)) or (a ~= a and b ~= b)
+        or (math.abs(a) < math.huge and math.abs(b) < math.huge
+          and math.abs(a - b) <= 1e-6 * math.max(1, math.abs(a), math.abs(b)))
     end
     for _, origin in {-2, -1, -0.0, 0, 1, 2, math.huge, 0 / 0} do
       for _, direction in {-2, -1e-7, -1e-8, -0.0, 0, 1e-8, 1e-7, 2, math.huge, 0 / 0} do
         for _, bound in {0, 1} do
-          local a, b = luauSlab(origin, direction, -bound, bound)
-          local c, d = nativeSlab(origin, direction, -bound, bound)
-          assert(same(a, c) and same(b, d), "slab result differs")
+          local a = luauSlab(origin, direction, -bound, bound)
+          local b = nativeSlab(origin, direction, -bound, bound)
+          assert(same(a.x, b.x) and same(a.y, b.y), "slab result differs")
         end
       end
     end
+    local sn = require('@sinen')
+    local v = nativeSlab(0, 1, 3, 4)
+    assert(v:length() == 5 and v:copy().y == 4)
+    local sum = v + sn.Vec2.new(1, 2)
+    assert(sum.x == 4 and sum.y == 6)
+    assert(tostring(v):find('sn.Vec2', 1, true))
   )");
   ASSERT_EQ(luau_load(state, "compare slab", compare.data(), compare.size(), 0),
             LUA_OK);

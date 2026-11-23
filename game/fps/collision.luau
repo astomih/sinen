@@ -3,7 +3,7 @@ local Art = require("./art")
 
 local Collision = {}
 
-local slab: (number, number, number, number) -> (number, number)
+local slab: (number, number, number, number) -> sn.Vec2
 if sn.Script.loadPlugin("fps_collision") then
 	slab = require("@sinen/plugin/fps_collision").slab
 else
@@ -12,11 +12,11 @@ end
 
 function Collision.wallDistance(solids: { Art.Box }, origin: sn.Vec3, direction: sn.Vec3, limit: number): number
 	for _, box in solids do
-		local x0, x1 = slab(origin.x, direction.x, box.lo.x, box.hi.x)
-		local y0, y1 = slab(origin.y, direction.y, box.lo.y, box.hi.y)
-		local z0, z1 = slab(origin.z, direction.z, box.lo.z, box.hi.z)
-		local entry = math.max(x0, y0, z0, 0)
-		if entry <= math.min(x1, y1, z1, limit) then
+		local x: sn.Vec2 = slab(origin.x, direction.x, box.lo.x, box.hi.x)
+		local y: sn.Vec2 = slab(origin.y, direction.y, box.lo.y, box.hi.y)
+		local z: sn.Vec2 = slab(origin.z, direction.z, box.lo.z, box.hi.z)
+		local entry = math.max(x.x, y.x, z.x, 0)
+		if entry <= math.min(x.y, y.y, z.y, limit) then
 			limit = entry
 		end
 	end

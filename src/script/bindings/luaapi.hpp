@@ -60,6 +60,7 @@ static luau::class_builder<T> engineClass(luau::table &sn,
     name += 3;
   auto binding = sn.class_<T>(name);
   binding.metatable_name(metaName);
+  binding.export_type(metaName);
   return binding;
 }
 

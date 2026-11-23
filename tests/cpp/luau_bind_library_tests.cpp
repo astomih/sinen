@@ -567,4 +567,49 @@ TEST_F(LuauBindLibrary,
   EXPECT_EQ(foreign["value"].get<int>(), 11);
   EXPECT_EQ(lua_gettop(L), 0);
 }
+
+TEST_F(LuauBindLibrary, SharedTypesCheckAbiCollisionsAndPreserveStack) {
+  struct Larger {
+    char data[64];
+  };
+  struct Bytes {
+    char data[16];
+  };
+  struct alignas(16) Aligned {
+    char data[16];
+  };
+  static_assert(sizeof(Bytes) == sizeof(Aligned));
+  bind::state_view vm(L);
+  lua_pushinteger(L, 99);
+  EXPECT_THROW(bind::export_type<Counter>(L, "test.Counter"),
+               bind::binding_error);
+  EXPECT_THROW(vm.import_type<Counter>("missing"), bind::binding_error);
+  vm.class_<Counter>("Counter").constructor<int>().export_type("test.Counter",
+                                                               7);
+  EXPECT_NO_THROW(bind::export_type<Counter>(L, "test.Counter", 7));
+  EXPECT_NO_THROW(vm.import_type<Counter>("test.Counter", 7));
+  EXPECT_NO_THROW(vm.import_type<Counter>("test.Counter", 7));
+  EXPECT_THROW(vm.import_type<Counter>("test.Counter", 8), bind::binding_error);
+  EXPECT_THROW(bind::export_type<Counter>(L, "test.Counter", 8),
+               bind::binding_error);
+  EXPECT_THROW(vm.import_type<Larger>("test.Counter", 7), bind::binding_error);
+  EXPECT_THROW(vm.import_type<Counter>(""), bind::binding_error);
+  EXPECT_THROW(vm.import_type<Counter>(std::string_view("bad\0key", 7)),
+               bind::binding_error);
+  vm.class_<Other>("Other");
+  EXPECT_THROW(bind::export_type<Other>(L, "test.Counter", 7),
+               bind::binding_error);
+  EXPECT_THROW(vm.import_type<Other>("test.Counter", 7), bind::binding_error);
+  vm.class_<Bytes>("Bytes").export_type("test.Bytes");
+  EXPECT_THROW(vm.import_type<Aligned>("test.Bytes"), bind::binding_error);
+  EXPECT_TRUE(run("value = Counter(3)"));
+  EXPECT_EQ(vm.get<Counter &>("value").value, 3);
+  EXPECT_EQ(lua_gettop(L), 1);
+  EXPECT_EQ(lua_tointeger(L, 1), 99);
+  bind::state foreign;
+  EXPECT_THROW(foreign.import_type<Counter>("test.Counter", 7),
+               bind::binding_error);
+  foreign.class_<Counter>("Counter").export_type("test.Counter", 1);
+  EXPECT_NO_THROW(foreign.import_type<Counter>("test.Counter", 1));
+}
 } // namespace

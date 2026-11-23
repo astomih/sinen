@@ -58,6 +58,13 @@ inline void reserve(lua_State *L, int count = 4) {
     throw binding_error("Luau stack capacity exceeded");
 }
 
+inline void create_table(lua_State *L, int array_size = 0) {
+  // Native plugins currently link Luau statically. An empty hash part would
+  // point at that DLL's luaH_dummynode, which another VM binary cannot free.
+  // Use an allocated hash part even for empty tables and array-only results.
+  lua_createtable(L, array_size, 1);
+}
+
 inline void require(bool condition, const char *message) {
   if (!condition)
     throw binding_error(message);
@@ -84,6 +91,40 @@ template <class T> struct object {
   bool owned = false;
   bool readonly = false;
 };
+
+// The pointer key is a binary-local cache. Shared registrations live under a
+// stable string key in this VM and are explicitly imported by other binaries.
+inline std::string shared_type_key(std::string_view name) {
+  require(!name.empty() && name.find('\0') == std::string_view::npos,
+          "shared C++ type name must not be empty or contain a null byte");
+  return "sinen.luau.shared_type." + std::string(name);
+}
+
+inline void set_abi_field(lua_State *L, const char *name, size_t value) {
+  lua_pushnumber(L, static_cast<double>(value));
+  lua_rawsetfield(L, -2, name);
+}
+
+inline bool abi_field_matches(lua_State *L, const char *name, size_t value) {
+  lua_rawgetfield(L, -1, name);
+  const bool matches = lua_type(L, -1) == LUA_TNUMBER &&
+                       lua_tonumber(L, -1) == static_cast<double>(value);
+  lua_pop(L, 1);
+  return matches;
+}
+
+template <class T>
+void check_shared_abi(lua_State *L, std::string_view name, unsigned version) {
+  const bool matches =
+      abi_field_matches(L, "binding_abi", 1) &&
+      abi_field_matches(L, "version", version) &&
+      abi_field_matches(L, "size", sizeof(T)) &&
+      abi_field_matches(L, "alignment", alignof(T)) &&
+      abi_field_matches(L, "box_size", sizeof(object<T>)) &&
+      abi_field_matches(L, "box_alignment", alignof(object<T>));
+  if (!matches)
+    throw binding_error("shared C++ type ABI mismatch: " + std::string(name));
+}
 
 template <class T> bool is_object(lua_State *L, int index) {
   stack_guard guard(L);
@@ -140,6 +181,67 @@ template <class T> void push_borrowed(lua_State *L, T &value) {
   lua_remove(L, -2);
 }
 } // namespace detail
+
+// All participants must use the same C++ definition, compiler ABI and runtime.
+// Size/alignment/version checks catch common mistakes, not every ABI mismatch.
+template <class T>
+void export_type(lua_State *L, std::string_view name, unsigned version = 1) {
+  static_assert(std::is_class_v<T>,
+                "export_type requires a C++ class or struct");
+  detail::stack_guard guard(L);
+  detail::reserve(L, 6);
+  const auto key = detail::shared_type_key(name);
+  lua_rawgetp(L, LUA_REGISTRYINDEX, &detail::type_key<T>);
+  detail::require(lua_istable(L, -1),
+                  "register the C++ class before exporting it");
+  const int metatable = lua_absindex(L, -1);
+  lua_rawgetfield(L, LUA_REGISTRYINDEX, key.c_str());
+  if (!lua_isnil(L, -1)) {
+    detail::require(lua_istable(L, -1), "invalid shared C++ type descriptor");
+    detail::check_shared_abi<T>(L, name, version);
+    lua_rawgetfield(L, -1, "metatable");
+    if (!lua_rawequal(L, metatable, -1))
+      throw binding_error("shared C++ type name already exported: " +
+                          std::string(name));
+    return; // Re-exporting the same registration is harmless.
+  }
+  lua_pop(L, 1);
+  lua_createtable(L, 0, 7);
+  detail::set_abi_field(L, "binding_abi", 1);
+  detail::set_abi_field(L, "version", version);
+  detail::set_abi_field(L, "size", sizeof(T));
+  detail::set_abi_field(L, "alignment", alignof(T));
+  detail::set_abi_field(L, "box_size", sizeof(detail::object<T>));
+  detail::set_abi_field(L, "box_alignment", alignof(detail::object<T>));
+  lua_pushvalue(L, metatable);
+  lua_rawsetfield(L, -2, "metatable");
+  lua_setreadonly(L, -1, true);
+  lua_rawsetfield(L, LUA_REGISTRYINDEX, key.c_str());
+}
+
+template <class T>
+void import_type(lua_State *L, std::string_view name, unsigned version = 1) {
+  static_assert(std::is_class_v<T>,
+                "import_type requires a C++ class or struct");
+  detail::stack_guard guard(L);
+  detail::reserve(L, 6);
+  const auto key = detail::shared_type_key(name);
+  lua_rawgetfield(L, LUA_REGISTRYINDEX, key.c_str());
+  if (lua_isnil(L, -1))
+    throw binding_error(
+        "shared C++ type is not exported; load its provider first: " +
+        std::string(name));
+  detail::require(lua_istable(L, -1), "invalid shared C++ type descriptor");
+  detail::check_shared_abi<T>(L, name, version);
+  lua_rawgetfield(L, -1, "metatable");
+  detail::require(lua_istable(L, -1), "invalid shared C++ type metatable");
+  lua_rawgetp(L, LUA_REGISTRYINDEX, &detail::type_key<T>);
+  if (!lua_isnil(L, -1) && !lua_rawequal(L, -1, -2))
+    throw binding_error("C++ type already bound to a different registration: " +
+                        std::string(name));
+  lua_pop(L, 1);
+  lua_rawsetp(L, LUA_REGISTRYINDEX, &detail::type_key<T>);
+}
 
 // Class values are owned by Luau. Returning T&/const T& copies the value;
 // use std::ref/std::cref explicitly for a borrowed object.
@@ -340,7 +442,7 @@ template <class T> struct stack<std::vector<T>> {
                         static_cast<size_t>(std::numeric_limits<int>::max()),
                     "array is too large for Luau");
     detail::reserve(L);
-    lua_createtable(L, static_cast<int>(values.size()), 0);
+    detail::create_table(L, static_cast<int>(values.size()));
     for (size_t i = 0; i < values.size(); ++i) {
       stack<T>::push(L, values[i]);
       lua_rawseti(L, -2, static_cast<int>(i + 1));
@@ -599,6 +701,12 @@ class table {
 public:
   table(lua_State *L, int index) : L(L) {
     detail::require(lua_istable(L, index), "expected table");
+    // Keep a hash entry while lua_ref grows the registry's array part, even
+    // before open_libraries. Otherwise Luau can replace the hash with this
+    // DLL's static empty-node sentinel during rehashing.
+    detail::reserve(L);
+    lua_pushboolean(L, true);
+    lua_rawsetfield(L, LUA_REGISTRYINDEX, "sinen.luau.bind");
     reference = lua_ref(L, index);
   }
   table(const table &other) : L(other.L) {
@@ -620,7 +728,7 @@ public:
   static table create(lua_State *L) {
     detail::stack_guard guard(L);
     detail::reserve(L);
-    lua_newtable(L);
+    detail::create_table(L);
     return table(L, -1);
   }
   void push() const {
@@ -629,6 +737,12 @@ public:
     lua_getref(L, reference);
   }
   lua_State *state() const { return L; }
+
+  template <class T>
+  table &import_type(std::string_view name, unsigned version = 1) {
+    luau::import_type<T>(L, name, version);
+    return *this;
+  }
 
   table create_table() const { return table::create(L); }
   table get_table(const char *name) const {
@@ -643,7 +757,7 @@ public:
     lua_getfield(L, -1, name);
     if (lua_isnil(L, -1)) {
       lua_pop(L, 1);
-      lua_newtable(L);
+      detail::create_table(L);
       lua_pushvalue(L, -1);
       lua_setfield(L, -3, name);
     }
@@ -790,6 +904,10 @@ public:
     detail::require(L != nullptr, "cannot bind a null Luau state");
   }
   lua_State *lua_state() const { return L; }
+  template <class T>
+  void import_type(std::string_view name, unsigned version = 1) const {
+    luau::import_type<T>(L, name, version);
+  }
   void open_libraries() const { luaL_openlibs(L); }
   void collect_garbage() const { lua_gc(L, LUA_GCCOLLECT, 0); }
   table globals() const { return table(L, LUA_GLOBALSINDEX); }
@@ -932,6 +1050,10 @@ public:
     lua_setfield(L, LUA_REGISTRYINDEX, name);
     return *this;
   }
+  class_builder &export_type(std::string_view name, unsigned version = 1) {
+    luau::export_type<T>(L, name, version);
+    return *this;
+  }
   template <detail::binding_function F>
   class_builder &metamethod(const char *name, F &&function) {
     metaTable.function(name, std::forward<F>(function));
@@ -981,7 +1103,7 @@ public:
     constructors.push();
     lua_pushcfunction(L, (detail::constructor_call<false, T, A...>), "C++.new");
     lua_setfield(L, -2, "new");
-    lua_newtable(L);
+    detail::create_table(L);
     lua_pushcfunction(L, (detail::constructor_call<true, T, A...>),
                       "C++.__call");
     lua_setfield(L, -2, "__call");

@@ -1,4 +1,5 @@
 #include "script/bindings/luaapi.hpp"
+#include <filesystem>
 #include <graphics/font/font.hpp>
 #include <graphics/video/video.hpp>
 #include <gtest/gtest.h>
@@ -10,11 +11,11 @@ protected:
   void SetUp() override { ASSERT_TRUE(sinen::Script::initialize(false)); }
   void TearDown() override { sinen::Script::shutdown(); }
 
-  testing::AssertionResult run(const char *source) {
+  testing::AssertionResult run(const char *source,
+                               const char *chunk = "engine_binding_test") {
     auto *L = sinen::getGlobalLua();
     const auto bytecode = Luau::compile(source);
-    if (luau_load(L, "engine_binding_test", bytecode.data(), bytecode.size(),
-                  0) != LUA_OK ||
+    if (luau_load(L, chunk, bytecode.data(), bytecode.size(), 0) != LUA_OK ||
         lua_pcall(L, 0, 0, 0) != LUA_OK) {
       const char *message = lua_tostring(L, -1);
       return testing::AssertionFailure() << (message ? message : "Luau error");
@@ -54,6 +55,43 @@ assert(not pcall(function() v.x = "bad" end))
 assert(not pcall(function() v:dot(sn.Vec2.new()) end))
 )"));
 }
+
+#ifdef SINEN_TEST_FPS_DIR
+TEST_F(EngineBindings, FpsPluginReturnsTheEngineVec2Type) {
+  const auto original = std::filesystem::current_path();
+  struct RestoreDirectory {
+    std::filesystem::path path;
+    ~RestoreDirectory() {
+      std::error_code ignored;
+      std::filesystem::current_path(path, ignored);
+    }
+  } restore{original};
+  std::filesystem::current_path(SINEN_TEST_FPS_DIR);
+  ASSERT_TRUE(
+      run(R"(
+    local sn = require('@sinen')
+    local ok, err = sn.Script.loadPlugin('fps_collision')
+    assert(ok, err)
+    local native = require('@sinen/plugin/fps_collision')
+    local v = native.slab(0, 1, 3, 4)
+    assert(v.x == 3 and v.y == 4 and v:length() == 5)
+    local copy = v:copy()
+    copy.x = 10
+    assert(v.x == 3 and copy.x == 10)
+    local sum = v + sn.Vec2.new(1, 2)
+    assert(sum.x == 4 and sum.y == 6)
+    assert(tostring(v):find('sn.Vec2', 1, true))
+    fps_plugin_keepalive = v
+    local Collision = require('./collision')
+    local box = {lo = sn.Vec3.new(3, -1, -1), hi = sn.Vec3.new(4, 1, 1)}
+    local direction = sn.Vec3.new(1, 0, 0)
+    assert(Collision.wallDistance({box}, sn.Vec3.new(), direction, 10) == 3)
+    assert(Collision.wallDistance({box}, sn.Vec3.new(0, 5, 0), direction, 10) == 10)
+    assert(Collision.wallDistance({box}, sn.Vec3.new(3.5, 0, 0), direction, 10) == 0)
+  )",
+          ("@" + std::string(SINEN_TEST_FPS_DIR) + "/main.luau").c_str()));
+}
+#endif
 
 TEST_F(EngineBindings, TypedAndRawHandlersShareValuesAndBorrowedFields) {
   ASSERT_TRUE(run(R"(

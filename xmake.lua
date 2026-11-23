@@ -33,40 +33,40 @@ local webgpu = wasm or (windows and has_config("sinen_webgpu_dawn"))
 local slang = not wasm and has_config("sinen_shader_compiler")
 
 option("sinen_preload")
-    set_default("")
-    set_showmenu(true)
-    set_description("Directory to preload at / in the Emscripten app")
+set_default("")
+set_showmenu(true)
+set_description("Directory to preload at / in the Emscripten app")
 option_end()
 option("sinen_slang_generators")
-    set_default("")
-    set_showmenu(true)
-    set_description("Host Slang generator directory for Android")
+set_default("")
+set_showmenu(true)
+set_description("Host Slang generator directory for Android")
 option_end()
 
 includes("xmake/dependencies.lua")
 
 target("sinen_vendor")
-    set_kind("phony")
-    set_default(false)
-    set_targetdir(vendor)
-    set_policy("build.fence", true)
-    set_values("sinen.dawn", windows and webgpu)
-    set_values("sinen.slang", slang)
-    on_build(function (target)
-        import("upstream", {rootdir = path.join(os.projectdir(), "xmake")})
-        upstream(target)
-    end)
+set_kind("phony")
+set_default(false)
+set_targetdir(vendor)
+set_policy("build.fence", true)
+set_values("sinen.dawn", windows and webgpu)
+set_values("sinen.slang", slang)
+on_build(function(target)
+	import("upstream", { rootdir = path.join(os.projectdir(), "xmake") })
+	upstream(target)
+end)
 target_end()
 
 target("sinen_licenses")
-    set_kind("phony")
-    set_default(false)
-    set_policy("build.fence", true)
-    set_targetdir(generated)
-    on_build(function (target)
-        import("licenses", {rootdir = path.join(os.projectdir(), "xmake")})
-        licenses(path.join(target:targetdir(), "licenses_data.hpp"))
-    end)
+set_kind("phony")
+set_default(false)
+set_policy("build.fence", true)
+set_targetdir(generated)
+on_build(function(target)
+	import("licenses", { rootdir = path.join(os.projectdir(), "xmake") })
+	licenses(path.join(target:targetdir(), "licenses_data.hpp"))
+end)
 target_end()
 
 local function vendor_includes()
@@ -120,7 +120,7 @@ local function vendor_includes()
 end
 
 local function common()
-	add_deps("sinen_vendor", {inherit = false})
+	add_deps("sinen_vendor", { inherit = false })
 	set_targetdir(output)
 	set_objectdir(path.join(output, ".objs"))
 	add_includedirs("include", "include/sinen", "src")
@@ -195,7 +195,7 @@ for _, name in ipairs(modules) do
 	common()
 	add_files("src/" .. name .. "/**.cpp")
 	if name == "core" then
-		add_deps("sinen_licenses", {inherit = false})
+		add_deps("sinen_licenses", { inherit = false })
 		add_files("libs/tlsf/tlsf.c")
 	elseif name == "platform" then
 		add_files("libs/tinyexr/deps/miniz/miniz.c")
@@ -216,7 +216,7 @@ for _, name in ipairs(modules) do
 end
 
 local function link_vendor()
-	local links = {"SDL3", "assimp", "ktx_read"}
+	local links = { "SDL3", "assimp", "ktx_read" }
 	if not android then
 		table.insert(links, "zlib")
 	end
@@ -235,7 +235,7 @@ local function link_vendor()
 	end
 	if wasm then
 		-- The pinned KTX read archive contains two copies of Basis Universal's miniz.
-		add_ldflags("-Wl,--allow-multiple-definition", {force = true})
+		add_ldflags("-Wl,--allow-multiple-definition", { force = true })
 	end
 	add_deps("box2d", "box3d", "msdfgen-core", "meshoptimizer", "sinen_vendor_luau")
 	if has_config("sinen_profiler") then
@@ -339,27 +339,21 @@ if not android and not wasm then
 	add_files("plugins/luau_to_cpp/source/cli.cpp", "plugins/luau_to_cpp/source/converter.cpp")
 	link_vendor()
 	target_end()
-	target("sinen_plugin_fps_collision")
-	set_kind("shared")
-	common()
-	set_filename(windows and "fps_collision.dll" or "fps_collision.so")
-	add_files("game/fps/plugin/plugin.cpp")
-	add_includedirs(path.join(output, "game/fps/plugin"))
-	add_deps("sinen_luau_to_cpp")
-	link_vendor()
-	before_build(function(target)
-		local headerdir = path.join(output, "game/fps/plugin")
-		os.mkdir(headerdir)
-		os.execv(
-			path.join(output, windows and "sinen_luau_to_cpp.exe" or "sinen_luau_to_cpp"),
-			{ path.join(root, "game/fps/slab.luau"), path.join(headerdir, "slab.generated.hpp") }
-		)
-	end)
-	after_build(function(target)
-		os.cp(target:targetfile(), path.join(root, "game/fps"))
-	end)
-	target_end()
 end
+
+target("sinen_plugin_fps_collision")
+set_kind("shared")
+common()
+set_filename(windows and "fps_collision.dll" or "fps_collision.so")
+add_files("game/fps/plugin/plugin.cpp")
+add_includedirs(path.join(output, "game/fps/plugin"))
+add_deps("sinen_core")
+link_vendor()
+after_build(function(target)
+	os.cp(target:targetfile(), path.join(root, "game/fps"))
+end)
+target_end()
+
 if has_config("sinen_nativefs") then
 	lua_module("sinen_plugin_nativefs", { "plugins/nativefs/source/nativefs.cpp" })
 end
@@ -378,6 +372,7 @@ if has_config("sinen_cpp_tests") then
 	end
 	if windows then
 		lua_module("sinen_test_failing_native_module", { "tests/cpp/native_module_failure_fixture.cpp" })
+		lua_module("sinen_test_shared_binding_consumer", { "tests/cpp/shared_binding_consumer_fixture.cpp" })
 		target("sinen_test_renderdoc")
 		set_kind("shared")
 		common()
@@ -408,6 +403,9 @@ if has_config("sinen_cpp_tests") then
 					.. path.join(root, "examples/graphics/ocean/ocean.slang"):gsub("\\", "/")
 					.. '"'
 			)
+		elseif name == "sinen_engine_binding_tests" and windows then
+			add_defines('SINEN_TEST_FPS_DIR="' .. path.join(root, "game/fps"):gsub("\\", "/") .. '"')
+			add_deps("sinen_plugin_fps_collision")
 		elseif name == "sinen_luau_binding_tests" and windows then
 			add_defines(
 				'SINEN_TEST_NATIVE_MODULE_PATH="'
@@ -420,8 +418,11 @@ if has_config("sinen_cpp_tests") then
 				'SINEN_TEST_LUAU_TO_CPP_DIR="' .. output:gsub("\\", "/") .. '"',
 				'SINEN_TEST_FPS_DIR="' .. path.join(root, "game/fps"):gsub("\\", "/") .. '"'
 			)
+			add_defines('SINEN_TEST_SHARED_BINDING_CONSUMER_PATH="'
+				.. path.join(output, "sinen_test_shared_binding_consumer.dll"):gsub("\\", "/") .. '"')
 			add_deps(
 				"sinen_test_native_module",
+				"sinen_test_shared_binding_consumer",
 				"sinen_test_failing_native_module",
 				"sinen_plugin_ocean",
 				"sinen_plugin_fps_collision"
@@ -511,12 +512,13 @@ if has_config("sinen_cpp_tests") then
 		"tests/cpp/luau_binding_tests.cpp",
 		"tests/cpp/luau_bind_library_tests.cpp",
 		"src/script/require_alias.cpp",
+		"src/script/bindings/vec2_lua.cpp",
 	}
 	if windows then
 		table.insert(luau_files, "tests/cpp/native_module_tests.cpp")
 		table.insert(luau_files, "src/script/native_module.cpp")
 	end
-	test_target("sinen_luau_binding_tests", luau_files, {})
+	test_target("sinen_luau_binding_tests", luau_files, { "sinen_math", "sinen_core" })
 	if windows then
 		test_target(
 			"sinen_renderdoc_tests",
@@ -562,17 +564,20 @@ if has_config("sinen_cpp_tests") then
 	end
 end
 
-
 if android then
 	target("sinen_android_package")
-		set_kind("phony")
-		add_deps("sinen")
-		add_deps("box2d", "box3d", "msdfgen-core", "cppdap")
-		if slang then add_deps("sinen_plugin_shader_compiler") end
-		if has_config("sinen_profiler") then add_deps("TracyClient") end
-		on_build(function (target)
-			import("android_stage", {rootdir = path.join(os.projectdir(), "xmake")})
-			android_stage(target)
-		end)
+	set_kind("phony")
+	add_deps("sinen")
+	add_deps("box2d", "box3d", "msdfgen-core", "cppdap")
+	if slang then
+		add_deps("sinen_plugin_shader_compiler")
+	end
+	if has_config("sinen_profiler") then
+		add_deps("TracyClient")
+	end
+	on_build(function(target)
+		import("android_stage", { rootdir = path.join(os.projectdir(), "xmake") })
+		android_stage(target)
+	end)
 	target_end()
 end

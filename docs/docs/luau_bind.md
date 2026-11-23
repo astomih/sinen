@@ -150,6 +150,36 @@ C++ 側でオーバーロードされている関数は、`static_cast<int (*)(i
 
 独自の変換は `sinen::luau::stack<T>` を特殊化し、`matches(L, index)`、`get(L, index)`、`push(L, value)` を実装します。`matches` はスタックを変更せず、`push` は1値だけ積みます。`get` は不正値に `binding_error` を投げてください。
 
+## 本体・プラグイン間でクラス型を共有する
+
+提供側が型を名前とABIバージョン付きで公開し、利用側が同じVMの登録を取り込みます。取り込んだ型を `.class_<T>()` で再登録する必要はありません。
+
+```cpp
+// 提供側プラグイン。SharedValue の定義は共通ヘッダーに置きます。
+module.class_<SharedValue>("SharedValue")
+    .constructor<int>()
+    .field<&SharedValue::value>("value")
+    .export_type("example.SharedValue", 1);
+
+// 利用側プラグイン。提供側のロード後に実行します。
+module.import_type<SharedValue>("example.SharedValue", 1)
+    .function("read", [](const SharedValue &v) { return v.value; })
+    .function("copy", [](const SharedValue &v) { return SharedValue(v.value); });
+```
+
+`sinen::luau::import_type<T>(L, name, version)` と `state_view::import_type<T>(name, version)` も利用できます。バージョンの省略値は `1` です。登録はVMごとに独立しており、提供側が未ロードなら取り込み時にエラーになります。提供側を先にロードしてください。同名の別登録、バージョン、型のサイズ・アラインメント、userdata表現のABIが一致しない場合も拒否します。
+
+エンジンの `engineClass` で登録した型は `sn.Vec2` などのメタテーブル名で公開されます。`game/fps` では次のように本体の `Vec2` を取り込み、`slab` から返します。返り値は本体と同じメタテーブルを使用するので、フィールド、演算子、`length()`、`copy()` も使用できます。
+
+```cpp
+module.import_type<sinen::Vec2>(sinen::Vec2::metaTableName());
+module.function("slab", &sinen::generated::run); // float × 4 -> Vec2
+```
+
+この共有方式は互換性のあるC++ ABIを前提とします。共通ヘッダー、コンパイラ、ランタイムとビルド設定を揃え、型のレイアウトや意味を変更したときはABIバージョンを更新してください。サイズ・アラインメントの検査だけで、すべてのABI不一致を検出できるわけではありません。エンジン内部で `Ptr<T>` として登録されるリソースは、利用側も `Ptr<T>` を取り込んでください。
+
+所有するオブジェクトは、そのオブジェクトを生成したバイナリのuserdata destructorで破棄します。取り込みによって所有権は移りません。`std::ref` / `std::cref` の借用先は、それを参照する全userdataより長く生存させてください。提供側と利用側のプラグインは、VMを閉じるまでロード状態を維持する必要があります。
+
 ## 寿命とエラー
 
 `table`、`class_builder`、添字プロキシはレジストリ参照を保持し、スタックの位置に依存しません。所有する `state` をこれらのハンドルより先に宣言し、ハンドルを先に破棄してください。`state_view` はVMを閉じません。借用VMでは `lua_close` より前にハンドルを破棄してください。登録された関数やクラスはハンドル破棄後も有効です。プラグインのDLLはVM終了後にアンロードしてください。既存の Sinen ローダーはこの順序を保証します。

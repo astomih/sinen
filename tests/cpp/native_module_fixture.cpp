@@ -1,3 +1,4 @@
+#include "shared_binding_fixture.hpp"
 #include <script/luau_bind.hpp>
 
 namespace {
@@ -20,6 +21,10 @@ SINEN_LUA_MODULE_EXPORT int sinen_lua_module_open(lua_State *state) {
             .constructor<int>()
             .method<&Counter::add>("add")
             .field<&Counter::value>("value");
+        module.class_<sinen::test::SharedValue>("SharedValue")
+            .constructor<int>()
+            .field<&sinen::test::SharedValue::value>("value")
+            .export_type("test.SharedValue", 3);
         module.publish("native_module_fixture");
       });
 }
